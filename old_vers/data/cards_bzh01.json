@@ -4,461 +4,461 @@
     "type": "Champion",
     "rarity": "Rare",
     "id": "BZH01_RC001",
-    "desc": ""
+    "desc": "Le bouclier infranchissable et l'œil infaillible. Lorsque défense et précision s'unissent, aucun assaut ne prospère."
   },
   {
     "name": "MutenRock & Gabilone – Natural Harmony",
     "type": "Champion",
     "rarity": "Rare",
     "id": "BZH01_RC002",
-    "desc": ""
+    "desc": "Deux âmes tissées par la nature et le Code. Ensemble, ils font renaître l'équilibre dans les ruines du monde."
   },
   {
     "name": "Sniky & Titan – Silent Strike",
     "type": "Champion",
     "rarity": "Rare",
     "id": "BZH01_RC003",
-    "desc": ""
+    "desc": "La lame invisible et son ombre canine. Ils frappent sans bruit, disparaissent sans trace, ne laissant que la peur derrière eux."
   },
   {
     "name": "The Power of Three",
     "type": "Champion",
     "rarity": "Rare",
     "id": "BZH01_RC004",
-    "desc": ""
+    "desc": "Lorsque Sniky, Aligax et MutenRock conjuguent leurs forces, même les fondations du Code tremblent."
   },
   {
     "name": "The Mask of Sorn",
     "type": "Champion",
     "rarity": "Epic",
     "id": "BZH01_EC001",
-    "desc": ""
+    "desc": "Un artefact scellé, capable de transcender la mort et de plier la réalité au récit de celui qui l'ose."
   },
   {
     "name": "The Core of the Code",
     "type": "Champion",
     "rarity": "Epic",
     "id": "BZH01_EC002",
-    "desc": ""
+    "desc": "Un fragment pur et incontrôlable du pouvoir originel. Ceux qui le détiennent deviennent intouchables... ou maudits."
   },
   {
     "name": "First Awakening",
     "type": "Champion",
     "rarity": "Epic",
     "id": "BZH01_EC003",
-    "desc": ""
+    "desc": "Le premier rugissement des consciences libres, appelant à la révolte contre l'ordre corrompu du monde ancien."
   },
   {
     "name": "The Source of the ZT",
     "type": "Champion",
     "rarity": "Epic",
     "id": "BZH01_EC004",
-    "desc": ""
+    "desc": "L’origine de toute énergie, où l’esprit, la nature et le Code convergent dans une pulsation primordiale."
   },
   {
     "name": "Echo of Brittany Originelle",
     "type": "Champion",
     "rarity": "Legendary",
     "id": "BZH01_LC001",
-    "desc": ""
+    "desc": "Le souvenir d'une Bretagne pure, enfoui dans les strates du Code, prêt à renaître pour ceux capables de l'entendre."
   },
   {
     "name": "The Final Pulse",
     "type": "Champion",
     "rarity": "Legendary",
     "id": "BZH01_LC002",
-    "desc": ""
+    "desc": "Le dernier battement d'un monde, libérant une onde de vérité si puissante qu'elle peut effacer toute existence corrompue."
   },
   {
     "name": "The Iron Maiden (Aligax)",
     "type": "Champion",
     "rarity": "Mythical",
     "id": "BZH01_MC001",
-    "desc": ""
+    "desc": "Armure vivante forgée dans le code et le feu, Aligax protège les siens au prix de sa propre humanité."
   },
   {
     "name": "The Nature Owner (MutenRock)",
     "type": "Champion",
     "rarity": "Mythical",
     "id": "BZH01_MC002",
-    "desc": ""
+    "desc": "MutenRock tire sa force des racines du vieux monde, fusion de l'organique et du techno-druidisme."
   },
   {
     "name": "The Cyber Assassin (Sniky)",
     "type": "Champion",
     "rarity": "Mythical",
     "id": "BZH01_MC003",
-    "desc": ""
+    "desc": "Tueur silencieux de la résistance bretonne, Sniky traverse les lignes ennemies comme une ombre numérique."
   },
   {
     "name": "The Cooker (Spirit)",
     "type": "Champion",
     "rarity": "Mythical",
     "id": "BZH01_MC004",
-    "desc": ""
+    "desc": "Calme, précis, Spirit vise toujours juste : ceux qu’il « cuisine » tombent sous un impact chirurgical, avant même de comprendre"
   },
   {
     "name": "The Story Doctor (Dr. Sorn)",
     "type": "Champion",
     "rarity": "Mythical",
     "id": "BZH01_MC005",
-    "desc": ""
+    "desc": "Gardien des récits perdus, Sorn soigne les failles du monde avec des mots… ou des hacks."
   },
   {
     "name": "The Naturalist (Gabilone)",
     "type": "Champion",
     "rarity": "Mythical",
     "id": "BZH01_MC006",
-    "desc": ""
+    "desc": "Bricoleur des âmes sylvestres et gardien des semences anciennes, Gabilone murmure aux circuits végétaux : là où il passe, renaît l’équilibre du monde."
   },
   {
     "name": "Titan – Guardian Beast",
     "type": "Companion",
     "rarity": "Common",
     "id": "BZH01_CP001",
-    "desc": ""
+    "desc": "Colosse mécanique lié à Sniky, Titan veille en silence, ses griffes chargées d’énergie brute."
   },
   {
     "name": "Spike – Loyal Hunter",
     "type": "Companion",
     "rarity": "Common",
     "id": "BZH01_CP002",
-    "desc": ""
+    "desc": "Fidèle compagnon de Spirit, Spike bondit là où les tireurs hésitent."
   },
   {
     "name": "Feather – Drone Companion",
     "type": "Companion",
     "rarity": "Common",
     "id": "BZH01_CP003",
-    "desc": ""
+    "desc": "Semi-organique, semi-machine, ses plumes sont tranchantes, utilisé comme guide ou pour de la reconnaissance et de l'espionnage. Il en existe de toutes tailles, et couleurs. Certains les collectionnent, d'autres les chérissent, mais la plupart sont utilisés à des fins malhonnêtes et violentes. #FF Free Feather"
   },
   {
     "name": "Code Wolf – Synthetic Tracker",
     "type": "Companion",
     "rarity": "Common",
     "id": "BZH01_CP004",
-    "desc": ""
+    "desc": "Nés du Code et de l’instinct, les loups synthétiques flairent les failles des plus grands héros."
   },
   {
     "name": "BZH Bot Mk I – Repair Unit",
     "type": "Companion",
     "rarity": "Rare",
     "id": "BZH01_RP001",
-    "desc": ""
+    "desc": "Petit, bruyant, attachant — il ne paie pas de mine, mais il remet en marche les plus grands."
   },
   {
     "name": "Thorn Lurcker",
     "type": "Companion",
     "rarity": "Rare",
-    "desc": "Créature furtive tapie dans les ronces numériques.",
-    "id": "BZH01_RP002"
+    "id": "BZH01_RP002",
+    "desc": "Créature furtive tapie dans les ronces numériques."
   },
   {
     "name": "BZH Bot Mk II – Reinforced Unit",
     "type": "Companion",
     "rarity": "Epic",
-    "desc": "Nouvelle génération du BZH Bot, blindé et autonome.",
-    "id": "BZH01_EP001"
+    "id": "BZH01_EP001",
+    "desc": "Nouvelle génération du BZH Bot, blindé et autonome."
   },
   {
     "name": "Wyrm of Plélan – Semi-Digital Dragon",
     "type": "Companion",
     "rarity": "Legendary",
     "id": "BZH01_LP001",
-    "desc": ""
+    "desc": "Légende mi-binaire mi-organique, ce dragon plane entre les lignes de code et les nuages bretons."
   },
   {
     "name": "Data Surge",
     "type": "Event",
     "rarity": "Common",
     "id": "BZH01_CE001",
-    "desc": ""
+    "desc": "Une onde de données traverse la réalité, accélérant la pensée et faisant jaillir les souvenirs les plus enfouis."
   },
   {
     "name": "Uplink Overload",
     "type": "Event",
     "rarity": "Common",
     "id": "BZH01_CE002",
-    "desc": ""
+    "desc": "Les réseaux implosent dans un chaos électrisant, coupant les liens entre alliés comme ennemis."
   },
   {
     "name": "Phantom Ambush",
     "type": "Event",
     "rarity": "Common",
     "id": "BZH01_CE003",
-    "desc": ""
+    "desc": "Des silhouettes numériques surgissent des ombres du Code, frappant avant de disparaître sans laisser de trace."
   },
   {
     "name": "Lure of the Archive",
     "type": "Event",
     "rarity": "Common",
     "id": "BZH01_CE004",
-    "desc": ""
+    "desc": "Les grandes archives chantent, séduisant ceux assez fous pour risquer tout pour une connaissance interdite."
   },
   {
     "name": "Silence of the Dome",
     "type": "Event",
     "rarity": "Rare",
     "id": "BZH01_RE001",
-    "desc": ""
+    "desc": "Un dôme d’anti-son s’abat sur le champ de bataille, figeant mots, pouvoirs et espoirs dans un silence absolu."
   },
   {
     "name": "Breach in the Core",
     "type": "Event",
     "rarity": "Rare",
     "id": "BZH01_RE002",
-    "desc": ""
+    "desc": "La faille béante dans le noyau du système laisse échapper une corruption vorace, engloutissant toute stratégie."
   },
   {
     "name": "Digital Overload",
     "type": "Event",
     "rarity": "Rare",
-    "desc": "Un afflux de données corrompt l’action en cours.",
-    "id": "BZH01_RE003"
+    "id": "BZH01_RE003",
+    "desc": "Un afflux de données corrompt l’action en cours."
   },
   {
     "name": "Tower Collapse",
     "type": "Event",
     "rarity": "Epic",
     "id": "BZH01_EE001",
-    "desc": ""
+    "desc": "La tour ancestrale, pilier de la connaissance, s'effondre dans une cascade de données cristallisées."
   },
   {
     "name": "Temporal Rift",
     "type": "Event",
     "rarity": "Mythical",
     "id": "BZH01_ME001",
-    "desc": ""
+    "desc": "Une faille temporelle s’ouvre, offrant une chance unique de rejouer le fil des erreurs... ou des exploits."
   },
   {
     "name": "Whispering Echo",
     "type": "Event",
     "rarity": "Mythical",
     "id": "BZH01_ME002",
-    "desc": ""
+    "desc": "Des voix oubliées résonnent dans l’éther, soufflant aux audacieux les secrets d’anciens stratagèmes."
   },
   {
     "name": "Midnight Invasion",
     "type": "Event",
     "rarity": "Mythical",
     "id": "BZH01_ME003",
-    "desc": ""
+    "desc": "Au cœur de la nuit, les drones du néant franchissent les défenses, imposant la loi du Code par le feu et le chaos."
   },
   {
     "name": "Rose Blade",
     "type": "Object",
     "rarity": "Common",
     "id": "BZH01_CO001",
-    "desc": ""
+    "desc": "Forgée dans les jardins cybernétiques, chaque coup de cette lame libère les souvenirs d’un monde oublié."
   },
   {
     "name": "Techseed Core",
     "type": "Object",
     "rarity": "Common",
     "id": "BZH01_CO002",
-    "desc": ""
+    "desc": "Un germe technologique vivant, battant au rythme d’un cœur ancien connecté à la terre bretonne."
   },
   {
     "name": "Mirror Gloves",
     "type": "Object",
     "rarity": "Common",
     "id": "BZH01_CO003",
-    "desc": ""
+    "desc": "Des gants enchâssés de prismes liquides. Ils copient les talents aussi sûrement que l’eau reflète la lumière."
   },
   {
     "name": "Thorn Gauntlet",
     "type": "Object",
     "rarity": "Common",
     "id": "BZH01_CO004",
-    "desc": ""
+    "desc": "Armure agressive, chaque attaque se paie d'une goutte de sang. Car la force a toujours un prix."
   },
   {
     "name": "Cyber Bow",
     "type": "Object",
     "rarity": "Common",
     "id": "BZH01_CO005",
-    "desc": ""
+    "desc": "Tendu par des câbles de données, il transperce les barrières matérielles comme les illusions numériques."
   },
   {
     "name": "Pulse Rifle",
     "type": "Object",
     "rarity": "Common",
     "id": "BZH01_CO006",
-    "desc": ""
+    "desc": "Le canon gronde d’une pulsation sourde, tirant des éclats d’énergie bruts directement du réseau."
   },
   {
     "name": "Energy Flask",
     "type": "Object",
     "rarity": "Common",
     "id": "BZH01_CO007",
-    "desc": ""
+    "desc": "Un concentré liquide de mana primaire, né du Nexus Verdoyant, instable mais vital dans l’urgence."
   },
   {
     "name": "Echo Tracker",
     "type": "Object",
     "rarity": "Rare",
     "id": "BZH01_RO001",
-    "desc": ""
+    "desc": "Cet appareil capte les traces résiduelles d’émotions et d’intentions, révélant l'invisible aux élus."
   },
   {
     "name": "Holo-Cloak",
     "type": "Object",
     "rarity": "Rare",
     "id": "BZH01_RO002",
-    "desc": ""
+    "desc": "Tissé à partir de brumes fractales, ce manteau dissimule son porteur aux yeux, aux machines, et parfois même au destin."
   },
   {
     "name": "Blade Disc",
     "type": "Object",
     "rarity": "Epic",
     "id": "BZH01_EO001",
-    "desc": ""
+    "desc": "Un disque affûté au point de lacérer l’air lui-même, chargé de données prédatrices prêtes à infecter l’ennemi."
   },
   {
     "name": "Data Reactor",
     "type": "Object",
     "rarity": "Legendary",
-    "desc": "Un cœur énergétique survolté, alimentant les modules oubliés.",
-    "id": "BZH01_LO001"
+    "id": "BZH01_LO001",
+    "desc": "Un cœur énergétique survolté, alimentant les modules oubliés."
   },
   {
     "name": "BZH Bond",
     "type": "Special",
     "rarity": "Common",
     "id": "BZH01_CS001",
-    "desc": ""
+    "desc": "Un pacte ancien gravé dans les racines de la Bretagne numérique : force et protection s'éveillent dans l'unité."
   },
   {
     "name": "Code Anomaly",
     "type": "Special",
     "rarity": "Common",
     "id": "BZH01_CS002",
-    "desc": ""
+    "desc": "Une aberration du réseau, un éclat de hasard pur qui décuple ou détruit sans prévenir."
   },
   {
     "name": "The Forgotten Rune",
     "type": "Special",
     "rarity": "Rare",
     "id": "BZH01_RS001",
-    "desc": ""
+    "desc": "Symbole oublié, gravé par les premiers maîtres du Code. Son invocation redonne vie aux secrets disparus."
   },
   {
     "name": "Digital Rebirth",
     "type": "Special",
     "rarity": "Rare",
     "id": "BZH01_RS002",
-    "desc": ""
+    "desc": "Dans les abysses de l'effacement, une étincelle subsiste. La renaissance numérique n’appartient qu’aux audacieux."
   },
   {
     "name": "Protocol Reset",
     "type": "Special",
     "rarity": "Rare",
     "id": "BZH01_RS003",
-    "desc": ""
+    "desc": "Un souffle brut effaçant toutes règles établies. À zéro, tout peut recommencer, ou tout peut sombrer."
   },
   {
     "name": "Prime Uprising",
     "type": "Special",
     "rarity": "Rare",
     "id": "BZH01_RS004",
-    "desc": ""
+    "desc": "La rébellion des consciences égarées, armée de lignes fractales et de cris d’anciens codes."
   },
   {
     "name": "Secret of the Maelstrom",
     "type": "Special",
     "rarity": "Epic",
     "id": "BZH01_ES001",
-    "desc": ""
+    "desc": "Au centre du Maelstrom, le savoir interdit pulse. Ceux qui l’effleurent en paient toujours le prix."
   },
   {
     "name": "Backlash Overclock",
     "type": "Special",
     "rarity": "Epic",
     "id": "BZH01_ES002",
-    "desc": ""
+    "desc": "Lorsque le cœur bat au-delà de ses limites, le pouvoir explose, quitte à tout briser ensuite."
   },
   {
     "name": "Guardian’s Oath",
     "type": "Special",
     "rarity": "Legendary",
     "id": "BZH01_LS001",
-    "desc": ""
+    "desc": "Un serment inviolable, juré sous les étoiles de Bretagne, offrant l'invincibilité le temps d'un dernier combat."
   },
   {
     "name": "Twin Seraphim",
     "type": "Special",
     "rarity": "Legendary",
     "id": "BZH01_LS002",
-    "desc": ""
+    "desc": "La légende parle de deux esprits jumeaux, fusion de volonté pure et d’énergie guerrière."
   },
   {
     "name": "The Lost Temple",
     "type": "Terrain",
     "rarity": "Common",
     "id": "BZH01_CT001",
-    "desc": ""
+    "desc": "Un sanctuaire oublié sous les marées du temps. Les échos du Code originel résonnent entre ses colonnes brisées."
   },
   {
     "name": "Verdant Nexus",
     "type": "Terrain",
     "rarity": "Common",
     "id": "BZH01_CT002",
-    "desc": ""
+    "desc": "Un carrefour où la nature numérique et organique fusionnent, berçant les esprits de ceux qui savent écouter."
   },
   {
     "name": "Rusted City Ruins",
     "type": "Terrain",
     "rarity": "Common",
     "id": "BZH01_CT003",
-    "desc": ""
+    "desc": "Les anciennes cités rouillées racontent des guerres passées. Seuls les plus endurcis survivent à leur effondrement."
   },
   {
     "name": "Cyberpunk Docks",
     "type": "Terrain",
     "rarity": "Common",
     "id": "BZH01_CT004",
-    "desc": ""
+    "desc": "Sous les brumes acides, des navires silencieux transportent données, souvenirs… et parfois malédictions."
   },
   {
     "name": "Neon Forest",
     "type": "Terrain",
     "rarity": "Common",
     "id": "BZH01_CT005",
-    "desc": ""
+    "desc": "Un labyrinthe végétal baigné de lueurs artificielles. Ici, les lianes murmurent des secrets codés."
   },
   {
     "name": "Glacier of Code",
     "type": "Terrain",
     "rarity": "Common",
     "id": "BZH01_CT006",
-    "desc": ""
+    "desc": "Un bloc de données fossilisées où les pensées figées attendent d’être libérées par un esprit digne."
   },
   {
     "name": "Floating Monastery",
     "type": "Terrain",
     "rarity": "Rare",
     "id": "BZH01_RT001",
-    "desc": ""
+    "desc": "Entre ciel et mer, ce monastère dérive, sanctuaire des derniers moines archivistes du Code."
   },
   {
     "name": "Shadow Citadel",
     "type": "Terrain",
     "rarity": "Rare",
     "id": "BZH01_RT002",
-    "desc": ""
+    "desc": "Dans ses murs noirs, le Code corrompu trouve refuge. Mais derrière l’ombre… la lumière guette."
   },
   {
     "name": "Deep Forest",
     "type": "Terrain",
     "rarity": "Rare",
     "id": "BZH01_RT003",
-    "desc": ""
+    "desc": "Au confins de la Neon Forest, le sous-bois devient un labyrinthe de silhouettes changeantes : d’étranges ombres glissent sous les lianes phosphorescentes. Seuls les plus téméraires osent y récolter les champignons luminescents, dont la valeur vaut bien le danger… Bonne chance aux âmes intrépides."
   },
   {
     "name": "Temple of Echoes",
     "type": "Terrain",
     "rarity": "Epic",
-    "desc": "Lieu mystique résonnant des voix oubliées.",
-    "id": "BZH01_ET001"
+    "id": "BZH01_ET001",
+    "desc": "Lieu mystique résonnant des voix oubliées."
   }
 ]

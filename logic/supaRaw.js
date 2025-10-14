@@ -1,9 +1,7 @@
-// logic/supaRaw.js — moderne (ESM only)
+// logic/supaRaw.js — minimal direct Supabase helper (fallback for shop buy)
 import { url } from './paths.js';
-
 let _client = null;
-
-export async function getClient() {
+export async function getClient(){
   if (_client) return _client;
   try {
     const mod = await import(url('/shared/supabaseClient.js'));
@@ -14,29 +12,8 @@ export async function getClient() {
   }
   return _client;
 }
-
-export async function getUser() {
+export async function getUser(){
   const supabase = await getClient();
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user || null;
-  } catch (e) {
-    console.warn('getUser error:', e);
-    return null;
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
 }
-
-export async function requireLogin() {
-  let user = null;
-  try {
-    user = await getUser();
-  } catch (e) {
-    console.warn('Erreur getUser dans requireLogin:', e);
-  }
-
-  if (!user && typeof window !== 'undefined') {
-    window.location.href = '/base/login.html';
-  }
-}
-
-console.info('[supaRaw.js moderne] loaded');

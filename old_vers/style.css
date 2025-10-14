@@ -1,0 +1,387 @@
+/* style.css */
+
+/* Global */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: #121212;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+.hidden {
+  display: none !important;
+}
+
+/* Header */
+header {
+  background: linear-gradient(135deg, #1a237e, #0d47a1);
+  padding: 20px;
+  text-align: center;
+}
+header h1 {
+  color: #00e5ff;
+  text-shadow: 0 0 8px #00e5ff;
+  font-size: 2rem;
+}
+
+/* Shelf of packs */
+.shelf {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  background: url('assets/shelf.png') no-repeat bottom;
+  background-size: cover;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 20px;
+  gap: 10px;
+}
+.pack-icon {
+  width: 60px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.pack-icon:hover {
+  transform: translateY(-5px);
+}
+#albumIcon {
+  width: 80px;
+  cursor: pointer;
+}
+.blurred {
+  filter: blur(6px);
+}
+
+/* Main layout */
+.main-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+/* Pack opening area */
+.pack-area {
+  flex: 2;
+  position: relative;
+}
+.card-stack, .opened-cards {
+  position: relative;
+  width: 160px;
+  height: 240px;
+  margin: 0 auto;
+}
+.card-stack .card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 150px;
+  height: 220px;
+  background: url('assets/card_back.png') center/cover no-repeat;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.card-container {
+  perspective: 800px;
+  position: absolute;
+  width: 150px;
+  height: 220px;
+  top: 0;
+  left: 0;
+}
+.card-container .card-back,
+.card-container .card-front {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
+}
+.card-container .card-back {
+  background: url('assets/card_back.png') center/cover no-repeat;
+  transform: rotateY(0deg);
+}
+.card-container .card-front {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  overflow: hidden;
+  color: white;
+}
+.card-container.flip .card-back {
+  transform: rotateY(-180deg);
+}
+.card-container.flip .card-front {
+  transform: rotateY(0deg);
+}
+
+/* Card front content */
+.card-front img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.rarity-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  text-transform: capitalize;
+  pointer-events: none;
+}
+.card-title {
+  font-weight: bold;
+  font-size: 1rem;
+  text-align: center;
+}
+.card-desc {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  text-align: center;
+}
+
+/* Glows by rarity */
+.common    { box-shadow: 0 0 8px #aaa; }
+.rare      { box-shadow: 0 0 12px #2196f3; }
+.epic      { box-shadow: 0 0 15px #9c27b0; }
+.legendary { box-shadow: 0 0 20px #ffc107; }
+.mythical  { box-shadow: 0 0 25px #00e676; }
+
+/* Shake animation for high rarity */
+.shake {
+  animation: shake 0.5s;
+}
+@keyframes shake {
+  0%   { transform: translate(1px, 1px) rotate(0deg); }
+  50%  { transform: translate(-1px, -2px) rotate(-1deg); }
+  100% { transform: translate(1px, 2px) rotate(1deg); }
+}
+
+/* Next card & open pack buttons */
+#newPackBtn, #nextCardBtn, #collectionBtn {
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border: none;
+  background: #00e5ff;
+  color: #121212;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+#newPackBtn:hover, #nextCardBtn:hover, #collectionBtn:hover {
+  background: #00b8d4;
+}
+
+/* Inventory & shop */
+.inventory {
+  flex: 1;
+  background: rgba(10,20,40,0.7);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px #00e5ff;
+}
+.inventory h2 {
+  margin-bottom: 10px;
+}
+.inventory p {
+  margin: 8px 0;
+  font-size: 1.1rem;
+}
+.shop {
+  margin-top: 20px;
+}
+.shop button {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  background: #00e5ff;
+  color: #121212;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.shop button:hover {
+  background: #00b8d4;
+}
+.shop-message {
+  margin-top: 10px;
+  height: 1.2em;
+  color: #ffc107;
+}
+
+/* Collection page */
+.set-selector {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  background: #0d0d0d;
+}
+.set-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 2px solid #00e5ff;
+  color: #00e5ff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.set-btn.active {
+  background: #00e5ff;
+  color: #121212;
+}
+.set-btn.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.collection-container {
+  max-width: 800px;
+  margin: 20px auto;
+  text-align: center;
+}
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 150px);
+  gap: 20px;
+  justify-content: center;
+}
+.card-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+.card-sleeve {
+  position: relative;
+  width: 150px;
+  height: 180px;
+  background: #333;
+  border: 2px solid #555;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+}
+.card-sleeve::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255,255,255,0.1);
+  transform: rotate(45deg);
+}
+.card-sleeve.unlocked {
+  border-color: #b19cd9;
+  box-shadow: 0 0 8px #b19cd9, inset 0 0 6px rgba(0,0,0,0.5);
+}
+.card-thumb {
+  width: 150px;
+  height: 180px;
+  object-fit: cover;
+}
+.card-name {
+  margin-top: 8px;
+  width: 150px;
+  background: rgba(20,20,20,0.7);
+  padding: 5px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #888;
+  text-align: center;
+}
+.card-name.unlocked-name {
+  color: #b19cd9;
+  border-color: #b19cd9;
+  text-shadow: 0 0 6px #b19cd9;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+}
+.page-btn {
+  padding: 6px 12px;
+  background: transparent;
+  border: 2px solid #00e5ff;
+  color: #00e5ff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+#pageIndicator {
+  color: #00e5ff;
+  font-size: 1rem;
+}
+
+/* Popup for card details */
+.card-popup {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.card-popup:not(.hidden) {
+  visibility: visible;
+  opacity: 1;
+}
+.popup-backdrop {
+  position: absolute;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+}
+.popup-content {
+  position: relative;
+  display: flex;
+  background: #0f0f0f;
+  border: 2px solid #00e5ff;
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 10;
+  box-shadow: 0 0 20px #00e5ff;
+}
+.popup-info {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  margin-right: 20px;
+}
+.popup-info h2 {
+  margin: 0 0 10px;
+  color: #00e5ff;
+}
+.popup-info p {
+  margin: 5px 0;
+}
+.popup-content img {
+  width: 50%;
+  border-radius: 8px;
+}

@@ -1,0 +1,688 @@
+[
+  {
+    "name": "Spike-Bot V3",
+    "type": "Companion",
+    "rarity": "Common",
+    "id": "BZH02_CP001",
+    "desc": "Reconstruit par Spirit.EXE à partir d’un ancien drone canin, Spike renifle les anomalies de chaleur comme un loup des glaces."
+  },
+  {
+    "name": "Mini-Titan",
+    "type": "Companion",
+    "rarity": "Common",
+    "id": "BZH02_CP002",
+    "desc": "Un robot de soutien transformé en tank de combat suite à une erreur de mise à jour. Il protège, écrase et répète \"opération validée\" avant chaque coup."
+  },
+  {
+    "name": "Nyx",
+    "type": "Companion",
+    "rarity": "Common",
+    "id": "BZH02_CP003",
+    "desc": "Créature résonné-organoïde générée par erreur dans une chambre de clonage. Elle passe partout, voit dans tous les spectres, et aime mâchouiller les câbles de commande. On retrouve de nombreux nids dans les décharges spéciales."
+  },
+  {
+    "name": "Yū le Rebelle",
+    "type": "Companion",
+    "rarity": "Common",
+    "id": "BZH02_CP004",
+    "desc": "Enfant du système carcéral orbital. Il a appris à voler un cargo avant de savoir écrire. Son sourire désarme aussi vite que ses grenades."
+  },
+  {
+    "name": "Luci le Miroir",
+    "type": "Companion",
+    "rarity": "Common",
+    "id": "BZH02_CP005",
+    "desc": "Entité projetée depuis un prisme alien. Elle souhaite venger l'annihilation de ses confrères par le Syndicat. Elle s’est connectée au système du Gwen-Ha-Star."
+  },
+  {
+    "name": "Tann",
+    "type": "Companion",
+    "rarity": "Common",
+    "id": "BZH02_CP006",
+    "desc": "Ses chants réparent, désorientent ou coupent selon la mélodie. Une espèce endémique de la terre qui a évolué rapidement pour se défendre des êtres cybernétiques envahissant le système."
+  },
+  {
+    "name": "Blip le Technognome",
+    "type": "Companion",
+    "rarity": "Rare",
+    "id": "BZH02_RP001",
+    "desc": "Trop petit pour être utile, trop intelligent pour être ignoré. Blip connaît les codes d’accès de chaque porte. Il refuse de les partager. Il a choisi d'accompagner pour découvrir le monde après leur passage sur sa planète d'origine."
+  },
+  {
+    "name": "Méduz-SR",
+    "type": "Companion",
+    "rarity": "Rare",
+    "id": "BZH02_RP002",
+    "desc": "Robot du Syndicat, lévitant grâce à une méduse enfermée dans son corps. Il est bardé de caméras sensibles. Rien ne lui échappe."
+  },
+  {
+    "name": "Bastard-Bee",
+    "type": "Companion",
+    "rarity": "Rare",
+    "id": "BZH02_RP003",
+    "desc": "Un essaim d’insectes cybernétiques agissant comme une entité collective. Ils aiment la musique de jazz."
+  },
+  {
+    "name": "Pacifistes des Errants",
+    "type": "Companion",
+    "rarity": "Rare",
+    "id": "BZH02_RP004",
+    "desc": "Unités pacifiques… jusqu’à déclenchement. Ils s’excusent après. Sincèrement."
+  },
+  {
+    "name": "Drone Errant",
+    "type": "Companion",
+    "rarity": "Rare",
+    "id": "BZH02_RP005",
+    "desc": "Drône dont la cible a déjà disparu, il vole perdu plusieurs décennies avant d'interpréter tout être vivant comme sa cible. Certains peuvent se regrouper par résonance, formant une nuée mortuaire."
+  },
+  {
+    "name": "Scrappy",
+    "type": "Companion",
+    "rarity": "Rare",
+    "id": "BZH02_RP006",
+    "desc": "Un robot-bricoleur fou, peut réparer une coque ou transformer un frigo en canon à plasma."
+  },
+  {
+    "name": "Triade des Errants",
+    "type": "Companion",
+    "rarity": "Epic",
+    "id": "BZH02_EP001",
+    "desc": "Unité de défense d’un culte. Ils traversent les lignes ennemies sans un mot."
+  },
+  {
+    "name": "Prophète des Errants",
+    "type": "Companion",
+    "rarity": "Legendary",
+    "id": "BZH02_LP001",
+    "desc": "Religieux du Culte des Errants. Certains disent qu’ils seraient directement connecté à GR4CE."
+  },
+  {
+    "name": "Brigade RQ (résonné-quantique)",
+    "type": "Team",
+    "rarity": "Epic",
+    "id": "BZH02_EU001",
+    "desc": "Chaque membre connaît l’autre par fréquence cardiaque. Ils combattent comme un organe unique. Le Syndicat en produit par clonage."
+  },
+  {
+    "name": "Section Myrmidon",
+    "type": "Team",
+    "rarity": "Epic",
+    "id": "BZH02_EU002",
+    "desc": "Petits, nombreux, impitoyables et asservis par le Syndicat. Clonés d’un pilote de 12 ans. Aucun n’a dépassé 24 heures d’existence."
+  },
+  {
+    "name": "L’Escouade Fantôme",
+    "type": "Team",
+    "rarity": "Epic",
+    "id": "BZH02_EU003",
+    "desc": "Impossible de prouver leur présence. Mais à chaque fois qu’ils auraient été \"aperçus\", ils [....] fin de transmission."
+  },
+  {
+    "name": "Les Tisseurs du Froid",
+    "type": "Team",
+    "rarity": "Epic",
+    "id": "BZH02_EU004",
+    "desc": "Opèrent uniquement dans le vide interplanétaire, et préfèrent les planètes gelées. Ils contrôlent de nombreux ports et plateformes spatiales."
+  },
+  {
+    "name": "Les Sables d’Andar",
+    "type": "Team",
+    "rarity": "Epic",
+    "id": "BZH02_EU005",
+    "desc": "Groupe nomade. Marchands, poètes ou pillards. Parfois tout à la fois. Ils sont l’équivalent des Tisseurs du Froid pour les climats plus brûlants."
+  },
+  {
+    "name": "Réseau Alt-Kelenn",
+    "type": "Team",
+    "rarity": "Epic",
+    "id": "BZH02_EU006",
+    "desc": "Culte masqué, lié aux anciennes IA celtiques. Leurs chants affectent le code source."
+  },
+  {
+    "name": "Inquisition des Errant",
+    "type": "Team",
+    "rarity": "Epic",
+    "id": "BZH02_EU007",
+    "desc": "Rassemblement des troupes des Errants."
+  },
+  {
+    "name": "BZH_Section_404",
+    "type": "Team",
+    "rarity": "Epic",
+    "id": "BZH02_EU008",
+    "desc": "Aligax, Sniky, Spirit. Leur dernière mission fut classée \"non-autorisée\". Rien ne reste après leur passage."
+  },
+  {
+    "name": "Compagnie du Lys Noir",
+    "type": "Team",
+    "rarity": "Legendary",
+    "id": "BZH02_LU001",
+    "desc": "Mercenaires semi-éthiques. Ils tuent proprement, et offrent une facture lisible."
+  },
+  {
+    "name": "Équipage Gwen-Ha-Star",
+    "type": "Team",
+    "rarity": "Legendary",
+    "id": "BZH02_LU002",
+    "desc": "L’équipe originale. Légendaire. Tactique. Chaotique. Leur tête est mise à prix dans 23 systèmes."
+  },
+  {
+    "name": "Station Fantôme de Letharia",
+    "type": "Terrain",
+    "rarity": "Common",
+    "id": "BZH02_CT001",
+    "desc": "Chaque couloir chuchote. Les murs conservent les empreintes d’anciens visiteurs. S’y perdre, c’est découvrir... ou disparaître."
+  },
+  {
+    "name": "L’Ouroboros Fractal",
+    "type": "Terrain",
+    "rarity": "Common",
+    "id": "BZH02_CT002",
+    "desc": "Une anomalie physique de la matière a causé la formation de cette fracture, certains disent que des monstres terrifiants y vivent. Il peut faire office de portail."
+  },
+  {
+    "name": "Hangar d’Os-Rouillés",
+    "type": "Terrain",
+    "rarity": "Rare",
+    "id": "BZH02_RT001",
+    "desc": "Un cimetière mécanique. On y trouve tout, sauf la paix."
+  },
+  {
+    "name": "Cratère de Dérive",
+    "type": "Terrain",
+    "rarity": "Rare",
+    "id": "BZH02_RT002",
+    "desc": "Là où les vaisseaux sans maître viennent mourir. L’espace y est tordu, la gravité en spirale."
+  },
+  {
+    "name": "Base Abandonnée 7E",
+    "type": "Terrain",
+    "rarity": "Rare",
+    "id": "BZH02_RT003",
+    "desc": "Tout y fonctionne, mais personne n’a jamais été vu."
+  },
+  {
+    "name": "Plateforme Aztel",
+    "type": "Terrain",
+    "rarity": "Rare",
+    "id": "BZH02_RT004",
+    "desc": "Marché noir, diplomatie occulte. Tout se vend ici, sauf la vérité."
+  },
+  {
+    "name": "Relais BZH_Λ-32",
+    "type": "Terrain",
+    "rarity": "Rare",
+    "id": "BZH02_RT005",
+    "desc": "Point de ralliement caché pour les agents du réseau BZH. Camouflé dans une tempête ionique."
+  },
+  {
+    "name": "Colonie Souterraine de Fenn",
+    "type": "Terrain",
+    "rarity": "Rare",
+    "id": "BZH02_RT006",
+    "desc": "Une primo-colonie minière humaine, qui est devenue depuis longtemps une Oublie les règles. Ici, c’est l’instinct et le crédit qui dictent la loi."
+  },
+  {
+    "name": "Anneau de Red Echo",
+    "type": "Terrain",
+    "rarity": "Rare",
+    "id": "BZH02_RT007",
+    "desc": "Boucle temporelle où le jour se répète. Des voix anciennes cherchent à corriger l’avenir."
+  },
+  {
+    "name": "Dôme de Nébula IX",
+    "type": "Terrain",
+    "rarity": "Epic",
+    "id": "BZH02_ET001",
+    "desc": "L’atmosphère y est chargée de particules de rêve. Parfois, le dôme te montre ce que tu pourrais devenir... ou ce que tu as raté."
+  },
+  {
+    "name": "Champ d’Épaves Cryo",
+    "type": "Terrain",
+    "rarity": "Epic",
+    "id": "BZH02_ET002",
+    "desc": "Un congélateur à ciel ouvert. Ce qui est dedans ne vieillit pas… De nombreuses espèces ont fini par y créer un écosystème."
+  },
+  {
+    "name": "Marée Éthérique",
+    "type": "Terrain",
+    "rarity": "Epic",
+    "id": "BZH02_ET003",
+    "desc": "Une vague d'énergie qui se serait reflétée aux confins de l’univers, toute la masse est accumulée en un seul point qui emporte tout sur son passage. Les planètes traversées par son champ d'énergie se voient privées d'énergie pendant plusieurs décennies."
+  },
+  {
+    "name": "L’illustre Gwen-Ha Star",
+    "type": "Terrain",
+    "rarity": "Legendary",
+    "id": "BZH02_LT001",
+    "desc": "Le vaisseau mère du groupe, un cargo reconverti et modifié par l’équipe. De nombreux secrets entourent les technologies rassemblées par le groupe."
+  },
+  {
+    "name": "Station BZH-AE",
+    "type": "Terrain",
+    "rarity": "Legendary",
+    "id": "BZH02_LT002",
+    "desc": "Base planétaire de BZH. Les couloirs souterrains forment un triskel parfait. Par hasard, ou volonté ?"
+  },
+  {
+    "name": "Temple des Errants",
+    "type": "Terrain",
+    "rarity": "Legendary",
+    "id": "BZH02_LT003",
+    "desc": "Entrée éclairée par un vortex cosmique formant un triskèle néon, motifs de nœuds celtiques gravés."
+  },
+  {
+    "name": "Miroir Orbital",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH02_CO001",
+    "desc": "Satellite psychique renvoyant les lasers, en amplifié."
+  },
+  {
+    "name": "Fusil Béopunk",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH02_CO002",
+    "desc": "Fusion entre un fusil de précision et un ampli audio à plasma. Tire au rythme du beat. Interdit dans 43 secteurs, adoré dans les concerts clandestins."
+  },
+  {
+    "name": "Lunettes de Phase",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH02_CO003",
+    "desc": "Détectent les structures cachées, les illusions... et parfois les mensonges. Offertes avec une playlist lo-fi intégrée."
+  },
+  {
+    "name": "Grappin Ionique",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH02_CO004",
+    "desc": "S’attache à tout, même ce qui ne se voit pas. Parfait pour s’extrire d’un gouffre, ou attraper un ennemi au vol. Très utile, rarement stable."
+  },
+  {
+    "name": "Processeur KX-Ghost",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH02_CO005",
+    "desc": "Un vieux chip BZH modifié par Gabil. Capable d’héberger un esprit secondaire… ou de t’éjecter de ton propre corps."
+  },
+  {
+    "name": "Abadon, Statue du Créateur Oublié",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH02_CO006",
+    "desc": "Fondateur mystique de BZH-PW. Sa statue trône dans une salle vide d’un monde sans nom. Certains disent qu’il veille encore."
+  },
+  {
+    "name": "Carte d’accès marquée V.R.K",
+    "type": "Object",
+    "rarity": "Rare",
+    "id": "BZH02_RO001",
+    "desc": "Gravée par des runes celtiques, liée à la Bretagne Originelle. Elle n’ouvre rien. Dit-on."  
+  },
+  {
+    "name": "Interface Chamanique",
+    "type": "Object",
+    "rarity": "Rare",
+    "id": "BZH02_RO002",
+    "desc": "Connexion cérébrale à l’esprit-machine du vaisseau. Permet de piloter en transe. Nécessite thé ou trance minimale pour rester lucide."
+  },
+  {
+    "name": "Couteau Prismatique",
+    "type": "Object",
+    "rarity": "Rare",
+    "id": "BZH02_RO003",
+    "desc": "Lame oscillante visible dans 4 dimensions. Transperce l’acier et les illusions. Mieux vaut ne pas se regarder dedans."
+  },
+  {
+    "name": "Blindage d’Essaim",
+    "type": "Object",
+    "rarity": "Rare",
+    "id": "BZH02_RO004",
+    "desc": "Nanoruches intégrées dans l’armure. Se répare en permanence, mais parfois, ça chatouille... ou ça pique."
+  },
+  {
+    "name": "Thermo-Vapeur du Syndicat",
+    "type": "Object",
+    "rarity": "Rare",
+    "id": "BZH02_RO005",
+    "desc": "Arme improvisée à partir de chaudière industrielle. Provoque une combustion lente de tout ce qui transpire."
+  },
+  {
+    "name": "Injecteur Morphotonique",
+    "type": "Object",
+    "rarity": "Rare",
+    "id": "BZH02_RO006",
+    "desc": "Altère temporairement l’identité génétique. Pratique pour infiltrer, très dangereux après 8 doses."
+  },
+  {
+    "name": "Boussole de Brèche",
+    "type": "Object",
+    "rarity": "Epic",
+    "id": "BZH02_EO001",
+    "desc": "Indique les brèches ouvertes dans le système. Un artefact du programme \"Echo Sauvage\"."
+  },
+  {
+    "name": "Harnais à Réalité Fragmentée",
+    "type": "Object",
+    "rarity": "Epic",
+    "id": "BZH02_EO002",
+    "desc": "Permet d’exister brièvement dans plusieurs lignes temporelles. Peut causer des discussions avec soi-même."
+  },
+  {
+    "name": "Puce d’Override",
+    "type": "Object",
+    "rarity": "Epic",
+    "id": "BZH02_EO003",
+    "desc": "Clé universelle conçue par Sorn. Elle ouvre tout ce qui a un protocole. Mais elle enregistre aussi tout ce que vous ouvrez..."
+  },
+  {
+    "name": "Guitare de Contre-Pulsar",
+    "type": "Object",
+    "rarity": "Legendary",
+    "id": "BZH02_LO001",
+    "desc": "Instrument maudit. Chaque note peut affecter les systèmes IA alentour. Jouée pour la première fois par Sorn lors du Siège de Kylion."
+  },
+  {
+    "name": "Disque à Antimatière",
+    "type": "Object",
+    "rarity": "Legendary",
+    "id": "BZH02_LO002",
+    "desc": "Projeté comme une arme, il se stabilise dans l’air avant de s’ouvrir comme une fleur quantique. Les objets autour ne sont jamais les mêmes ensuite."
+  },
+  {
+    "name": "Anomalie du Cœur Vide",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH02_EC001",
+    "desc": "Un battement sourd dans le vide, apparaissant après une super-nova. À chaque pulsation, les communications s’éteignent."
+  },
+  {
+    "name": "Espace Déformé",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH02_EC002",
+    "desc": "Les distances n'ont plus de sens. On peut sauter d’un couloir à l’autre… ou dans une autre réalité."
+  },
+  {
+    "name": "Perturbation Orbitale",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH02_EC003",
+    "desc": "Un alignement étrange brouille les instruments. Aucun tir ne touche juste. Aucun plan ne tient."
+  },
+  {
+    "name": "Quarantaine Forcée",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH02_EC004",
+    "desc": "Une fuite dans la soute. Toute l’équipe est enfermée. Les ressources fondent… la tension monte."
+  },
+  {
+    "name": "Chute d’une Lune",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH02_EC005",
+    "desc": "Un satellite explose. Les débris créent un anneau mortel. Spirale lente et inévitable."
+  },
+  {
+    "name": "Message Fragmenté",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH02_EC006",
+    "desc": "Une voix dans les ondes. \"Ne… faites… pas confiance…\" — puis silence. Le doute s’installe."
+  },
+  {
+    "name": "Chaos d’une colonie",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH02_EC007",
+    "desc": "Une révolte éclate dans la station neutre. Tout le monde devient suspect. Même vous."
+  },
+  {
+    "name": "Expiration de l’Oxygène",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH02_EC008",
+    "desc": "Le compte à rebours commence. Pas le temps de débattre. Courez."
+  },
+  {
+    "name": "Chasse Interdite",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH02_EC009",
+    "desc": "Un vaisseau fantôme a été repéré. La récompense est immense. Le risque aussi. D’autres équipes sont déjà sur le coup."
+  },
+  {
+    "name": "Découverte Xeno",
+    "type": "Event",
+    "rarity": "Rare",
+    "id": "BZH02_ER001",
+    "desc": "Une capsule alien scellée. L’ouvrir, c’est déclencher un compte à rebours. Mais refuser, c’est renoncer à la vérité."
+  },
+  {
+    "name": "Clonage Inversé",
+    "type": "Event",
+    "rarity": "Rare",
+    "id": "BZH02_ER002",
+    "desc": "Un de vous a été copié… ou remplacé. Même l’équipement doute. Une seule façon de le savoir : observer qui respire."
+  },
+  {
+    "name": "Pacte Électrosphérique",
+    "type": "Event",
+    "rarity": "Rare",
+    "id": "BZH02_ER003",
+    "desc": "Deux factions s’allient. Ou font semblant. Tous les capteurs tombent à zéro."
+  },
+  {
+    "name": "Signal de Retour",
+    "type": "Event",
+    "rarity": "Rare",
+    "id": "BZH02_ER004",
+    "desc": "Une balise vieille de 80 ans s’active. C’était une mission BZH-PW. Elle n’avait jamais été archivée."
+  },
+  {
+    "name": "Tempête Plasma",
+    "type": "Event",
+    "rarity": "Epic",
+    "id": "BZH02_EE001",
+    "desc": "Foudres violettes, ondes pulsées. Même les IA prient. Même les prières grésillent."
+  },
+  {
+    "name": "Hack du Gwen-Ha-Star",
+    "type": "Event",
+    "rarity": "Epic",
+    "id": "BZH02_EE002",
+    "desc": "Un virus jouant du biniou et prenant le contrôle des vaisseaux ennemis."
+  },
+  {
+    "name": "Transfert Quantique",
+    "type": "Special",
+    "rarity": "Common",
+    "id": "BZH02_SC001",
+    "desc": "Échangez de place avec une autre version de vous-même. Parfois, c’est un progrès. Parfois, c’est un aveu d’échec."
+  },
+  {
+    "name": "Appel du Néant",
+    "type": "Special",
+    "rarity": "Common",
+    "id": "BZH02_SC002",
+    "desc": "Une transmission vide. Elle fait pleurer les IA. Et les enfants."
+  },
+  {
+    "name": "Journal d’Aligax-13",
+    "type": "Special",
+    "rarity": "Common",
+    "id": "BZH02_SC003",
+    "desc": "\"Je ressens des battements. Sont-ce les miens ou ceux du vaisseau ?\""
+  },
+  {
+    "name": "Fragment vocal du Commandant",
+    "type": "Special",
+    "rarity": "Common",
+    "id": "BZH02_SC004",
+    "desc": "\"Si on meurt aujourd’hui, au moins ce ne sera pas en silence.\""
+  },
+  {
+    "name": "Message Brouillé - Abadon",
+    "type": "Special",
+    "rarity": "Rare",
+    "id": "BZH02_SR001",
+    "desc": "\"Le Code est vivant. Le cercle n’est pas fermé. Tu dois…\""
+  },
+  {
+    "name": "B.A.R.0ssA",
+    "type": "Special",
+    "rarity": "Epic",
+    "id": "BZH02_SE001",
+    "desc": "Un véhicule tout-terrain appartenant à Spirit.EXE ; ses cibles n’ont pas le temps de l’entendre arriver."
+  },
+  {
+    "name": "Cryo-Sacrifice",
+    "type": "Special",
+    "rarity": "Epic",
+    "id": "BZH02_SE002",
+    "desc": "Se geler volontairement pour survivre au chaos. L’éveil est lent. Le monde ne vous attend pas."
+  },
+  {
+    "name": "Rêve de Reprise",
+    "type": "Special",
+    "rarity": "Epic",
+    "id": "BZH02_SE003",
+    "desc": "Un bug transformé en vision prophétique. Ce que vous voyez n’est peut-être pas une erreur."
+  },
+  {
+    "name": "Balade Canine : Sniky",
+    "type": "Special",
+    "rarity": "Epic",
+    "id": "BZH02_SE004",
+    "desc": "Sniky prend du bon temps avec Mini-Titan dans le jardin du Gwen-Ha-Star."
+  },
+  {
+    "name": "Protocole Zéro",
+    "type": "Special",
+    "rarity": "Epic",
+    "id": "BZH02_SE005",
+    "desc": "Réinitialisation générale. Perte de mémoire partielle. Certains y voient une seconde chance."
+  },
+  {
+    "name": "Rapport interne du Syndicat Solaire",
+    "type": "Special",
+    "rarity": "Epic",
+    "id": "BZH02_SE006",
+    "desc": "\"Le groupe BZH ne doit pas survivre.\""
+  },
+  {
+    "name": "Fusion Spectrale",
+    "type": "Special",
+    "rarity": "Legendary",
+    "id": "BZH02_SL001",
+    "desc": "Deux entités deviennent une. Personne ne sait qui pilote ensuite. Même elles."
+  },
+  {
+    "name": "Dédale de Mémoire",
+    "type": "Special",
+    "rarity": "Legendary",
+    "id": "BZH02_SL002",
+    "desc": "Piégé dans les souvenirs d’un autre. Chaque porte ouverte vous change un peu plus."
+  },
+  {
+    "name": "Commandant MutenRock",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC001",
+    "desc": "Capitaine du Gwen-Ha-Star, légendaire bâtiment cargo reconverti en vaisseau de contrebande tactique. Il connaît les anciens couloirs orbitaux, les routes interdites, et l’endroit exact où poser une mine sans se faire repérer. Son regard perce les interfaces, ses mots sont des armes."
+  },
+  {
+    "name": "Sniky l’Ombre du Vide",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC002",
+    "desc": "Il traverse les coques sans alarme, tue sans témoin, et repart sans trace. Sniky a été formé dans les Zones Rouges. On raconte que son ombre agit avant lui. Si tu entends la musique de sa lame, c’est déjà trop tard."
+  },
+  {
+    "name": "Aligax-13",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC003",
+    "desc": "Interface de Combat. Ancienne hackeuse fusionnée avec une exo-armure expérimentale. Depuis sa \"Résonance Totale\", Aligax peut entrer en connexion avec les machines. Sa beauté fatale et immuable est connue dans tous les systèmes."
+  },
+  {
+    "name": "Spirit.EXE",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC004",
+    "desc": "Tireur d’élite augmenté. Il voit 2 secondes dans le futur, et tire 1 seconde avant. Chaque impact raconte une histoire. Il n’a jamais tiré deux fois sur la même cible. Il tient aussi le rôle de mécanicien du Gwen-Ha-Star."
+  },
+  {
+    "name": "Dr. Sorn le Récursif",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC005",
+    "desc": "Scientifique cybernétique, archiviste des âmes et médecin de bord. On dit qu’il dialogue avec les mémoires corrompues. Il possède de grandes connaissances et n’est surpassé que par des Résonnés en informatique."
+  },
+  {
+    "name": "Gabil-One",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC006",
+    "desc": "Druidologue. Il implante des semences biomécaniques dans les vaisseaux. Il maîtrise la flore de nombreuses planètes et étudie les êtres résonnés. Un conseil : ne tombez pas face à sa horde de compagnons."
+  },
+  {
+    "name": "Abbadon le Fondateur",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC007",
+    "desc": "Un ancien du programme BZH-PW. Fondateur du projet, il fut capturé par le Syndicat. Personne ne sait ce qui lui est arrivé, mais certains membres finirent par entendre les échos de sa voix dans les interférences."
+  },
+  {
+    "name": "Sigma Loops",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC008",
+    "desc": "Champion du Syndicat Solaire, chasseur de primes. Mercenaire de l’espace, il commande une troupe agissant pour le compte du Syndicat."
+  },
+  {
+    "name": "Sigma Loops (EN ARMURE)",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC009",
+    "desc": "Champion du Syndicat Solaire, chasseur de primes."
+  },
+  {
+    "name": "GR4CE",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC010",
+    "desc": "Ex-assistante IA domestique dont l’humain a perdu le contrôle. Elle est polie, efficace, mais sait tuer de 48 façons avec une tasse."
+  },
+  {
+    "name": "Rufus le Mangeur de Mondes",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC011",
+    "desc": "Petite créature verte au métabolisme fusionnel. Il dévore le sol d’une planète tout en grossissant, il cherche à atteindre le cœur de celle-ci pour en tirer de l’énergie… là condamnant la planète à mourir."
+  },
+  {
+    "name": "Otto l’Hémisphère",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC012",
+    "desc": "Cerveau flottant sous globe blindé. Personne ne sait de quand il date, mais il parle un étrange langage (cerveau cryogénisé d’un Otaku du début des années 2000, ne lui spoilez pas la fin de One Piece)."
+  },
+  {
+    "name": "Le Code-Vivant",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC013",
+    "desc": "Il respire à travers les câbles. Il rêve à travers les logs. Il attend un porteur."
+  },
+  {
+    "name": "Druide du Vide",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH02_MC014",
+    "desc": "Portent une robe faite de poussière d’étoile. Ils peuvent murmurer aux êtres vivants et chassent les Résonnés."
+  }
+]

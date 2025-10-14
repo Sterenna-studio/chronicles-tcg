@@ -1,0 +1,464 @@
+[
+  {
+    "name": "Aligax & Spirit – The Shield and the Aim",
+    "type": "Champion",
+    "rarity": "Rare",
+    "id": "BZH01_RC001",
+    "desc": ""
+  },
+  {
+    "name": "MutenRock & Gabilone – Natural Harmony",
+    "type": "Champion",
+    "rarity": "Rare",
+    "id": "BZH01_RC002",
+    "desc": ""
+  },
+  {
+    "name": "Sniky & Titan – Silent Strike",
+    "type": "Champion",
+    "rarity": "Rare",
+    "id": "BZH01_RC003",
+    "desc": ""
+  },
+  {
+    "name": "The Power of Three",
+    "type": "Champion",
+    "rarity": "Rare",
+    "id": "BZH01_RC004",
+    "desc": ""
+  },
+  {
+    "name": "The Mask of Sorn",
+    "type": "Champion",
+    "rarity": "Epic",
+    "id": "BZH01_EC001",
+    "desc": ""
+  },
+  {
+    "name": "The Core of the Code",
+    "type": "Champion",
+    "rarity": "Epic",
+    "id": "BZH01_EC002",
+    "desc": ""
+  },
+  {
+    "name": "First Awakening",
+    "type": "Champion",
+    "rarity": "Epic",
+    "id": "BZH01_EC003",
+    "desc": ""
+  },
+  {
+    "name": "The Source of the ZT",
+    "type": "Champion",
+    "rarity": "Epic",
+    "id": "BZH01_EC004",
+    "desc": ""
+  },
+  {
+    "name": "Echo of Brittany Originelle",
+    "type": "Champion",
+    "rarity": "Legendary",
+    "id": "BZH01_LC001",
+    "desc": ""
+  },
+  {
+    "name": "The Final Pulse",
+    "type": "Champion",
+    "rarity": "Legendary",
+    "id": "BZH01_LC002",
+    "desc": ""
+  },
+  {
+    "name": "The Iron Maiden (Aligax)",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH01_MC001",
+    "desc": ""
+  },
+  {
+    "name": "The Nature Owner (MutenRock)",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH01_MC002",
+    "desc": ""
+  },
+  {
+    "name": "The Cyber Assassin (Sniky)",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH01_MC003",
+    "desc": ""
+  },
+  {
+    "name": "The Cooker (Spirit)",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH01_MC004",
+    "desc": ""
+  },
+  {
+    "name": "The Story Doctor (Dr. Sorn)",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH01_MC005",
+    "desc": ""
+  },
+  {
+    "name": "The Naturalist (Gabilone)",
+    "type": "Champion",
+    "rarity": "Mythical",
+    "id": "BZH01_MC006",
+    "desc": ""
+  },
+  {
+    "name": "Titan – Guardian Beast",
+    "type": "Companion",
+    "rarity": "Common",
+    "id": "BZH01_CP001",
+    "desc": ""
+  },
+  {
+    "name": "Spike – Loyal Hunter",
+    "type": "Companion",
+    "rarity": "Common",
+    "id": "BZH01_CP002",
+    "desc": ""
+  },
+  {
+    "name": "Feather – Drone Companion",
+    "type": "Companion",
+    "rarity": "Common",
+    "id": "BZH01_CP003",
+    "desc": ""
+  },
+  {
+    "name": "Code Wolf – Synthetic Tracker",
+    "type": "Companion",
+    "rarity": "Common",
+    "id": "BZH01_CP004",
+    "desc": ""
+  },
+  {
+    "name": "BZH Bot Mk I – Repair Unit",
+    "type": "Companion",
+    "rarity": "Rare",
+    "id": "BZH01_RP001",
+    "desc": ""
+  },
+  {
+    "name": "Thorn Lurcker",
+    "type": "Companion",
+    "rarity": "Rare",
+    "desc": "Créature furtive tapie dans les ronces numériques.",
+    "id": "BZH01_RP002"
+  },
+  {
+    "name": "BZH Bot Mk II – Reinforced Unit",
+    "type": "Companion",
+    "rarity": "Epic",
+    "desc": "Nouvelle génération du BZH Bot, blindé et autonome.",
+    "id": "BZH01_EP001"
+  },
+  {
+    "name": "Wyrm of Plélan – Semi-Digital Dragon",
+    "type": "Companion",
+    "rarity": "Legendary",
+    "id": "BZH01_LP001",
+    "desc": ""
+  },
+  {
+    "name": "Data Surge",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH01_CE001",
+    "desc": ""
+  },
+  {
+    "name": "Uplink Overload",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH01_CE002",
+    "desc": ""
+  },
+  {
+    "name": "Phantom Ambush",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH01_CE003",
+    "desc": ""
+  },
+  {
+    "name": "Lure of the Archive",
+    "type": "Event",
+    "rarity": "Common",
+    "id": "BZH01_CE004",
+    "desc": ""
+  },
+  {
+    "name": "Silence of the Dome",
+    "type": "Event",
+    "rarity": "Rare",
+    "id": "BZH01_RE001",
+    "desc": ""
+  },
+  {
+    "name": "Breach in the Core",
+    "type": "Event",
+    "rarity": "Rare",
+    "id": "BZH01_RE002",
+    "desc": ""
+  },
+  {
+    "name": "Digital Overload",
+    "type": "Event",
+    "rarity": "Rare",
+    "desc": "Un afflux de données corrompt l’action en cours.",
+    "id": "BZH01_RE003"
+  },
+  {
+    "name": "Tower Collapse",
+    "type": "Event",
+    "rarity": "Epic",
+    "id": "BZH01_EE001",
+    "desc": ""
+  },
+  {
+    "name": "Temporal Rift",
+    "type": "Event",
+    "rarity": "Mythical",
+    "id": "BZH01_ME001",
+    "desc": ""
+  },
+  {
+    "name": "Whispering Echo",
+    "type": "Event",
+    "rarity": "Mythical",
+    "id": "BZH01_ME002",
+    "desc": ""
+  },
+  {
+    "name": "Midnight Invasion",
+    "type": "Event",
+    "rarity": "Mythical",
+    "id": "BZH01_ME003",
+    "desc": ""
+  },
+  {
+    "name": "Rose Blade",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH01_CO001",
+    "desc": ""
+  },
+  {
+    "name": "Techseed Core",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH01_CO002",
+    "desc": ""
+  },
+  {
+    "name": "Mirror Gloves",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH01_CO003",
+    "desc": ""
+  },
+  {
+    "name": "Thorn Gauntlet",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH01_CO004",
+    "desc": ""
+  },
+  {
+    "name": "Cyber Bow",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH01_CO005",
+    "desc": ""
+  },
+  {
+    "name": "Pulse Rifle",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH01_CO006",
+    "desc": ""
+  },
+  {
+    "name": "Energy Flask",
+    "type": "Object",
+    "rarity": "Common",
+    "id": "BZH01_CO007",
+    "desc": ""
+  },
+  {
+    "name": "Echo Tracker",
+    "type": "Object",
+    "rarity": "Rare",
+    "id": "BZH01_RO001",
+    "desc": ""
+  },
+  {
+    "name": "Holo-Cloak",
+    "type": "Object",
+    "rarity": "Rare",
+    "id": "BZH01_RO002",
+    "desc": ""
+  },
+  {
+    "name": "Blade Disc",
+    "type": "Object",
+    "rarity": "Epic",
+    "id": "BZH01_EO001",
+    "desc": ""
+  },
+  {
+    "name": "Data Reactor",
+    "type": "Object",
+    "rarity": "Legendary",
+    "desc": "Un cœur énergétique survolté, alimentant les modules oubliés.",
+    "id": "BZH01_LO001"
+  },
+  {
+    "name": "BZH Bond",
+    "type": "Special",
+    "rarity": "Common",
+    "id": "BZH01_CS001",
+    "desc": ""
+  },
+  {
+    "name": "Code Anomaly",
+    "type": "Special",
+    "rarity": "Common",
+    "id": "BZH01_CS002",
+    "desc": ""
+  },
+  {
+    "name": "The Forgotten Rune",
+    "type": "Special",
+    "rarity": "Rare",
+    "id": "BZH01_RS001",
+    "desc": ""
+  },
+  {
+    "name": "Digital Rebirth",
+    "type": "Special",
+    "rarity": "Rare",
+    "id": "BZH01_RS002",
+    "desc": ""
+  },
+  {
+    "name": "Protocol Reset",
+    "type": "Special",
+    "rarity": "Rare",
+    "id": "BZH01_RS003",
+    "desc": ""
+  },
+  {
+    "name": "Prime Uprising",
+    "type": "Special",
+    "rarity": "Rare",
+    "id": "BZH01_RS004",
+    "desc": ""
+  },
+  {
+    "name": "Secret of the Maelstrom",
+    "type": "Special",
+    "rarity": "Epic",
+    "id": "BZH01_ES001",
+    "desc": ""
+  },
+  {
+    "name": "Backlash Overclock",
+    "type": "Special",
+    "rarity": "Epic",
+    "id": "BZH01_ES002",
+    "desc": ""
+  },
+  {
+    "name": "Guardian’s Oath",
+    "type": "Special",
+    "rarity": "Legendary",
+    "id": "BZH01_LS001",
+    "desc": ""
+  },
+  {
+    "name": "Twin Seraphim",
+    "type": "Special",
+    "rarity": "Legendary",
+    "id": "BZH01_LS002",
+    "desc": ""
+  },
+  {
+    "name": "The Lost Temple",
+    "type": "Terrain",
+    "rarity": "Common",
+    "id": "BZH01_CT001",
+    "desc": ""
+  },
+  {
+    "name": "Verdant Nexus",
+    "type": "Terrain",
+    "rarity": "Common",
+    "id": "BZH01_CT002",
+    "desc": ""
+  },
+  {
+    "name": "Rusted City Ruins",
+    "type": "Terrain",
+    "rarity": "Common",
+    "id": "BZH01_CT003",
+    "desc": ""
+  },
+  {
+    "name": "Cyberpunk Docks",
+    "type": "Terrain",
+    "rarity": "Common",
+    "id": "BZH01_CT004",
+    "desc": ""
+  },
+  {
+    "name": "Neon Forest",
+    "type": "Terrain",
+    "rarity": "Common",
+    "id": "BZH01_CT005",
+    "desc": ""
+  },
+  {
+    "name": "Glacier of Code",
+    "type": "Terrain",
+    "rarity": "Common",
+    "id": "BZH01_CT006",
+    "desc": ""
+  },
+  {
+    "name": "Floating Monastery",
+    "type": "Terrain",
+    "rarity": "Rare",
+    "id": "BZH01_RT001",
+    "desc": ""
+  },
+  {
+    "name": "Shadow Citadel",
+    "type": "Terrain",
+    "rarity": "Rare",
+    "id": "BZH01_RT002",
+    "desc": ""
+  },
+  {
+    "name": "Deep Forest",
+    "type": "Terrain",
+    "rarity": "Rare",
+    "id": "BZH01_RT003",
+    "desc": ""
+  },
+  {
+    "name": "Temple of Echoes",
+    "type": "Terrain",
+    "rarity": "Epic",
+    "desc": "Lieu mystique résonnant des voix oubliées.",
+    "id": "BZH01_ET001"
+  }
+]

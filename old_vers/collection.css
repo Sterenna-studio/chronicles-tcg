@@ -1,0 +1,177 @@
+/* collection.css */
+
+/* Set selector at top */
+.set-selector {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  background: #0d0d0d;
+}
+.set-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 2px solid #00e5ff;
+  color: #00e5ff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.set-btn.active {
+  background: #00e5ff;
+  color: #121212;
+}
+.set-btn.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Container centré */
+.collection-container {
+  max-width: 800px;
+  margin: 20px auto;
+  text-align: center;
+}
+
+/* Grid de cartes */
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 150px);
+  grid-auto-rows: auto;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* Emplacement de chaque carte */
+.card-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Sleeve simule la pochette de l’album */
+.card-sleeve {
+  position: relative;
+  width: 150px;
+  height: 180px;
+  background: #333;
+  border: 2px solid #555;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+}
+.card-sleeve::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255,255,255,0.1);
+  transform: rotate(45deg);
+}
+
+/* État débloqué */
+.card-sleeve.unlocked {
+  border-color: #b19cd9;
+  background: #444;
+  box-shadow: 0 0 8px #b19cd9, inset 0 0 6px rgba(0,0,0,0.5);
+}
+
+/* Vignette d’artwork */
+.card-thumb {
+  width: 150px;
+  height: 180px;
+  object-fit: cover;
+}
+
+/* Nom de la carte */
+.card-name {
+  margin-top: 8px;
+  width: 150px;
+  padding: 5px;
+  background: rgba(20,20,20,0.7);
+  border: 1px solid #555;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #888;
+  text-align: center;
+}
+.card-name.unlocked-name {
+  color: #b19cd9;
+  border-color: #b19cd9;
+  text-shadow: 0 0 6px #b19cd9;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+}
+.page-btn {
+  padding: 6px 12px;
+  background: transparent;
+  border: 2px solid #00e5ff;
+  color: #00e5ff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+#pageIndicator {
+  color: #00e5ff;
+  font-size: 1rem;
+}
+
+/* Popup détail carte */
+.card-popup {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.card-popup:not(.hidden) {
+  visibility: visible;
+  opacity: 1;
+}
+.popup-backdrop {
+  position: absolute;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+}
+.popup-content {
+  position: relative;
+  display: flex;
+  background: #0f0f0f;
+  border: 2px solid #00e5ff;
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 10;
+  box-shadow: 0 0 20px #00e5ff;
+}
+.popup-info {
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  margin-right: 20px;
+}
+.popup-info h2 {
+  margin: 0 0 10px;
+  color: #00e5ff;
+}
+.popup-info p {
+  margin: 5px 0;
+}
+.popup-content img {
+  width: 50%;
+  border-radius: 8px;
+}

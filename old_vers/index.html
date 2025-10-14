@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>BZH Chronicles – Pack Opening</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="./shared/supabaseClient.js"></script>
+  <script type="module" src="./tcg_auth.js"></script>
+  <script type="module" src="./supabaseData.js"></script>
+  <script type="module" src="./store.js"></script>
+  <script type="module" src="./script.js" defer></script>
+</head>
+<body>
+  <header><h1>BZH Chronicles – Pack Opening</h1></header>
+  <div class="shelf"></div>
+  <div class="main-container">
+    <div class="pack-area">
+      <div id="cardStack" class="card-stack"></div>
+      <div id="openedCards" class="opened-cards"></div>
+      <div id="nextCardContainer" class="hidden"><button id="nextCardBtn">Carte suivante</button></div>
+      <button id="newPackBtn" class="hidden">Ouvrir un pack</button>
+    </div>
+    <div class="inventory">
+      <h2>Inventaire</h2>
+      <p><strong>Joueur :</strong> <span id="usernameDisplay"></span></p>
+      <p><strong>Packs :</strong> <span id="packCount">0</span></p>
+      <p><strong>Révélées :</strong> <span id="revealedCount">0</span></p>
+      <p><strong>Collection :</strong> <span id="collectionCount">0</span></p>
+      <p><strong>Gold :</strong> <span id="goldCount">0</span> ✨</p>
+      <button id="collectionBtn">Voir la Collection</button>
+      <div class="shop"><h3>Boutique</h3><div id="shopButtons"></div><p id="shopMessage"></p></div>
+    </div>
+  </div>
+</body>
+</html>

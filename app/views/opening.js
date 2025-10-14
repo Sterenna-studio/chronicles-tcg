@@ -1,0 +1,1 @@
+export async function renderOpening(root){const el=document.createElement('div');el.className='panel';el.innerHTML=`<div class='h-section'>Ouverture</div><div class='hud'><span class='chip'>Drag-to-open + reveal (à brancher)</span></div>`;root.appendChild(el);}

@@ -1,0 +1,1 @@
+export async function renderCollection(root){const el=document.createElement('div');el.className='panel';el.innerHTML=`<div class='h-section'>Album / Collection</div><div class='hud'><span class='chip'>Sélecteur de sets + grille (à brancher)</span></div>`;root.appendChild(el);}

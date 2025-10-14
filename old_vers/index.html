@@ -1,34 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>BZH Chronicles – Pack Opening</title>
-  <link rel="stylesheet" href="style.css">
-  <script type="module" src="./shared/supabaseClient.js"></script>
-  <script type="module" src="./tcg_auth.js"></script>
-  <script type="module" src="./supabaseData.js"></script>
-  <script type="module" src="./store.js"></script>
-  <script type="module" src="./script.js" defer></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>BZH TCG — Accueil</title>
+  <link rel="stylesheet" href="./styles/style.css?v=v1.0.7-home-dragtear" />
 </head>
 <body>
-  <header><h1>BZH Chronicles – Pack Opening</h1></header>
-  <div class="shelf"></div>
-  <div class="main-container">
-    <div class="pack-area">
-      <div id="cardStack" class="card-stack"></div>
-      <div id="openedCards" class="opened-cards"></div>
-      <div id="nextCardContainer" class="hidden"><button id="nextCardBtn">Carte suivante</button></div>
-      <button id="newPackBtn" class="hidden">Ouvrir un pack</button>
+  <div class="home-wrap">
+    <div class="home-inventory"><div style="position:absolute; left:-76px; top:-8px;"><a class="btn-nav" href="./pages/admin/index.html?v=v1.1.1-admin-fx">⚙️ Admin</a></div>
+      <div class="row"><span>Or</span><b id="gold">0</b></div>
+      <div class="row"><span>Boosters</span><b id="boosters">0</b></div>
+      <div class="row"><span>Cartes uniques</span><b id="unique">0</b></div>
+      <button class="stats-btn" id="btn-stats">Plus de stats</button>
     </div>
-    <div class="inventory">
-      <h2>Inventaire</h2>
-      <p><strong>Joueur :</strong> <span id="usernameDisplay"></span></p>
-      <p><strong>Révélées :</strong> <span id="revealedCount">0</span></p>
-      <p><strong>Collection :</strong> <span id="collectionCount">0</span></p>
-      <p><strong>Gold :</strong> <span id="goldCount">0</span> ✨</p>
-      <button id="collectionBtn">Voir la Collection</button>
-      <div class="shop"><h3>Boutique</h3><div id="shopButtons"></div><p id="shopMessage"></p></div>
+
+    <div class="home-main">
+      <div class="shelf-angled" id="owned-packs"></div>
+    </div>
+
+    <div class="home-bottom">
+      <a class="btn-nav" href="./pages/shop/index.html?v=v1.0.7-home-dragtear">🛒 Boutique</a>
+      <a class="btn-nav" href="./pages/collection/index.html?set=bzh_set01&v=v1.0.7-home-dragtear">📘 Album</a>
     </div>
   </div>
+
+  <div class="modal hidden" id="stats-modal">
+    <div class="panel">
+      <h3>Statistiques</h3>
+      <p>Boosters ouverts: <b id="st-opened">0</b></p>
+      <p>Cartes obtenues (total): <b id="st-cards">0</b></p>
+      <p>Or dépensé: <b id="st-gold">0</b></p>
+      <div style="text-align:right;margin-top:8px;">
+        <button id="close-stats">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./pages/home/home.js?v=v1.0.7-home-dragtear"></script>
 </body>
 </html>

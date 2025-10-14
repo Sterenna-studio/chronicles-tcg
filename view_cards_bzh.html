@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Visualiseur de Cartes BZH</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #eee;
+      padding: 20px;
+    }
+    h1 { text-align: center; }
+    input[type="file"] {
+      display: block;
+      margin: 20px auto;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .card {
+      background-color: #1e1e1e;
+      padding: 10px;
+      border: 1px solid #333;
+      border-radius: 8px;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 1.1em;
+      color: #00e5ff;
+    }
+    .card p {
+      margin: 5px 0;
+    }
+    .card .id {
+      font-size: 0.8em;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Visualiseur de Cartes BZH</h1>
+<input type="file" id="fileInput" accept=".json">
+<div class="cards" id="cardsContainer"></div>
+
+<script>
+document.getElementById('fileInput').addEventListener('change', function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const json = JSON.parse(e.target.result);
+    displayCards(json);
+  };
+  reader.readAsText(file);
+});
+
+function displayCards(cards) {
+  const container = document.getElementById('cardsContainer');
+  container.innerHTML = '';
+  cards.forEach(card => {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card';
+    cardDiv.innerHTML = `
+      <h3>${card.name}</h3>
+      <p><strong>Type:</strong> ${card.type}</p>
+      <p><strong>Rareté:</strong> ${card.rarity}</p>
+      <p class="id">${card.id}</p>
+      <p>${card.desc}</p>
+    `;
+    container.appendChild(cardDiv);
+  });
+}
+</script>
+
+</body>
+</html>

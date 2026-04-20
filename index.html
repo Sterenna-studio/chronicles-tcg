@@ -17,20 +17,17 @@
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;background:var(--bg);color:var(--fg);font-family:var(--font);overflow:hidden}
-
     body::after{
       content:'';position:fixed;inset:0;
       background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.18) 2px,rgba(0,0,0,.18) 4px);
       pointer-events:none;z-index:9999;
     }
-
     .shell{
       display:grid;
       grid-template-rows:38px 1fr 28px;
       grid-template-columns:200px 1fr 220px;
       height:100vh;
     }
-
     /* TOPBAR */
     .topbar{
       grid-column:1/-1;display:flex;align-items:center;gap:16px;
@@ -53,34 +50,22 @@
       cursor:pointer;letter-spacing:.1em;
     }
     .btn-eject:hover{background:var(--red);color:#000}
-
-    /* LEFT PANEL */
-    .left-panel{
-      border-right:1px solid var(--border);background:var(--bg2);
-      display:flex;flex-direction:column;overflow:hidden;
-    }
+    /* LEFT */
+    .left-panel{border-right:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;overflow:hidden}
     .panel-section{padding:10px 12px;border-bottom:1px solid var(--border);font-size:.72em;letter-spacing:.1em}
     .panel-title{color:var(--muted);margin-bottom:8px;letter-spacing:.15em}
-
     .sys-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:.72em}
     .sys-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
     .dot-on{background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
     .dot-warn{background:var(--amber);box-shadow:0 0 6px var(--amber)}
-    .dot-off{background:var(--red);box-shadow:0 0 6px var(--red)}
     .sys-name{color:var(--fg);letter-spacing:.08em}
-
     .stat-row{display:flex;justify-content:space-between;margin-bottom:5px;font-size:.72em}
     .stat-label{color:var(--muted)}
     .stat-val{color:var(--cyan)}
-
     /* CENTER */
     .center-panel{overflow-y:auto;padding:14px 16px;background:var(--bg)}
-    .modules-title{
-      font-size:.72em;letter-spacing:.15em;color:var(--muted);
-      margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:6px;
-    }
+    .modules-title{font-size:.72em;letter-spacing:.15em;color:var(--muted);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:6px}
     .modules-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-
     .module-card{
       position:relative;background:var(--bg2);border:1px solid var(--border);
       padding:16px 14px 14px;cursor:pointer;
@@ -93,44 +78,25 @@
     .module-name{font-family:'VT323',monospace;font-size:1.4em;letter-spacing:.15em;color:var(--fg);transition:color .2s}
     .module-desc{font-size:.68em;color:var(--muted);margin-top:4px;letter-spacing:.06em}
     .module-status{position:absolute;top:8px;right:10px;font-size:.6em;color:var(--cyan);letter-spacing:.1em}
-
-    /* BOOSTERS SECTION */
-    .boosters-title{
-      font-size:.72em;letter-spacing:.15em;color:var(--muted);
-      margin:16px 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px;
-    }
+    /* BOOSTERS */
+    .boosters-title{font-size:.72em;letter-spacing:.15em;color:var(--muted);margin:16px 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px}
     .boosters-grid{display:flex;gap:12px;flex-wrap:wrap}
-    .booster-thumb{
-      display:flex;flex-direction:column;align-items:center;gap:5px;
-      cursor:pointer;transition:transform .18s;
-    }
+    .booster-thumb{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:transform .18s}
     .booster-thumb:hover{transform:translateY(-4px)}
     .booster-img{
       width:70px;height:96px;border-radius:8px;
-      border:1px solid var(--border);
-      background:var(--bg2);background-size:cover;background-position:center;
+      border:1px solid var(--border);background:var(--bg2);
+      background-size:cover;background-position:center;
       position:relative;display:flex;align-items:flex-start;justify-content:flex-end;
       box-shadow:0 0 10px rgba(0,245,196,.1);
     }
-    .booster-badge{
-      font-size:.6em;font-weight:700;background:var(--cyan);color:#000;
-      border-radius:4px;padding:1px 5px;margin:4px;
-    }
+    .booster-badge{font-size:.6em;font-weight:700;background:var(--cyan);color:#000;border-radius:4px;padding:1px 5px;margin:4px}
     .booster-name{font-size:.6em;color:var(--muted);letter-spacing:.06em;text-align:center;max-width:70px}
     .no-boosters{font-size:.7em;color:var(--muted);font-style:italic}
-
-    /* RIGHT PANEL */
+    /* RIGHT */
     .right-panel{border-left:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;overflow:hidden}
-    .feed-title{
-      font-size:.65em;color:var(--muted);letter-spacing:.15em;
-      padding:10px 12px 6px;border-bottom:1px solid var(--border);
-      display:flex;align-items:center;gap:6px;
-    }
-    .feed-dot{
-      width:6px;height:6px;border-radius:50%;
-      background:var(--cyan);box-shadow:0 0 6px var(--cyan);
-      animation:blink 1.2s step-end infinite;
-    }
+    .feed-title{font-size:.65em;color:var(--muted);letter-spacing:.15em;padding:10px 12px 6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+    .feed-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan);animation:blink 1.2s step-end infinite}
     @keyframes blink{50%{opacity:0}}
     .feed-list{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:5px}
     .feed-item{font-size:.65em;color:var(--muted);letter-spacing:.05em;border-left:2px solid var(--border);padding-left:6px}
@@ -138,7 +104,6 @@
     .feed-item .fm{color:var(--fg)}
     .feed-item .fs{color:var(--cyan)}
     .feed-item .fe{color:var(--red)}
-
     /* TICKER */
     .ticker{grid-column:1/-1;border-top:1px solid var(--border);background:#020508;display:flex;align-items:center;overflow:hidden;font-size:.65em;letter-spacing:.1em;color:var(--muted)}
     .ticker-label{flex-shrink:0;padding:0 10px;color:var(--cyan);border-right:1px solid var(--border);height:100%;display:flex;align-items:center}
@@ -150,22 +115,17 @@
     .t-warn{color:var(--amber)}
     .sterenna{flex-shrink:0;padding:0 12px;border-left:1px solid var(--border);color:var(--muted);height:100%;display:flex;align-items:center;font-size:.9em;letter-spacing:.12em}
     .sterenna span{color:var(--cyan)}
-
     #app-root{display:none}
   </style>
 </head>
 <body>
 <div class="shell">
 
-  <!-- TOPBAR -->
   <header class="topbar">
-    <span class="sys">SYS</span>
-    <span class="sep">·</span>
-    <span class="sys">NOMINAL</span>
-    <span class="sep">·</span>
+    <span class="sys">SYS</span><span class="sep">·</span>
+    <span class="sys">NOMINAL</span><span class="sep">·</span>
     <span class="brand">CHRONICLES&nbsp;TCG</span>
-    <span class="ver">BRIDGE v2.1</span>
-    <span class="sep">·</span>
+    <span class="ver">BRIDGE v2.1</span><span class="sep">·</span>
     <span class="sys" id="tb-nav-cig" style="cursor:pointer;text-decoration:underline dotted" title="CIG">CIG</span>
     <div class="spacer"></div>
     <span class="agent">Agent <b id="tb-name">...</b></span>
@@ -173,18 +133,13 @@
     <button class="btn-eject" id="btn-logout">EJECT</button>
   </header>
 
-  <!-- LEFT -->
   <aside class="left-panel">
-
-    <!-- AGENT STATS (remplace radar) -->
     <div class="panel-section">
       <div class="panel-title">AGENT STATS</div>
       <div class="stat-row"><span class="stat-label">GOLD</span><span class="stat-val" id="stat-gold">---</span></div>
       <div class="stat-row"><span class="stat-label">CARDS</span><span class="stat-val" id="stat-cards">---</span></div>
       <div class="stat-row"><span class="stat-label">PACKS</span><span class="stat-val" id="stat-packs">---</span></div>
     </div>
-
-    <!-- SYSTEMS -->
     <div class="panel-section">
       <div class="panel-title">SYSTEMS</div>
       <div class="sys-row"><span class="sys-dot dot-on"></span><span class="sys-name">AUTH</span></div>
@@ -193,10 +148,8 @@
       <div class="sys-row"><span class="sys-dot dot-warn"></span><span class="sys-name">CARD ENGINE</span></div>
       <div class="sys-row"><span class="sys-dot dot-on"></span><span class="sys-name">NETWORK</span></div>
     </div>
-
   </aside>
 
-  <!-- CENTER -->
   <main class="center-panel">
     <div class="modules-title">MODULES · <span id="mod-count">4</span> SYSTEMES ONLINE</div>
     <div class="modules-grid">
@@ -226,14 +179,12 @@
       </div>
     </div>
 
-    <!-- BOOSTERS POSSEDES -->
     <div class="boosters-title">BOOSTERS POSSEDES · <span id="boosters-count">0</span> EN STOCK</div>
     <div class="boosters-grid" id="boosters-grid">
       <span class="no-boosters">Chargement...</span>
     </div>
   </main>
 
-  <!-- RIGHT -->
   <aside class="right-panel">
     <div class="feed-title"><span class="feed-dot"></span>STATUS FEED</div>
     <div class="feed-list" id="feed-list">
@@ -245,29 +196,26 @@
     </div>
   </aside>
 
-  <!-- TICKER -->
   <footer class="ticker">
     <div class="ticker-label">TCG</div>
-    <div class="ticker-track">
-      <div class="ticker-inner">
-        <span class="t-on">AUTH ONLINE</span><span class="ticker-sep">·</span>
-        <span class="t-on">DATABASE SYNC</span><span class="ticker-sep">·</span>
-        <span class="t-on">PACKS LOADED</span><span class="ticker-sep">·</span>
-        <span class="t-warn">CARD ENGINE STANDBY</span><span class="ticker-sep">·</span>
-        <span class="t-on">NETWORK NOMINAL</span><span class="ticker-sep">·</span>
-        <span class="t-on">BZH01 READY</span><span class="ticker-sep">·</span>
-        <span class="t-on">BZH02 READY</span><span class="ticker-sep">·</span>
-        <span class="t-on">BRIDGE CONNECTED</span><span class="ticker-sep">·</span>
-        <span class="t-on">AUTH ONLINE</span><span class="ticker-sep">·</span>
-        <span class="t-on">DATABASE SYNC</span><span class="ticker-sep">·</span>
-        <span class="t-on">PACKS LOADED</span><span class="ticker-sep">·</span>
-        <span class="t-warn">CARD ENGINE STANDBY</span><span class="ticker-sep">·</span>
-        <span class="t-on">NETWORK NOMINAL</span><span class="ticker-sep">·</span>
-        <span class="t-on">BZH01 READY</span><span class="ticker-sep">·</span>
-        <span class="t-on">BZH02 READY</span><span class="ticker-sep">·</span>
-        <span class="t-on">BRIDGE CONNECTED</span>
-      </div>
-    </div>
+    <div class="ticker-track"><div class="ticker-inner">
+      <span class="t-on">AUTH ONLINE</span><span class="ticker-sep">·</span>
+      <span class="t-on">DATABASE SYNC</span><span class="ticker-sep">·</span>
+      <span class="t-on">PACKS LOADED</span><span class="ticker-sep">·</span>
+      <span class="t-warn">CARD ENGINE STANDBY</span><span class="ticker-sep">·</span>
+      <span class="t-on">NETWORK NOMINAL</span><span class="ticker-sep">·</span>
+      <span class="t-on">BZH01 READY</span><span class="ticker-sep">·</span>
+      <span class="t-on">BZH02 READY</span><span class="ticker-sep">·</span>
+      <span class="t-on">BRIDGE CONNECTED</span><span class="ticker-sep">·</span>
+      <span class="t-on">AUTH ONLINE</span><span class="ticker-sep">·</span>
+      <span class="t-on">DATABASE SYNC</span><span class="ticker-sep">·</span>
+      <span class="t-on">PACKS LOADED</span><span class="ticker-sep">·</span>
+      <span class="t-warn">CARD ENGINE STANDBY</span><span class="ticker-sep">·</span>
+      <span class="t-on">NETWORK NOMINAL</span><span class="ticker-sep">·</span>
+      <span class="t-on">BZH01 READY</span><span class="ticker-sep">·</span>
+      <span class="t-on">BZH02 READY</span><span class="ticker-sep">·</span>
+      <span class="t-on">BRIDGE CONNECTED</span>
+    </div></div>
     <div class="sterenna">MADE BY <span>&nbsp;STERENNA</span></div>
   </footer>
 
@@ -279,20 +227,32 @@
 <script type="module">
 import { getClient, getUser } from './logic/supaRaw.js';
 import { initPlayer, getDisplayName } from './data/supabaseData.js';
+import { loadPlayerPacks } from './data/packsRepo.js';
 import { boot, navigate } from './app/router.js';
 
-const pad = n => String(n).padStart(2,'0');
-
-// MOCK LOCAL — remplacer par Supabase quand pret
-const MOCK = {
-  gold: 250,
-  cards: 34,
-  packs: 3,
-  boosters: [
-    { id: 'bzh01', name: 'BZH01', image_name: 'pack_bzh01.webp', quantity: 2 },
-    { id: 'bzh02', name: 'BZH02', image_name: 'pack_bzh02.webp', quantity: 1 },
-  ]
+// Mapping set_id -> image locale reelle
+const PACK_IMAGES = {
+  'BZH01': './assets/packs/set01.jpg',
+  'bzh01': './assets/packs/set01.jpg',
+  'set01': './assets/packs/set01.jpg',
+  'BZH01_CHAMP': './assets/packs/set01_champ.jpg',
+  'set01_champ': './assets/packs/set01_champ.jpg',
+  'BZH02': './assets/packs/set02.jpg',
+  'bzh02': './assets/packs/set02.jpg',
+  'set02': './assets/packs/set02.jpg',
+  'BZH02_CHAMP': './assets/packs/Set02_champ.jpg',
+  'Set02_champ': './assets/packs/Set02_champ.jpg',
 };
+
+function packImage(pack) {
+  // Cherche dans le mapping par id, set_id, ou name
+  return PACK_IMAGES[pack.set_id]
+      || PACK_IMAGES[pack.id]
+      || PACK_IMAGES[pack.name]
+      || './assets/packs/set01.jpg'; // fallback
+}
+
+const pad = n => String(n).padStart(2,'0');
 
 // CLOCK
 function tickClock() {
@@ -302,86 +262,12 @@ function tickClock() {
 }
 tickClock(); setInterval(tickClock, 1000);
 
-// FEED timestamps
+// FEED timestamps init
 const now0 = new Date();
 const t0 = pad(now0.getHours())+':'+pad(now0.getMinutes())+':'+pad(now0.getSeconds());
 document.querySelectorAll('[id^="feed-t"]').forEach(el => el.textContent = t0);
 
-// RENDER MOCK STATS
-function renderMockStats(data) {
-  document.getElementById('stat-gold').textContent  = data.gold;
-  document.getElementById('stat-cards').textContent = data.cards;
-  document.getElementById('stat-packs').textContent = data.packs;
-}
-
-// RENDER BOOSTERS
-function renderBoosters(boosters) {
-  const grid = document.getElementById('boosters-grid');
-  const count = document.getElementById('boosters-count');
-  const owned = boosters.filter(b => b.quantity > 0);
-  count.textContent = owned.reduce((s,b)=>s+b.quantity,0);
-  if (!owned.length) {
-    grid.innerHTML = '<span class="no-boosters">Aucun booster en stock</span>';
-    return;
-  }
-  grid.innerHTML = '';
-  owned.forEach(b => {
-    const imgSrc = './assets/packs/' + b.image_name;
-    const el = document.createElement('div');
-    el.className = 'booster-thumb';
-    el.title = b.name + ' x' + b.quantity;
-    el.innerHTML = `
-      <div class="booster-img" style="background-image:url('${imgSrc}')">
-        <span class="booster-badge">x${b.quantity}</span>
-      </div>
-      <div class="booster-name">${b.name}</div>
-    `;
-    el.addEventListener('click', () => {
-      document.dispatchEvent(new CustomEvent('tcg:open-pack', {
-        detail: { pack_type_id: b.id, set_id: b.id.toUpperCase() }
-      }));
-      enterSPA('#/opening');
-    });
-    grid.appendChild(el);
-  });
-}
-
-// Afficher mock immediatement
-renderMockStats(MOCK);
-renderBoosters(MOCK.boosters);
-
-// SUPABASE (async, remplace le mock quand connecte)
-async function initSupabase() {
-  try {
-    const sb = await getClient();
-    const user = await getUser();
-    if (!user) return;
-    const player = await initPlayer(sb, user);
-    document.getElementById('tb-name').textContent = getDisplayName();
-
-    const [{ data: cards }, { data: packs }, { data: packTypes }] = await Promise.all([
-      sb.from('player_cards').select('quantity').eq('player_id', user.id),
-      sb.from('player_packs').select('pack_type_id,quantity').eq('player_id', user.id),
-      sb.from('pack_types').select('id,name,image_name,set_id'),
-    ]);
-
-    const totalCards = (cards||[]).reduce((s,r)=>s+(r.quantity||0),0);
-    const totalPacks = (packs||[]).reduce((s,r)=>s+(r.quantity||0),0);
-    renderMockStats({ gold: player?.gold??0, cards: totalCards, packs: totalPacks });
-
-    // Boosters reels
-    const qtyMap = Object.fromEntries((packs||[]).map(r=>[r.pack_type_id, r.quantity||0]));
-    const realBoosters = (packTypes||[]).map(t=>({...t, quantity: qtyMap[t.id]||0}));
-    renderBoosters(realBoosters);
-
-    addFeed('AGENT ' + getDisplayName() + ' CONNECTED');
-    addFeed('GOLD ' + (player?.gold??0) + ' · CARDS ' + totalCards + ' · PACKS ' + totalPacks);
-  } catch(e) {
-    console.warn('Supabase non disponible, mode mock actif', e);
-    addFeed('MODE MOCK ACTIF', 'fe');
-  }
-}
-
+// FEED helper
 const feedList = document.getElementById('feed-list');
 function addFeed(msg, cls='fs') {
   const d = document.createElement('div');
@@ -393,9 +279,81 @@ function addFeed(msg, cls='fs') {
   feedList.scrollTop = feedList.scrollHeight;
 }
 
-initSupabase();
+// RENDER STATS
+function renderStats({ gold, cards, packs }) {
+  document.getElementById('stat-gold').textContent  = gold ?? '---';
+  document.getElementById('stat-cards').textContent = cards ?? '---';
+  document.getElementById('stat-packs').textContent = packs ?? '---';
+}
 
-// ENTRER DANS SPA
+// RENDER BOOSTERS
+function renderBoosters(packs) {
+  const grid = document.getElementById('boosters-grid');
+  const countEl = document.getElementById('boosters-count');
+  const owned = (packs||[]).filter(b => b.quantity > 0);
+  countEl.textContent = owned.reduce((s,b) => s + b.quantity, 0);
+  if (!owned.length) {
+    grid.innerHTML = '<span class="no-boosters">Aucun booster en stock</span>';
+    return;
+  }
+  grid.innerHTML = '';
+  owned.forEach(b => {
+    const img = packImage(b);
+    const el = document.createElement('div');
+    el.className = 'booster-thumb';
+    el.title = (b.name || b.id) + ' x' + b.quantity;
+    el.innerHTML = `
+      <div class="booster-img" style="background-image:url('${img}')">
+        <span class="booster-badge">x${b.quantity}</span>
+      </div>
+      <div class="booster-name">${b.name || b.id}</div>
+    `;
+    el.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('tcg:open-pack', {
+        detail: { pack_type_id: b.id, set_id: b.set_id || b.id }
+      }));
+      enterSPA('#/opening');
+    });
+    grid.appendChild(el);
+  });
+}
+
+// INIT SUPABASE
+async function init() {
+  try {
+    const sb   = await getClient();
+    const user = await getUser();
+    if (!user) { addFeed('NON CONNECTE', 'fe'); return; }
+
+    const player = await initPlayer(sb, user);
+    document.getElementById('tb-name').textContent = getDisplayName();
+
+    // player_cards : utilise .select() sans filtre player_id direct
+    // (evite le 400 du join RLS) — on passe par player_cards via supabaseData
+    const { data: cardRows } = await sb
+      .from('player_cards')
+      .select('quantity')
+      .eq('player_id', user.id);
+    const totalCards = (cardRows||[]).reduce((s,r) => s + (r.quantity||0), 0);
+
+    // Boosters via packsRepo (gere player_id en interne)
+    const playerPacks = await loadPlayerPacks();
+    const totalPacks  = playerPacks.reduce((s,p) => s + (p.quantity||0), 0);
+
+    renderStats({ gold: player?.gold ?? 0, cards: totalCards, packs: totalPacks });
+    renderBoosters(playerPacks);
+
+    addFeed(getDisplayName() + ' CONNECTED');
+    addFeed('GOLD ' + (player?.gold??0) + ' CARDS ' + totalCards + ' PACKS ' + totalPacks);
+  } catch(e) {
+    console.warn('[hub] init error', e);
+    addFeed('ERREUR INIT: ' + e.message, 'fe');
+    renderBoosters([]);
+  }
+}
+init();
+
+// ENTRER SPA
 function enterSPA(hash) {
   document.querySelector('.shell').style.display = 'none';
   document.getElementById('app-root').style.display = 'block';
@@ -415,10 +373,7 @@ document.getElementById('tb-nav-cig').addEventListener('click', () => {
 
 // EJECT
 document.getElementById('btn-logout').addEventListener('click', async () => {
-  try {
-    const sb = await getClient();
-    await sb.auth.signOut();
-  } catch(e) {}
+  try { const sb = await getClient(); await sb.auth.signOut(); } catch(e) {}
   location.reload();
 });
 

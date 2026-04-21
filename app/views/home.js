@@ -85,8 +85,10 @@ export async function renderHome(root) {
           </div>
         `;
         card.querySelector('.open-btn').addEventListener('click', () => {
+          // pack_type_id vient de packsRepo.loadPlayerPacks() qui retourne { ...pack_types, quantity }
+          // => p.id est bien l'id du pack_type
           document.dispatchEvent(new CustomEvent('tcg:open-pack', {
-            detail: { pack_type_id: p.id, set_id: p.set_id }
+            detail: { pack_type_id: p.pack_type_id ?? p.id, set_id: p.set_id }
           }));
           navigate('#/opening');
         });

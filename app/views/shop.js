@@ -40,7 +40,11 @@ export async function renderShop(root) {
     gridEl.innerHTML = '';
     const frag = document.createDocumentFragment();
     packs.forEach(p => {
-      const price = p.price || 100;
+      // Guard: price manquant dans pack_types => fallback 100 + warning console
+      if (p.price === undefined || p.price === null) {
+        console.warn(`[shop] pack "${p.name}" (id: ${p.id}) n'a pas de champ "price" dans pack_types — fallback 100`);
+      }
+      const price = p.price ?? 100;
       const canBuy = gold >= price;
       const imgSrc = url(`/assets/packs/${p.image_name}?v=cyber`);
       const card = document.createElement('div');
@@ -76,7 +80,7 @@ export async function renderShop(root) {
           // Débit gold
           const { data: pl } = await sb.from('players').select('gold').eq('id', user.id).single();
           const currentGold = pl?.gold || 0;
-          if (currentGold < price) { showMsg('Or insuffisant !', '#ff8a8a'); return; }
+          if (currentGold < price) { showMsg('Or insuffisant !', '#ff8a8a'); btn.disabled = false; btn.textContent = 'Acheter'; return; }
           const newGold = currentGold - price;
           await sb.from('players').update({ gold: newGold }).eq('id', user.id);
           // Incrément pack

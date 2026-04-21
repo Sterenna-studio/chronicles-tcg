@@ -1,11 +1,19 @@
-// logic/supaRaw.js
-import { supabase as _sb } from '../shared/supabaseClient.js';
-let _user = null;
-export function getClient() { return _sb; }
-export async function getUser() {
-  if (_user) return _user;
-  const { data: { user } } = await _sb.auth.getUser();
-  _user = user;
+// logic/supaRaw.js — static Supabase helper
+import { supabase } from '../shared/supabaseClient.js';
+
+export async function getClient(){
+  return supabase;
+}
+
+export async function getUser(){
+  const { data: { user } } = await supabase.auth.getUser();
   return user;
 }
-export function clearUserCache() { _user = null; }
+
+export async function requireLogin(){
+  const user = await getUser();
+  if (!user) {
+    throw new Error('Utilisateur non connecté');
+  }
+  return user;
+}

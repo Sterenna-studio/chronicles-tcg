@@ -7,6 +7,11 @@ const SETS = [
   { id: 'BZH02', label: 'Set 2 — BZH Chronicles', file: '/data/BZH02.json' },
 ];
 
+const RARITY_COLORS = {
+  Common: '#9da7b3', Rare: '#42b0ff', Epic: '#bb55d3',
+  Legendary: '#ffbe46', Mythical: '#ff5080'
+};
+
 async function fetchOwned() {
   try {
     const sb = await getClient();
@@ -24,6 +29,54 @@ async function loadSetCards(setId) {
   const res = await fetch(url(setInfo.file));
   const json = await res.json();
   return Array.isArray(json) ? json : (json.cards || []);
+}
+
+function openCardModal(card, qty) {
+  const rc = RARITY_COLORS[card.rarity] || '#9da7b3';
+  const imgSrc = url(`/assets/cards/${card.id}.jpg`);
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.80);z-index:10100;display:grid;place-items:center;padding:20px';
+
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    width:min(480px,95vw);
+    background:#05080d;
+    border:1px solid ${rc};
+    border-radius:16px;
+    color:#c8ffe8;
+    overflow:hidden;
+    box-shadow:0 0 40px ${rc}44;
+    display:flex;
+    flex-direction:column;
+  `;
+
+  const TYPE_ICONS = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍' };
+  const typeIcon = TYPE_ICONS[card.type] || '📄';
+
+  modal.innerHTML = `
+    <div style="position:relative">
+      <img src="${imgSrc}" alt="${card.name}"
+        style="width:100%;max-height:320px;object-fit:contain;background:#060c10;"
+        onerror="this.style.display='none'">
+      <button id="modal-close" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.7);border:1px solid #ff2d4e;color:#ff2d4e;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:.8em;border-radius:6px">✕</button>
+      ${qty > 0 ? `<span style="position:absolute;top:10px;left:10px;background:${rc};color:#000;font-weight:700;font-size:.8em;padding:3px 8px;border-radius:6px">x${qty} possédée${qty > 1 ? 's' : ''}</span>` : '<span style="position:absolute;top:10px;left:10px;background:#1a1a1a;color:#666;font-size:.8em;padding:3px 8px;border-radius:6px">Non possédée</span>'}
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-weight:700;font-size:1.1em">${card.name}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="background:#0e2a1f;border:1px solid ${rc};color:${rc};padding:3px 10px;border-radius:20px;font-size:.78em;font-weight:700">${card.rarity}</span>
+        <span style="background:#0e2a1f;border:1px solid #2a3a4a;color:#8ab;padding:3px 10px;border-radius:20px;font-size:.78em">${typeIcon} ${card.type}</span>
+        <span style="background:#0e2a1f;border:1px solid #2a3a4a;color:#5a7a6a;padding:3px 10px;border-radius:20px;font-size:.78em">${card.id}</span>
+      </div>
+      ${card.desc ? `<div style="font-size:.85em;color:#8ab4a0;line-height:1.5;border-left:2px solid ${rc}44;padding-left:10px;font-style:italic">${card.desc}</div>` : ''}
+    </div>
+  `;
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  modal.querySelector('#modal-close').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
 export async function renderCollection(root) {
@@ -84,8 +137,7 @@ export async function renderCollection(root) {
       const qty = owned[card.id] || 0;
       const hasCard = qty > 0;
       const imgSrc = url(`/assets/cards/${card.id}.jpg`);
-      const rarityColors = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
-      const rc = rarityColors[card.rarity] || '#9da7b3';
+      const rc = RARITY_COLORS[card.rarity] || '#9da7b3';
       const div = document.createElement('div');
       div.title = `${card.name} — ${card.rarity}`;
       div.style.cssText = `
@@ -103,6 +155,7 @@ export async function renderCollection(root) {
       `;
       div.addEventListener('mouseenter', () => { div.style.transform='translateY(-3px)'; div.style.boxShadow=hasCard?`0 6px 20px ${rc}66`:''; });
       div.addEventListener('mouseleave', () => { div.style.transform=''; div.style.boxShadow=hasCard?`0 0 12px ${rc}44`:''; });
+      div.addEventListener('click', () => openCardModal(card, qty));
       if (hasCard) {
         div.innerHTML = `
           <img src="${imgSrc}" alt="${card.name}"

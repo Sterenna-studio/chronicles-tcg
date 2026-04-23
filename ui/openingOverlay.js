@@ -11,6 +11,16 @@ const SET_FILES = {
 };
 
 const RARITY_COLOR = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
+const RARITY_SOUND = { Common:'common', Rare:'rare', Epic:'epic', Legendary:'legendary', Mythical:'mythical' };
+
+function playRaritySound(rarity) {
+  try {
+    const name = RARITY_SOUND[rarity] || 'common';
+    const audio = new Audio(url(`/sounds/${name}.mp3`));
+    audio.volume = 0.6;
+    audio.play().catch(() => {});
+  } catch {}
+}
 
 async function loadCards(setId) {
   const file = SET_FILES[setId] || SET_FILES.BZH01;
@@ -46,7 +56,7 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
       <div style="font-weight:700;letter-spacing:.08em">✦ OUVERTURE DE BOOSTER</div>
       <button id="open-close" style="background:transparent;border:1px solid #ff2d4e;color:#ff2d4e;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:.8em">Fermer</button>
     </div>
-    <div id="opening-stage" style="flex:1;display:grid;place-items:center;padding:20px"></div>
+    <div id="opening-stage" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow:auto"></div>
   `;
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
@@ -62,6 +72,18 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
   } catch (e) {
     stage.innerHTML = '<div style="color:#ff8a8a">Erreur génération pack.</div>';
     return;
+  }
+
+  // Grouper les doublons avant ouverture
+  const grouped = [];
+  const seen = {};
+  for (const card of cards) {
+    if (seen[card.id] !== undefined) {
+      grouped[seen[card.id]].count++;
+    } else {
+      seen[card.id] = grouped.length;
+      grouped.push({ card, count: 1 });
+    }
   }
 
   let clicks = 0;
@@ -110,51 +132,81 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
 
     try { await decrementPlayerPack(packTypeId, 1); } catch(e) { console.warn('decrement pack', e); }
 
+    // Affichage grille — cartes groupées dos visible
     stage.innerHTML = `
-      <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:20px">
-        <div style="font-weight:700;color:#42b0ff">✦ Le booster révèle ses cartes !</div>
-        <div id="circle" style="position:relative;width:min(700px,88vw);height:420px"></div>
-        <div style="display:flex;gap:12px">
+      <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:24px">
+        <div style="font-weight:700;color:#42b0ff">✦ Clique sur chaque carte pour la révéler !</div>
+        <div id="cards-grid" style="
+          display:flex;
+          flex-wrap:wrap;
+          justify-content:center;
+          gap:16px;
+          padding:8px;
+          width:100%;
+        "></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
           <button id="reveal-all" style="background:transparent;border:1px solid #00f5c4;color:#00f5c4;padding:6px 16px;cursor:pointer;font-family:inherit;font-size:.85em">Tout révéler</button>
           <button id="save-cards" style="background:#00f5c4;border:none;color:#000;padding:6px 16px;cursor:pointer;font-family:inherit;font-size:.85em;font-weight:700">Sauvegarder la collection</button>
         </div>
       </div>
     `;
-    const circle = stage.querySelector('#circle');
-    const W = circle.clientWidth, H = circle.clientHeight;
-    const cx = W/2, cy = H/2, R = Math.min(W,H)*0.33;
 
-    cards.forEach((item, i) => {
-      const angle = (Math.PI*2*i/cards.length) - Math.PI/2;
-      const x = cx + Math.cos(angle)*R - 70;
-      const y = cy + Math.sin(angle)*R - 100;
-      const rc = RARITY_COLOR[item.rarity] || '#9da7b3';
-      const imgSrc = url(`/assets/cards/${item.id}.jpg`);
-      const backSrc = url('/assets/card_back.png');
+    const grid = stage.querySelector('#cards-grid');
+    const backSrc = url('/assets/card_back.png');
+
+    grouped.forEach(({ card, count }) => {
+      const rc = RARITY_COLOR[card.rarity] || '#9da7b3';
+      const imgSrc = url(`/assets/cards/${card.id}.jpg`);
+
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:6px;';
+
       const fc = document.createElement('div');
-      fc.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:140px;height:200px;perspective:900px;cursor:pointer;`;
+      fc.style.cssText = 'width:130px;height:185px;perspective:900px;cursor:pointer;flex-shrink:0;';
       fc.innerHTML = `
         <div class="flip-inner" style="position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s ease">
           <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:11px;overflow:hidden;border:1px solid #173628">
             <img src="${backSrc}" style="width:100%;height:100%;object-fit:contain;background:#060c10" alt="dos">
           </div>
           <div style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);border-radius:11px;overflow:hidden;border:1px solid ${rc};box-shadow:0 0 18px ${rc}55">
-            <img src="${imgSrc}" style="width:100%;height:100%;object-fit:contain;background:#060c10" alt="${item.name}"
+            <img src="${imgSrc}" style="width:100%;height:100%;object-fit:contain;background:#060c10" alt="${card.name}"
               onerror="this.src='${backSrc}'">
             <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.75);padding:5px 7px;border-bottom-left-radius:11px;border-bottom-right-radius:11px">
-              <div style="font-size:.68em;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
-              <div style="font-size:.62em;color:${rc}">${item.rarity}</div>
+              <div style="font-size:.62em;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${card.name}</div>
+              <div style="font-size:.58em;color:${rc}">${card.rarity}</div>
             </div>
           </div>
         </div>
       `;
-      fc.addEventListener('click', () => fc.querySelector('.flip-inner').style.transform = 'rotateY(180deg)');
-      circle.appendChild(fc);
+
+      let revealed = false;
+      fc.addEventListener('click', () => {
+        if (revealed) return;
+        revealed = true;
+        fc.querySelector('.flip-inner').style.transform = 'rotateY(180deg)';
+        playRaritySound(card.rarity);
+      });
+
+      wrapper.appendChild(fc);
+
+      if (count > 1) {
+        const badge = document.createElement('div');
+        badge.style.cssText = `background:${rc};color:#000;font-weight:700;font-size:.72em;padding:2px 8px;border-radius:10px;`;
+        badge.textContent = `x${count}`;
+        wrapper.appendChild(badge);
+      }
+
+      grid.appendChild(wrapper);
     });
 
     stage.querySelector('#reveal-all').addEventListener('click', () => {
-      circle.querySelectorAll('.flip-inner').forEach(el => el.style.transform = 'rotateY(180deg)');
+      grid.querySelectorAll('.flip-inner').forEach(el => el.style.transform = 'rotateY(180deg)');
+      // Jouer le son de la rareté la plus haute du pack
+      const rarityOrder = ['Mythical','Legendary','Epic','Rare','Common'];
+      const best = rarityOrder.find(r => grouped.some(g => g.card.rarity === r));
+      if (best) playRaritySound(best);
     });
+
     stage.querySelector('#save-cards').addEventListener('click', async () => {
       try {
         await saveOpenedCards(cards);

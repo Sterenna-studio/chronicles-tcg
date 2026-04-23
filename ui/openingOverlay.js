@@ -22,13 +22,17 @@ async function loadCards(setId) {
 async function saveOpenedCards(cards) {
   const sb = await getClient();
   const user = await getUser();
-  // Détecte la bonne colonne (player_id ou user_id)
-  const testQ = await sb.from('player_cards').select('quantity').eq('player_id', user.id).limit(1);
-  const col = testQ.error ? 'user_id' : 'player_id';
   for (const card of cards) {
-    const { data: row } = await sb.from('player_cards').select('quantity').eq(col, user.id).eq('card_id', card.id).maybeSingle();
-    const quantity = (row?.quantity || 0) + 1;
-    await sb.from('player_cards').upsert({ [col]: user.id, card_id: card.id, quantity }, { onConflict: `${col},card_id` });
+    const { data: row } = await sb.from('player_cards')
+      .select('qty')
+      .eq('player_id', user.id)
+      .eq('card_id', card.id)
+      .maybeSingle();
+    const newQty = (row?.qty || 0) + 1;
+    await sb.from('player_cards').upsert(
+      { player_id: user.id, card_id: card.id, qty: newQty },
+      { onConflict: 'player_id,card_id' }
+    );
   }
 }
 
@@ -60,7 +64,6 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
     return;
   }
 
-  // --- PHASE 1 : booster à cliquer ---
   let clicks = 0;
   const MAX_CLICKS = 4;
   const boosterImg = packImage || url('/assets/packs/set01.jpg');
@@ -105,10 +108,8 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
     statusEl.textContent = `${clicks} / ${MAX_CLICKS} impacts`;
     if (clicks < MAX_CLICKS) return;
 
-    // Décrémenter le pack
     try { await decrementPlayerPack(packTypeId, 1); } catch(e) { console.warn('decrement pack', e); }
 
-    // --- PHASE 2 : cartes en cercle ---
     stage.innerHTML = `
       <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:20px">
         <div style="font-weight:700;color:#42b0ff">✦ Le booster révèle ses cartes !</div>

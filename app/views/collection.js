@@ -11,11 +11,10 @@ async function fetchOwned() {
   try {
     const sb = await getClient();
     const user = await getUser();
-    // Fallback player_id -> user_id
-    let q = await sb.from('player_cards').select('card_id, quantity').eq('player_id', user.id);
-    if (q.error) q = await sb.from('player_cards').select('card_id, quantity').eq('user_id', user.id);
+    const { data, error } = await sb.from('player_cards').select('card_id, qty').eq('player_id', user.id);
+    if (error) { console.warn('[collection] player_cards error', error); return {}; }
     const map = {};
-    (q.data || []).forEach(r => { map[r.card_id] = r.quantity || 0; });
+    (data || []).forEach(r => { map[r.card_id] = r.qty || 0; });
     return map;
   } catch { return {}; }
 }
@@ -84,7 +83,6 @@ export async function renderCollection(root) {
     cards.forEach(card => {
       const qty = owned[card.id] || 0;
       const hasCard = qty > 0;
-      // Extension .jpg
       const imgSrc = url(`/assets/cards/${card.id}.jpg`);
       const rarityColors = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
       const rc = rarityColors[card.rarity] || '#9da7b3';

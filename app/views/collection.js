@@ -1,4 +1,4 @@
-// app/views/collection.js — rework complet
+// app/views/collection.js
 import { getClient, getUser } from '../../logic/supaRaw.js';
 import { url } from '../../logic/paths.js';
 
@@ -7,122 +7,132 @@ const SETS = [
   { id: 'BZH02', label: 'Set 2 — BZH Chronicles', file: '/data/BZH02.json' },
 ];
 
+async function fetchOwned() {
+  try {
+    const sb = await getClient();
+    const user = await getUser();
+    // Fallback player_id -> user_id
+    let q = await sb.from('player_cards').select('card_id, quantity').eq('player_id', user.id);
+    if (q.error) q = await sb.from('player_cards').select('card_id, quantity').eq('user_id', user.id);
+    const map = {};
+    (q.data || []).forEach(r => { map[r.card_id] = r.quantity || 0; });
+    return map;
+  } catch { return {}; }
+}
+
+async function loadSetCards(setId) {
+  const setInfo = SETS.find(s => s.id === setId);
+  const res = await fetch(url(setInfo.file));
+  const json = await res.json();
+  return Array.isArray(json) ? json : (json.cards || []);
+}
+
 export async function renderCollection(root) {
   const el = document.createElement('div');
   el.className = 'panel';
   el.innerHTML = `
-    <div class="h-section">📘 Collection</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)">
+      <div style="font-weight:700;letter-spacing:.08em">📘 COLLECTION</div>
+      <button id="coll-back" class="btn-nav">← Retour</button>
+    </div>
     <div style="padding:8px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       ${SETS.map(s => `<button class="btn-nav btn-set" data-set="${s.id}">${s.label}</button>`).join('')}
       <span id="coll-stats" style="margin-left:auto;color:var(--muted);font-size:.9em"></span>
     </div>
-    <div id="coll-grid" class="grid" style="min-height:200px">Chargement...</div>
+    <div id="coll-grid" style="
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+      gap:10px;
+      padding:16px;
+      overflow-y:auto;
+      max-height:calc(100vh - 120px);
+    ">Chargement...</div>
   `;
   root.appendChild(el);
+
+  el.querySelector('#coll-back').addEventListener('click', () => {
+    root.innerHTML = '';
+    document.getElementById('app-root').style.display = 'none';
+    document.querySelector('.shell').style.display = 'grid';
+  });
 
   const gridEl = el.querySelector('#coll-grid');
   const statsEl = el.querySelector('#coll-stats');
   let activeSet = SETS[0].id;
 
-  // Highlight bouton actif
   function updateBtns() {
     el.querySelectorAll('.btn-set').forEach(b => {
-      b.style.borderColor = b.dataset.set === activeSet ? 'var(--accent)' : '';
-      b.style.color = b.dataset.set === activeSet ? 'var(--accent)' : '';
+      b.style.borderColor = b.dataset.set === activeSet ? 'var(--cyan)' : '';
+      b.style.color = b.dataset.set === activeSet ? 'var(--cyan)' : '';
     });
-  }
-
-  // Charger la collection du joueur (cartes possédées)
-  async function loadOwned() {
-    try {
-      const sb = await getClient();
-      const user = await getUser();
-      const { data } = await sb.from('player_cards')
-        .select('card_id, quantity')
-        .eq('player_id', user.id);
-      const map = {};
-      (data || []).forEach(r => { map[r.card_id] = r.quantity || 0; });
-      return map;
-    } catch {
-      return {};
-    }
-  }
-
-  // Charger le JSON du set
-  async function loadSetCards(setId) {
-    const setInfo = SETS.find(s => s.id === setId);
-    const res = await fetch(url(setInfo.file));
-    const json = await res.json();
-    // Support tableau direct ou { cards: [...] }
-    return Array.isArray(json) ? json : (json.cards || []);
   }
 
   async function renderSet(setId) {
     gridEl.innerHTML = '<div style="padding:16px;opacity:.7">Chargement...</div>';
     statsEl.textContent = '';
-
     let cards, owned;
     try {
-      [cards, owned] = await Promise.all([loadSetCards(setId), loadOwned()]);
+      [cards, owned] = await Promise.all([loadSetCards(setId), fetchOwned()]);
     } catch (e) {
       gridEl.innerHTML = `<div style="color:#ff8a8a;padding:16px">Erreur de chargement.</div>`;
       return;
     }
-
     const ownedCount = cards.filter(c => (owned[c.id] || 0) > 0).length;
     statsEl.textContent = `${ownedCount} / ${cards.length} cartes`;
-
     gridEl.innerHTML = '';
     const frag = document.createDocumentFragment();
-
     cards.forEach(card => {
       const qty = owned[card.id] || 0;
       const hasCard = qty > 0;
-      const rarityClass = `rarity-${(card.rarity || 'common').toLowerCase()}`;
-      const imgSrc = url(`/assets/cards/${card.image || card.id + '.webp'}?v=cyber`);
-
+      // Extension .jpg
+      const imgSrc = url(`/assets/cards/${card.id}.jpg`);
+      const rarityColors = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
+      const rc = rarityColors[card.rarity] || '#9da7b3';
       const div = document.createElement('div');
-      div.className = `sleeve card ${rarityClass} ${hasCard ? 'owned' : ''}`;
-      div.style.position = 'relative';
-      div.style.cursor = 'pointer';
       div.title = `${card.name} — ${card.rarity}`;
-
+      div.style.cssText = `
+        border-radius:10px;
+        border:1px solid ${hasCard ? rc : '#0e2a1f'};
+        background:#04060a;
+        overflow:hidden;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        cursor:pointer;
+        transition:transform .18s,box-shadow .18s;
+        position:relative;
+        ${hasCard ? `box-shadow:0 0 12px ${rc}44;` : 'opacity:.45;filter:grayscale(1);'}
+      `;
+      div.addEventListener('mouseenter', () => { div.style.transform='translateY(-3px)'; div.style.boxShadow=hasCard?`0 6px 20px ${rc}66`:''; });
+      div.addEventListener('mouseleave', () => { div.style.transform=''; div.style.boxShadow=hasCard?`0 0 12px ${rc}44`:''; });
       if (hasCard) {
         div.innerHTML = `
           <img src="${imgSrc}" alt="${card.name}"
-            style="width:100%;height:100%;object-fit:cover;border-radius:10px"
+            style="width:100%;aspect-ratio:2/3;object-fit:contain;background:#060c10;"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:4px">
-            <span style="font-size:.75em;font-weight:700;text-align:center;padding:4px">${card.name}</span>
-            <span style="font-size:.7em;color:var(--muted)">${card.rarity}</span>
+          <div style="display:none;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:2/3;width:100%;gap:4px;padding:8px;text-align:center">
+            <span style="font-size:.75em;font-weight:700">${card.name}</span>
+            <span style="font-size:.68em;color:${rc}">${card.rarity}</span>
           </div>
-          ${qty > 1 ? `<span class="badge-new" style="background:#42b0ff;color:#000">x${qty}</span>` : ''}
+          <div style="padding:4px 6px;width:100%;font-size:.62em;text-align:center;color:${rc};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${card.name}</div>
+          ${qty > 1 ? `<span style="position:absolute;top:4px;right:4px;background:#42b0ff;color:#000;font-size:.6em;font-weight:700;padding:1px 5px;border-radius:4px">x${qty}</span>` : ''}
         `;
       } else {
         div.innerHTML = `
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:4px;opacity:.45">
-            <span style="font-size:1.6em">?</span>
-            <span style="font-size:.7em;color:var(--muted);text-align:center;padding:4px">${card.name}</span>
-            <span style="font-size:.65em;color:var(--muted)">${card.rarity}</span>
+          <div style="width:100%;aspect-ratio:2/3;background:#060c10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <span style="font-size:2em">?</span>
           </div>
+          <div style="padding:4px 6px;width:100%;font-size:.62em;text-align:center;color:#3a6655;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${card.name}</div>
         `;
       }
-
       frag.appendChild(div);
     });
-
     gridEl.appendChild(frag);
   }
 
-  // Clics sur les sets
   el.querySelectorAll('.btn-set').forEach(b => {
-    b.addEventListener('click', () => {
-      activeSet = b.dataset.set;
-      updateBtns();
-      renderSet(activeSet);
-    });
+    b.addEventListener('click', () => { activeSet = b.dataset.set; updateBtns(); renderSet(activeSet); });
   });
-
   updateBtns();
   await renderSet(activeSet);
 }

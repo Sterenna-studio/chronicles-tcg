@@ -29,11 +29,11 @@ export async function renderHome(root) {
       const user = await getUser();
       const [{ data: pl }, { data: cards }, { data: packs }] = await Promise.all([
         sb.from('players').select('gold').eq('id', user.id).single(),
-        sb.from('player_cards').select('quantity').eq('player_id', user.id),
+        sb.from('player_cards').select('qty').eq('player_id', user.id),
         sb.from('player_packs').select('quantity').eq('player_id', user.id),
       ]);
       const gold = pl?.gold ?? (state.gold || 0);
-      const totalCards = (cards || []).reduce((s, r) => s + (r.quantity || 0), 0);
+      const totalCards = (cards || []).reduce((s, r) => s + (r.qty || 0), 0);
       const totalPacks = (packs || []).reduce((s, r) => s + (r.quantity || 0), 0);
       statsEl.innerHTML = `
         <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px">
@@ -85,8 +85,6 @@ export async function renderHome(root) {
           </div>
         `;
         card.querySelector('.open-btn').addEventListener('click', () => {
-          // pack_type_id vient de packsRepo.loadPlayerPacks() qui retourne { ...pack_types, quantity }
-          // => p.id est bien l'id du pack_type
           document.dispatchEvent(new CustomEvent('tcg:open-pack', {
             detail: { pack_type_id: p.pack_type_id ?? p.id, set_id: p.set_id }
           }));

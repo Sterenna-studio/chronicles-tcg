@@ -1,1 +1,5 @@
-import { renderHome } from './views/home.js';import { renderShop } from './views/shop.js';import { renderCollection } from './views/collection.js';import { renderOpening } from './views/opening.js';const routes={'#/home':renderHome,'#/shop':renderShop,'#/collection':renderCollection,'#/opening':renderOpening};export function navigate(h){if(location.hash!==h)location.hash=h;else onRoute()}export function boot(){addEventListener('hashchange',onRoute);if(!location.hash)location.hash='#/home';onRoute()}async function onRoute(){const root=document.getElementById('app-root');root.innerHTML='';const fn=routes[location.hash]||renderHome;await fn(root);}
+import { renderCollection } from './views/collection.js';
+const routes={'#/collection':renderCollection};
+export function navigate(h){if(location.hash!==h)location.hash=h;else onRoute()}
+export function boot(){addEventListener('hashchange',onRoute);if(!location.hash)location.hash='#/collection';onRoute()}
+async function onRoute(){const root=document.getElementById('app-root');if(!root)return;root.innerHTML='';const fn=routes[location.hash]||renderCollection;await fn(root);}

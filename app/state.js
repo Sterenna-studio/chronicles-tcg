@@ -1,1 +1,4 @@
-const s={subs:[],data:{}};export const state=s.data;export function set(p){Object.assign(s.data,p);s.subs.forEach(f=>f(s.data))}export function subscribe(f){s.subs.push(f);return()=>s.subs=s.subs.filter(x=>x!==f)}
+const s = { subs: [], data: { chronicles: 0 } };
+export const state = s.data;
+export function set(p) { Object.assign(s.data, p); s.subs.forEach(f => f(s.data)); }
+export function subscribe(f) { s.subs.push(f); return () => s.subs = s.subs.filter(x => x !== f); }

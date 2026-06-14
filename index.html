@@ -66,7 +66,7 @@
     <div class="spacer"></div>
     <button class="btn-small" id="btn-collection">COLLECTION</button>
     <span class="agent">Agent <b id="tb-name">...</b></span>
-    <span id="ub-gold" style="color:#00f5c4;font-weight:700">0</span> <span style="color:var(--muted);font-size:.8em">🪙</span>
+    <span id="ub-chronicles" style="color:#00f5c4;font-weight:700">0</span> <span style="color:var(--muted);font-size:.8em">✦</span>
     <div class="clock" id="tb-clock">00:00:00</div>
     <button class="btn-eject" id="btn-logout">EJECT</button>
   </header>
@@ -74,7 +74,7 @@
   <aside class="left-panel">
     <div class="panel-section">
       <div class="panel-title">AGENT STATS</div>
-      <div class="stat-row"><span class="stat-label">GOLD</span><span class="stat-val" id="stat-gold">---</span></div>
+      <div class="stat-row"><span class="stat-label">CHRONICLES</span><span class="stat-val" id="stat-chronicles">---</span></div>
       <div class="stat-row"><span class="stat-label">CARDS</span><span class="stat-val" id="stat-cards">---</span></div>
       <div class="stat-row"><span class="stat-label">PACKS</span><span class="stat-val" id="stat-packs">---</span></div>
     </div>
@@ -142,16 +142,16 @@ async function renderShop(){
     if(!user){ shopList.innerHTML='<div style="padding:12px;font-size:.72em;opacity:.6">Non connecté</div>'; return; }
     const [packs, {data:pl}] = await Promise.all([
       loadPackTypes(),
-      sb.from('players').select('gold').eq('id',user.id).single()
+      sb.from('tcg_players').select('chronicles').eq('id',user.id).single()
     ]);
-    const gold = pl?.gold ?? 0;
-    const ubGold = document.getElementById('ub-gold');
-    if(ubGold) ubGold.textContent = gold;
+    const chronicles = pl?.chronicles ?? 0;
+    const ubChronicles = document.getElementById('ub-chronicles');
+    if(ubChronicles) ubChronicles.textContent = chronicles;
     if(!packs.length){ shopList.innerHTML='<div style="padding:12px;font-size:.72em;opacity:.6">Aucun article</div>'; return; }
     shopList.innerHTML='';
     packs.forEach(p=>{
       const price = p.price ?? 100;
-      const canBuy = gold >= price;
+      const canBuy = chronicles >= price;
       const imgSrc = `./assets/packs/${p.image_name||'set01.jpg'}`;
       const item = document.createElement('div');
       item.className='shop-item';
@@ -161,8 +161,8 @@ async function renderShop(){
           <div class="shop-item-name">${p.name}</div>
           <div class="shop-item-sub">${p.card_count||'?'} cartes · Set ${p.set_id||'?'}</div>
           <div class="shop-item-footer">
-            <span style="font-weight:700">🪙 ${price}</span>
-            <button class="buy-btn" data-id="${p.id}" data-price="${price}" ${canBuy?'':'disabled'}>${canBuy?'Acheter':'Insuffisant'}</button>
+            <span style="font-weight:700">✦ ${price}</span>
+            <button class="buy-btn" data-id="${p.id}" data-price="${price}" ${canBuy?'':'disabled'}>${canBuy?'Acheter':'Chronicles insuffisants'}</button>
           </div>
         </div>
       `;
@@ -176,14 +176,14 @@ async function renderShop(){
         try{
           const sb = await getClient();
           const user = await getUser();
-          const {data:pl} = await sb.from('players').select('gold').eq('id',user.id).single();
-          const cur = pl?.gold||0;
-          if(cur<price){showMsg('Or insuffisant !','#ff8a8a');btn.disabled=false;return;}
-          await sb.from('players').update({gold:cur-price}).eq('id',user.id);
-          const {data:row} = await sb.from('player_packs').select('quantity').eq('player_id',user.id).eq('pack_type_id',packId).maybeSingle();
+          const {data:pl} = await sb.from('tcg_players').select('chronicles').eq('id',user.id).single();
+          const cur = pl?.chronicles||0;
+          if(cur<price){showMsg('Chronicles insuffisants !','#ff8a8a');btn.disabled=false;return;}
+          await sb.from('tcg_players').update({chronicles:cur-price}).eq('id',user.id);
+          const {data:row} = await sb.from('tcg_player_packs').select('quantity').eq('player_id',user.id).eq('pack_type_id',packId).maybeSingle();
           const qty=(row?.quantity||0)+1;
-          await sb.from('player_packs').upsert({player_id:user.id,pack_type_id:packId,quantity:qty},{onConflict:'player_id,pack_type_id'});
-          showMsg(`✅ Pack acheté ! 🪙 ${cur-price} restants`,'#22c55e');
+          await sb.from('tcg_player_packs').upsert({player_id:user.id,pack_type_id:packId,quantity:qty},{onConflict:'player_id,pack_type_id'});
+          showMsg(`✅ Pack acheté ! ✦ ${cur-price} restants`,'#22c55e');
           await refreshHub();
           await renderShop();
         }catch(err){console.error(err);showMsg("Erreur achat",'#ff8a8a');btn.disabled=false;}
@@ -194,8 +194,8 @@ async function renderShop(){
 
 // ── HUB ──────────────────────────────────────────────────────
 async function fetchTotalCards(sb, user){
-  const {data, error} = await sb.from('player_cards').select('qty').eq('player_id', user.id);
-  if(error){ console.warn('[hub] player_cards',error); return 0; }
+  const {data, error} = await sb.from('tcg_player_cards').select('qty').eq('player_id', user.id);
+  if(error){ console.warn('[hub] tcg_player_cards',error); return 0; }
   return (data||[]).reduce((s,r)=>s+(r.qty||0),0);
 }
 
@@ -205,14 +205,14 @@ async function refreshHub(){
     const [totalCards, playerPacks, {data:pl}] = await Promise.all([
       fetchTotalCards(sb,user),
       loadPlayerPacks(),
-      sb.from('players').select('gold').eq('id',user.id).single()
+      sb.from('tcg_players').select('chronicles').eq('id',user.id).single()
     ]);
     const totalPacks = playerPacks.reduce((s,p)=>s+(p.quantity||0),0);
-    const gold = pl?.gold??0;
-    document.getElementById('stat-gold').textContent = gold;
+    const chronicles = pl?.chronicles??0;
+    document.getElementById('stat-chronicles').textContent = chronicles;
     document.getElementById('stat-cards').textContent = totalCards;
     document.getElementById('stat-packs').textContent = totalPacks;
-    const ubGold=document.getElementById('ub-gold'); if(ubGold) ubGold.textContent=gold;
+    const ubChronicles=document.getElementById('ub-chronicles'); if(ubChronicles) ubChronicles.textContent=chronicles;
     renderBoosters(playerPacks);
   }catch(e){console.warn('[hub] refresh',e);}
 }

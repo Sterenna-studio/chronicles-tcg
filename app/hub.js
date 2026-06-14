@@ -3,6 +3,7 @@ import { getClient, getUser } from '../logic/supaRaw.js';
 import { initPlayer, getDisplayName } from '../data/supabaseData.js';
 import { loadPlayerPacks, loadPackTypes } from '../data/packsRepo.js';
 import { openOpeningOverlay } from '../ui/openingOverlay.js';
+import { claimDailyReward } from '../logic/daily.js';
 import { boot, navigate } from './router.js';
 
 // ── CLOCK ─────────────────────────────────────────────────────
@@ -166,6 +167,10 @@ async function init() {
     if (!user) { document.getElementById('tb-name').textContent = '???'; return; }
     await initPlayer(sb, user);
     document.getElementById('tb-name').textContent = getDisplayName();
+    // Daily reward — fire & forget, ne bloque pas le rendu
+    claimDailyReward(sb, user.id)
+      .then(({ rewarded }) => { if (rewarded) refreshHub(); })
+      .catch(e => console.warn('[daily]', e));
     await refreshHub();
     await renderShop();
   } catch (e) {

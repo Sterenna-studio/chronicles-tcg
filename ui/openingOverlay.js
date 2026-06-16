@@ -199,11 +199,8 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
 
   function advancePhase() {
     if (phase === 'booster') {
-      // Simule le dernier click sur le booster
-      if (clicks < MAX_CLICKS) {
-        clicks = MAX_CLICKS;
-        wrap?.dispatchEvent(new MouseEvent('click'));
-      }
+      // Clic hors zone = déchire le booster d'un coup
+      if (tearOpen) tearOpen();
     } else if (phase === 'cards') {
       // Révèle tout + sauvegarde
       revealAll();
@@ -211,6 +208,7 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
   }
 
   function closeOverlay() {
+    if (boosterCleanup) boosterCleanup();
     overlay.style.transition = 'opacity .3s';
     overlay.style.opacity = '0';
     setTimeout(() => overlay.remove(), 320);
@@ -237,57 +235,97 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
   // Pixel build-in → révèle l'overlay
   pixelBuildIn(overlay, showBoosterPhase);
 
-  // ── Phase booster ──────────────────────────────────────────────────────────
-  let clicks = 0;
-  const MAX_CLICKS = 4;
-  let wrap, pixelsEl, statusEl;
+  // ── Phase booster (déchirure au drag) ───────────────────────────────────────
+  let tearOpen = null;       // assignée dans showBoosterPhase, appelable via advancePhase
+  let torn = false;
+  let boosterCleanup = null; // détache les écouteurs window de la phase booster
 
   function showBoosterPhase() {
     phase = 'booster';
     const boosterImg = packImage || url('/assets/packs/set01.jpg');
     zone.innerHTML = `
-      <div style="color:#6fa694;font-size:.82em;opacity:.8">Clique ${MAX_CLICKS}× sur le booster — ou clique n'importe où autour</div>
-      <div id="booster-wrap" style="position:relative;width:220px;height:310px;perspective:900px;cursor:pointer;">
-        <div id="booster-card" style="position:absolute;inset:0;border-radius:14px;overflow:hidden;border:1px solid #173628;box-shadow:0 0 30px rgba(0,245,196,.2);transition:transform .12s ease,filter .12s ease">
-          <img src="${boosterImg}" style="width:100%;height:100%;object-fit:contain;background:#060c10" alt="booster">
+      <div style="color:#6fa694;font-size:.82em;opacity:.8">Tire la languette ↗ pour déchirer le booster — ou clique autour</div>
+      <div id="booster-wrap" style="position:relative;width:240px;height:320px;perspective:900px;">
+        <div id="booster-card" style="position:absolute;inset:0;border-radius:14px;overflow:hidden;border:1px solid #173628;box-shadow:0 0 30px rgba(0,245,196,.2);transition:transform .26s ease,filter .12s ease,opacity .26s ease">
+          <img src="${boosterImg}" style="width:100%;height:100%;object-fit:contain;background:#060c10" alt="booster" draggable="false">
         </div>
+        <div id="rip-line" style="position:absolute;top:0;right:0;height:10px;width:0px;background:linear-gradient(90deg,rgba(0,245,196,0),rgba(0,245,196,.7));border-bottom-left-radius:6px;pointer-events:none;box-shadow:0 0 10px #00f5c4"></div>
+        <div id="tear-handle" style="position:absolute;top:-8px;right:-8px;width:44px;height:44px;border-radius:11px;background:radial-gradient(circle at 30% 30%,#c8ffe8,#00b594);border:1px solid #0e2a1f;box-shadow:0 6px 14px rgba(0,0,0,.5);cursor:grab;touch-action:none;user-select:none;display:flex;align-items:center;justify-content:center;font-size:.62em;color:#04130d;font-weight:700">PULL</div>
         <div id="booster-pixels" style="position:absolute;inset:0;pointer-events:none"></div>
       </div>
-      <div id="booster-status" style="font-weight:700;color:#42b0ff;font-size:.9em">0 / ${MAX_CLICKS} impacts</div>
+      <div id="booster-status" style="font-weight:700;color:#42b0ff;font-size:.9em">Déchirure : 0%</div>
     `;
-    wrap = zone.querySelector('#booster-wrap');
     const cardEl = zone.querySelector('#booster-card');
-    pixelsEl = zone.querySelector('#booster-pixels');
-    statusEl = zone.querySelector('#booster-status');
+    const ripEl = zone.querySelector('#rip-line');
+    const handle = zone.querySelector('#tear-handle');
+    const pixelsEl = zone.querySelector('#booster-pixels');
+    const statusEl = zone.querySelector('#booster-status');
+
+    const MAX = 200;        // distance de drag (px) pour déchirure complète
+    const THRESHOLD = 120;  // au lâcher, ouvre si dépassé
+    let dragging = false, startX = 0, progress = 0;
 
     function burst(intensity = 1) {
-      for (let i = 0; i < Math.round(18 * intensity); i++) {
+      for (let i = 0; i < Math.round(22 * intensity); i++) {
         const px = document.createElement('span');
         const size = 5 + Math.random() * 10;
-        const left = 90 + (Math.random() * 80 - 40);
-        const top = 140 + (Math.random() * 80 - 40);
-        const dx = (Math.random() * 260 - 130) * intensity;
-        const dy = (Math.random() * 260 - 130) * intensity;
+        const left = 120 + (Math.random() * 90 - 45);
+        const top = 20 + (Math.random() * 90);
+        const dx = (Math.random() * 280 - 140) * intensity;
+        const dy = (Math.random() * 280 - 140) * intensity;
         px.style.cssText = `position:absolute;left:${left}px;top:${top}px;width:${size}px;height:${size}px;background:${Math.random()>.5?'#00f5c4':'#42b0ff'};opacity:.9;border-radius:2px;pointer-events:none;transition:transform .5s ease-out,opacity .5s ease-out;`;
         pixelsEl.appendChild(px);
-        requestAnimationFrame(() => { px.style.transform=`translate(${dx}px,${dy}px)`; px.style.opacity='0'; });
+        requestAnimationFrame(() => { px.style.transform = `translate(${dx}px,${dy}px)`; px.style.opacity = '0'; });
         setTimeout(() => px.remove(), 520);
       }
     }
 
-    wrap.addEventListener('click', async () => {
-      if (clicks >= MAX_CLICKS) return;
-      clicks++;
-      const prog = clicks / MAX_CLICKS;
-      cardEl.style.transform = `rotateY(${clicks%2?14:-14}deg) scale(${1+prog*0.06})`;
-      cardEl.style.filter = `brightness(${1+prog*0.4})`;
-      burst(prog);
-      statusEl.textContent = `${clicks} / ${MAX_CLICKS} impacts`;
-      if (clicks >= MAX_CLICKS) {
-        try { await decrementPlayerPack(packTypeId, 1); } catch(e) { console.warn(e); }
-        setTimeout(showCardsPhase, 320);
-      }
-    });
+    function setProgress(p) {
+      progress = Math.max(0, Math.min(MAX, p));
+      ripEl.style.width = progress + 'px';
+      statusEl.textContent = `Déchirure : ${Math.round((progress / MAX) * 100)}%`;
+      const k = progress / MAX;
+      cardEl.style.transform = `rotate(${k * 3}deg)`;
+      cardEl.style.filter = `brightness(${1 + k * 0.3})`;
+    }
+
+    function detach() {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onUp);
+    }
+    boosterCleanup = detach;
+
+    tearOpen = async () => {
+      if (torn) return;
+      torn = true;
+      detach();
+      setProgress(MAX);
+      burst(1.4);
+      cardEl.style.transform = 'translateY(-14px) rotate(4deg)';
+      cardEl.style.opacity = '0';
+      statusEl.textContent = 'Ouvert !';
+      try { await decrementPlayerPack(packTypeId, 1); } catch (e) { console.warn(e); }
+      setTimeout(showCardsPhase, 320);
+    };
+
+    const getX = e => (e.touches ? e.touches[0].clientX : e.clientX);
+    const onDown = e => { if (torn) return; dragging = true; startX = getX(e); handle.style.cursor = 'grabbing'; e.preventDefault && e.preventDefault(); };
+    const onMove = e => { if (!dragging) return; setProgress(startX - getX(e)); };
+    const onUp = () => {
+      if (!dragging) return;
+      dragging = false; handle.style.cursor = 'grab';
+      if (progress >= THRESHOLD) tearOpen();
+      else { burst(progress / MAX); setProgress(0); }
+    };
+
+    handle.addEventListener('mousedown', onDown);
+    handle.addEventListener('touchstart', onDown, { passive: false });
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onUp);
   }
 
   // ── Phase cartes ───────────────────────────────────────────────────────────

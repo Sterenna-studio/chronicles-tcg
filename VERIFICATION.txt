@@ -1,0 +1,14 @@
+Vérification des extractions principales :
+const MISSIONS = [ -> ABSENT
+const HOURLY_QUEST_POOL = [ -> ABSENT
+const TRAINER_TYPES = { -> ABSENT
+const BALLS = { -> ABSENT
+const NATURES = { -> ABSENT
+const I18N = { -> ABSENT
+const SPECIAL_TRAINER_KEYS = new Set([ -> ABSENT
+const BOOST_DURATIONS = { -> ABSENT
+const BALL_SPRITES = { -> ABSENT
+const TRANSLATOR_PHRASES_FR = [ -> ABSENT
+const BOSS_SPRITES = [ -> ABSENT
+const ZONE_BGS = { -> ABSENT
+const POKEDEX_DESC = { -> ABSENT

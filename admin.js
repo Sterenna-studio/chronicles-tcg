@@ -23,12 +23,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       require_legendary: f.require_legendary.checked,
       require_mythical:  f.require_mythical.checked
     };
-    const { data, error } = await supabase.from('pack_types').insert(newPack);
+    const { data, error } = await supabase.from('pack_types').insert(newPack).select();
     if (error) {
       status.textContent = `❌ ${error.message}`;
       status.style.color = 'crimson';
     } else {
-      status.textContent = `✅ Pack "${data[0].name}" créé!`;
+      status.textContent = `✅ Pack "${data?.[0]?.name ?? newPack.name}" créé!`;
       status.style.color = '#0f0';
       form.reset();
     }

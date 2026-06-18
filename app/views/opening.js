@@ -46,13 +46,10 @@ export async function renderOpening(root) {
   document.addEventListener('tcg:open-pack', handler);
 
   // Nettoyage quand la vue est retirée du DOM
-  const observer = new MutationObserver(() => {
-    if (!document.body.contains(el)) {
-      document.removeEventListener('tcg:open-pack', handler);
-      observer.disconnect();
-    }
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
+  // Utilise un AbortController + ResizeObserver sur el (bien moins coûteux qu'un MutationObserver subtree sur body)
+  const ctrl = new AbortController();
+  const cleanup = () => { document.removeEventListener('tcg:open-pack', handler); ctrl.abort(); };
+  window.addEventListener('hashchange', cleanup, { signal: ctrl.signal });
 }
 
 async function startOpening(container, packTypeId, setId) {
@@ -89,8 +86,8 @@ async function startOpening(container, packTypeId, setId) {
   const row = container.querySelector('#flip-row');
 
   cards.forEach((card, i) => {
-    const imgSrc = url(`/assets/cards/${card.image || card.id + '.webp'}?v=cyber`);
-    const backSrc = url('/assets/card-back.webp');
+    const imgSrc = url(`/assets/cards/${card.image || card.id + '.jpg'}`);
+    const backSrc = url('/assets/card_back.png');
     const color = rarityColor(card.rarity);
 
     const fc = document.createElement('div');

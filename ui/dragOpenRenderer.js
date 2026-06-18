@@ -40,7 +40,7 @@ export function renderDragOpen(root, { packImage, picks, ownedSet, onFinish }){
       const back=document.createElement('div'); back.className='flip-face flip-back';
       const front=document.createElement('div'); front.className='flip-face flip-front';
       setBgWithFallback(back,url('/assets/card_back.png'),url('/assets/card_back.png'));
-      setBgWithFallback(front,url(`/artworks/${card.id}.jpg`),url('/assets/card_back.png'));
+      setBgWithFallback(front,url(`/assets/cards/${card.id}.jpg`),url('/assets/card_back.png'));
       if(!ownedSet?.has(card.id)){ const b=document.createElement('div'); b.className='badge-new'; b.textContent='NEW!'; front.appendChild(b); }
       inner.append(back,front); fc.appendChild(inner);
       fc.addEventListener('click',()=>{ if(fc.classList.contains('flipped')) return; fc.classList.add('flipped'); play(card.rarity); revealed++; if(revealed>=picks.length) btnStore.style.display=''; });

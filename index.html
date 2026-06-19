@@ -458,9 +458,7 @@ function renderDailyChallenges() {
 }
 renderDailyChallenges();
 
-// Rafraîchit les défis après un combat (même onglet)
 window.addEventListener('tcg:challenge-completed', () => renderDailyChallenges());
-// Rafraîchit aussi au retour d'un autre onglet
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) renderDailyChallenges();
 });

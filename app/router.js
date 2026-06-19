@@ -14,4 +14,15 @@ export function navigate(h) {
 }
 
 export function boot() {
-  addEventListener('hashchange', onRou
+  addEventListener('hashchange', onRoute);
+  if (!location.hash) location.hash = '#/collection';
+  onRoute();
+}
+
+async function onRoute() {
+  const root = document.getElementById('app-root');
+  if (!root) return;
+  root.innerHTML = '';
+  const fn = routes[location.hash] || renderCollection;
+  await fn(root);
+}

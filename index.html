@@ -246,4 +246,70 @@ function renderBoosters(packs){
     const imgFile=b.image_name||'set01.jpg';
     const img='./assets/packs/'+imgFile;
     const el=document.createElement('div');
-    el.className='booster-thumb';
+    el.className='booster-thumb';
+    el.title=(b.name||b.id)+' x'+b.quantity;
+    el.innerHTML=`<div class="booster-img"><img src="${img}" alt="${b.name||b.id}"></div><span class="booster-badge">x${b.quantity}</span><div class="booster-name">${b.name||b.id}</div>`;
+    el.addEventListener('click',()=>openOpeningOverlay({packTypeId:b.pack_type_id??b.id,setId:b.set_id||b.id,packImage:img,onDone:async()=>{await refreshHub();await renderShop();}}));
+    grid.appendChild(el);
+  });
+}
+
+async function init(){
+  try{
+    const sb=await getClient(); const user=await getUser();
+    if(!user){document.getElementById('tb-name').textContent='???';return;}
+    const player=await initPlayer(sb,user);
+    document.getElementById('tb-name').textContent=getDisplayName();
+    await refreshHub();
+    await renderShop();
+  }catch(e){console.warn('[hub] init',e);renderBoosters([]);}
+}
+init();
+
+// ── DÉFIS QUOTIDIENS ─────────────────────────────────────────
+function renderDailyChallenges() {
+  const el = document.getElementById('daily-challenges-list');
+  if (!el) return;
+  const challenges = getDailyChallenges();
+  const progress   = getChallengeProgress();
+  el.innerHTML = '';
+  challenges.forEach(ch => {
+    const done = !!progress[ch.id]?.completed;
+    const item = document.createElement('div');
+    item.className = 'challenge-item' + (done ? ' done' : '');
+    if (!done) item.style.borderColor = 'rgba(0,245,196,.2)';
+    item.innerHTML = `
+      <span class="challenge-icon">${ch.icon}</span>
+      <div class="challenge-info">
+        <div class="challenge-label">${ch.label}</div>
+        <div class="challenge-desc">${ch.desc}</div>
+      </div>
+      <span class="challenge-gold">${done ? '<span style="color:#3a6655">✓</span>' : '+'+ch.gold+'🪙'}</span>
+    `;
+    el.appendChild(item);
+  });
+}
+renderDailyChallenges();
+
+// Rafraîchit les défis après un combat (même onglet)
+window.addEventListener('tcg:challenge-completed', () => renderDailyChallenges());
+// Rafraîchit aussi au retour d'un autre onglet
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) renderDailyChallenges();
+});
+
+function goToView(hash) {
+  document.querySelector('.shell').style.display = 'none';
+  document.getElementById('app-root').style.display = 'block';
+  navigate(hash);
+}
+document.getElementById('btn-collection').addEventListener('click', () => goToView('#/collection'));
+document.getElementById('card-collection').addEventListener('click', () => goToView('#/collection'));
+document.getElementById('btn-arena').addEventListener('click', () => goToView('#/deck-builder'));
+document.getElementById('tb-nav-cig').addEventListener('click',()=>window.location.href='./pages/cig/index.html');
+document.getElementById('card-arena').addEventListener('click', () => goToView('#/deck-builder'));
+document.getElementById('btn-logout').addEventListener('click',async()=>{try{const sb=await getClient();await sb.auth.signOut();}catch(e){}location.reload();});
+boot();
+</script>
+</body>
+</html>

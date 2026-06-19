@@ -1,0 +1,21 @@
+name: Sync chronicles-tcg → gwen-ha-star-static
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: sync-chronicles-tcg
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send repository_dispatch to gwen-ha-star-static
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.SYNC_TOKEN }}
+          repository: Sterenna-studio/gwen-ha-star-static
+          event-type: chronicles-tcg-updated

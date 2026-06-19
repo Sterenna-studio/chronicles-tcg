@@ -32,15 +32,23 @@ async function loadCards(setId) {
 async function saveOpenedCards(cards) {
   const sb = await getClient();
   const user = await getUser();
-  for (const card of cards) {
-    const { data: row } = await sb.from('player_cards')
-      .select('qty').eq('player_id', user.id).eq('card_id', card.id).maybeSingle();
-    const newQty = (row?.qty || 0) + 1;
-    await sb.from('player_cards').upsert(
-      { player_id: user.id, card_id: card.id, qty: newQty },
-      { onConflict: 'player_id,card_id' }
-    );
-  }
+  // Récupère toutes les quantités en une seule requête
+  const cardIds = cards.map(c => c.id);
+  const { data: rows } = await sb.from('player_cards')
+    .select('card_id, qty').eq('player_id', user.id).in('card_id', cardIds);
+  const qtyMap = Object.fromEntries((rows || []).map(r => [r.card_id, r.qty || 0]));
+  // Compte les doublons dans le pack lui-même
+  const newQtys = {};
+  for (const card of cards) newQtys[card.id] = (newQtys[card.id] || 0) + 1;
+  // Upsert en parallèle
+  await Promise.all(
+    Object.entries(newQtys).map(([card_id, gained]) =>
+      sb.from('player_cards').upsert(
+        { player_id: user.id, card_id, qty: (qtyMap[card_id] || 0) + gained },
+        { onConflict: 'player_id,card_id' }
+      )
+    )
+  );
 }
 
 // ─── Pixel build-in : construit l'overlay tuile par tuile ────────────────────
@@ -92,10 +100,12 @@ function pixelBuildIn(overlay, onDone) {
 // ─── Désintégration pixels vers le bouton Collection ─────────────────────────
 function disintegrateToCollection(sourceEl, onDone) {
   // Cherche le bouton de nav Collection dans le hub
+  // Cherche le bouton collection — en priorité les IDs du hub, puis fallbacks legacy
   const collectionBtn =
+    document.querySelector('#btn-collection') ||
+    document.querySelector('#card-collection') ||
     document.querySelector('[data-nav="collection"]') ||
     document.querySelector('a[href="#/collection"]') ||
-    document.querySelector('.nav-item[data-route="collection"]') ||
     [...document.querySelectorAll('button,a')].find(el =>
       el.textContent.trim().toLowerCase().includes('collection')
     );

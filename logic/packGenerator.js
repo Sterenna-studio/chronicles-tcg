@@ -16,7 +16,14 @@ export function generatePack({cards,cardCount,flags,seedHex}){
   while(chosen.size<cardCount){ const p=pickFrom(pool); if(!p) break; }
   if(![...chosen.values()].some(c=>['Rare','Epic','Legendary','Mythical'].includes(c.rarity))){
     const rarePool=pool.filter(c=>['Rare','Epic','Legendary','Mythical'].includes(c.rarity)&&!chosen.has(c.id));
-    if(rarePool.length){ const repl=rarePool[Math.floor(rng()*rarePool.length)]; const fk=chosen.keys().next().value; chosen.delete(fk); chosen.set(repl.id,repl); }
+    if(rarePool.length){
+      const repl=rarePool[Math.floor(rng()*rarePool.length)];
+      // Supprime une Common au hasard (pas la première carte qui pourrait être un Champion requis)
+      const commons=[...chosen.values()].filter(c=>c.rarity==='Common');
+      const toRemove=commons.length ? commons[Math.floor(rng()*commons.length)] : [...chosen.values()][0];
+      chosen.delete(toRemove.id);
+      chosen.set(repl.id,repl);
+    }
   }
   return [...chosen.values()];
 }

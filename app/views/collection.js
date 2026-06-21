@@ -16,10 +16,10 @@ async function fetchOwned() {
   try {
     const sb = await getClient();
     const user = await getUser();
-    const { data, error } = await sb.from('player_cards').select('card_id, qty').eq('player_id', user.id);
-    if (error) { console.warn('[collection] player_cards error', error); return {}; }
+    const { data, error } = await sb.from('tcg_player_cards').select('card_id, quantity').eq('user_id', user.id);
+    if (error) { console.warn('[collection] tcg_player_cards error', error); return {}; }
     const map = {};
-    (data || []).forEach(r => { map[r.card_id] = r.qty || 0; });
+    (data || []).forEach(r => { map[r.card_id] = r.quantity || 0; });
     return map;
   } catch { return {}; }
 }

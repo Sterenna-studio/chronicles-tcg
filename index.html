@@ -216,7 +216,7 @@ async function renderShop(){
     if(!user){ shopList.innerHTML='<div style="padding:12px;font-size:.72em;opacity:.6">Non connecté</div>'; return; }
     const [packs, {data:pl}] = await Promise.all([
       loadPackTypes(),
-      sb.from('tcg_players').select('chronicles').eq('id',user.id).single()
+      sb.from('profiles').select('chronicles').eq('id',user.id).single()
     ]);
     const chronicles = pl?.chronicles ?? 0;
     const ubGold = document.getElementById('ub-gold');
@@ -251,15 +251,9 @@ async function renderShop(){
         btn.disabled=true;
         try{
           const sb = await getClient();
-          const user = await getUser();
-          const {data:pl} = await sb.from('tcg_players').select('chronicles').eq('id',user.id).single();
-          const cur = pl?.chronicles||0;
-          if(cur<price){showMsg('Chronicles insuffisantes !','#ff8a8a');btn.disabled=false;return;}
-          await sb.from('tcg_players').update({chronicles:cur-price}).eq('id',user.id);
-          const {data:row} = await sb.from('tcg_player_packs').select('quantity').eq('player_id',user.id).eq('pack_type_id',packId).maybeSingle();
-          const qty=(row?.quantity||0)+1;
-          await sb.from('tcg_player_packs').upsert({player_id:user.id,pack_type_id:packId,quantity:qty},{onConflict:'player_id,pack_type_id'});
-          showMsg(`✅ Pack acheté ! ✦ ${cur-price} restants`,'#22c55e');
+          const {data, error} = await sb.rpc('buy_pack_with_chronicles', {p_pack_type_id: packId});
+          if(error || !data?.ok){showMsg(data?.error||'Erreur achat','#ff8a8a');btn.disabled=false;return;}
+          showMsg(`✅ Pack acheté ! ✦ ${data.chronicles_remaining} restants`,'#22c55e');
           await refreshHub();
           await renderShop();
         }catch(err){console.error(err);showMsg("Erreur achat",'#ff8a8a');btn.disabled=false;}
@@ -281,7 +275,7 @@ async function refreshHub(){
     const [totalCards, playerPacks, {data:pl}] = await Promise.all([
       fetchTotalCards(sb,user),
       loadPlayerPacks(),
-      sb.from('tcg_players').select('chronicles').eq('id',user.id).single()
+      sb.from('profiles').select('chronicles').eq('id',user.id).single()
     ]);
     const totalPacks = playerPacks.reduce((s,p)=>s+(p.quantity||0),0);
     const chronicles = pl?.chronicles??0;

@@ -71,12 +71,17 @@ async function awardGold(amount) {
     const sb   = await getClient();
     const user = await getUser();
     if (!user) return;
-    const { data: pl } = await sb.from('players').select('gold').eq('id', user.id).single();
-    const newGold = (pl?.gold || 0) + amount;
-    await sb.from('players').update({ gold: newGold }).eq('id', user.id);
+    // Source de vérité : profiles.chronicles
+    const { data: prof } = await sb.from('profiles').select('chronicles').eq('id', user.id).single();
+    const newVal = (prof?.chronicles || 0) + amount;
+    await sb.from('profiles').update({ chronicles: newVal }).eq('id', user.id);
     // Met à jour l'affichage hub si visible
-    const el = document.getElementById('ub-gold') || document.getElementById('stat-gold');
-    if (el) el.textContent = newGold;
+    const elGold = document.getElementById('ub-gold');
+    const elStat = document.getElementById('stat-gold');
+    const elChr  = document.getElementById('ub-chronicles');
+    if (elGold) elGold.textContent = newVal;
+    if (elStat) elStat.textContent = newVal;
+    if (elChr)  elChr.textContent  = newVal;
   } catch(e) { console.warn('[battle] awardGold', e); }
 }
 

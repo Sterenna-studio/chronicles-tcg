@@ -1,4 +1,4 @@
-// data/packsRepo.js — v6
+// data/packsRepo.js — v7
 import { getClient, getUser } from '../logic/supaRaw.js';
 
 const PACK_IMAGE_MAP = {
@@ -27,7 +27,7 @@ function normalizePack(pack) {
 export async function loadPackTypes() {
   const sb = await getClient();
   const { data, error } = await sb
-    .from('tcg_pack_types')
+    .from('pack_types')
     .select('*')
     .order('created_at', { ascending: true });
   if (error) throw error;
@@ -41,7 +41,7 @@ export async function loadPlayerPacks() {
     { data: types, error: typesErr },
     { data: inv,   error: invErr   }
   ] = await Promise.all([
-    sb.from('tcg_pack_types').select('*'),
+    sb.from('pack_types').select('*'),
     sb.from('tcg_player_packs').select('pack_type_id, quantity').eq('player_id', user.id)
   ]);
   if (typesErr) throw typesErr;
@@ -69,4 +69,20 @@ export async function decrementPlayerPack(pack_type_id, count = 1) {
     );
   if (upsertErr) throw upsertErr;
   return next;
+}
+
+export async function buyPack(pack_type_id) {
+  const sb   = await getClient();
+  const user = await getUser();
+  const { data: pt } = await sb.from('pack_types').select('price').eq('id', pack_type_id).single();
+  if (!pt) return false;
+  const { data: player } = await sb.from('tcg_players').select('chronicles').eq('id', user.id).single();
+  if (!player || player.chronicles < pt.price) return false;
+  await sb.from('tcg_players').update({ chronicles: player.chronicles - pt.price }).eq('id', user.id);
+  const { data: existing } = await sb.from('tcg_player_packs').select('quantity').eq('player_id', user.id).eq('pack_type_id', pack_type_id).maybeSingle();
+  await sb.from('tcg_player_packs').upsert(
+    { player_id: user.id, pack_type_id, quantity: (existing?.quantity || 0) + 1 },
+    { onConflict: 'player_id,pack_type_id' }
+  );
+  return true;
 }

@@ -23,9 +23,14 @@ export function getDisplayName() {
     || 'Joueur';
 }
 
+export function getCachedPlayer() { return null; }
+export const ASSET_VERSION = '1';
+export function formatUserTag(user) {
+  return user?.user_metadata?.username || user?.email?.split('@')[0] || 'Joueur';
+}
+
 /**
- * Assure que le joueur existe dans la table `players` et retourne sa ligne.
- * Appelé comme : await initPlayer(sb, user)
+ * Assure que le joueur existe dans la table `tcg_players` et retourne sa ligne.
  */
 export async function initPlayer(sb, user) {
   if (!sb || !user) return null;
@@ -41,12 +46,12 @@ export async function initPlayer(sb, user) {
       || 'Joueur';
   }
 
-  const { data: existing } = await sb.from('players').select('*').eq('id', user.id).maybeSingle();
+  const { data: existing } = await sb.from('tcg_players').select('*').eq('id', user.id).maybeSingle();
   if (!existing) {
     const username = await resolveUsername();
     _displayName = username;
-    await sb.from('players').insert({ id: user.id, gold: 0, username });
-    const { data } = await sb.from('players').select('*').eq('id', user.id).single();
+    await sb.from('tcg_players').insert({ id: user.id, chronicles: 0, username });
+    const { data } = await sb.from('tcg_players').select('*').eq('id', user.id).single();
     return data;
   }
 
@@ -54,5 +59,6 @@ export async function initPlayer(sb, user) {
   return existing;
 }
 
-// Re-exports localData pour les ops pack/collection (toujours en local pour l'instant)
-export { loadPackTypes, loadPlayerPacks, decrementPlayerPack, buyPack, loadPlayerCollection, addCardsBatch } from './localData.js';
+// Re-exports depuis les repos Supabase
+export { loadPackTypes, loadPlayerPacks, decrementPlayerPack, buyPack } from './packsRepo.js';
+export { loadPlayerCollection, addCardsBatch } from './cardsRepo.js';

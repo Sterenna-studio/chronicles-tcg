@@ -27,8 +27,8 @@ async function fetchOwned() {
     const sb   = await getClient();
     const user = await getUser();
     if (!user) return {};
-    const { data } = await sb.from('player_cards').select('card_id, qty').eq('player_id', user.id);
-    return Object.fromEntries((data || []).map(r => [r.card_id, r.qty]));
+    const { data } = await sb.from('tcg_player_cards').select('card_id, quantity').eq('user_id', user.id);
+    return Object.fromEntries((data || []).map(r => [r.card_id, r.quantity || 0]));
   } catch { return {}; }
 }
 
@@ -39,6 +39,22 @@ export async function renderDeckBuilder(root) {
 
   const [allCards, owned] = await Promise.all([loadAllCards(), fetchOwned()]);
   const ownedCards = allCards.filter(c => (owned[c.id] || 0) > 0);
+
+  // Collection vide → message d'aide
+  if (!ownedCards.length) {
+    root.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:80vh;gap:16px;font-family:'Share Tech Mono',monospace;color:#3a6655;text-align:center;padding:20px">
+        <div style="font-family:'VT323',monospace;font-size:2.4em;color:#00f5c4;letter-spacing:.2em">COLLECTION VIDE</div>
+        <div style="font-size:.82em;max-width:360px;line-height:1.6">Tu n'as pas encore de cartes.<br>Achète des boosters dans la boutique pour construire ton deck !</div>
+        <button id="db-back-empty" style="margin-top:12px;background:transparent;border:1px solid #00f5c4;color:#00f5c4;padding:8px 24px;cursor:pointer;font-family:inherit;font-size:.85em">← Retour au hub</button>
+      </div>`;
+    root.querySelector('#db-back-empty').addEventListener('click', () => {
+      root.innerHTML = '';
+      document.getElementById('app-root').style.display = 'none';
+      document.querySelector('.shell').style.display = 'grid';
+    });
+    return;
+  }
 
   // Deck courant (restauré depuis localStorage)
   const savedIds  = JSON.parse(localStorage.getItem(DECK_KEY) || '[]');
@@ -240,9 +256,9 @@ export async function renderDeckBuilder(root) {
     box.innerHTML = `
       <div style="font-family:'VT323',monospace;font-size:1.8em;color:#00f5c4;letter-spacing:.2em;margin-bottom:16px">CHOISIR DIFFICULTÉ</div>
       <div style="display:flex;flex-direction:column;gap:10px">
-        <button class="diff-btn" data-diff="easy"   style="background:#0a1a14;border:1px solid #22c55e;color:#22c55e;padding:12px;cursor:pointer;font-family:inherit;font-size:.88em;border-radius:8px">🟢 FACILE — Or: 20-40 🪙</button>
-        <button class="diff-btn" data-diff="normal" style="background:#0a1a14;border:1px solid #42b0ff;color:#42b0ff;padding:12px;cursor:pointer;font-family:inherit;font-size:.88em;border-radius:8px">🔵 NORMAL — Or: 30-55 🪙</button>
-        <button class="diff-btn" data-diff="hard"   style="background:#0a1a14;border:1px solid #ff2d4e;color:#ff2d4e;padding:12px;cursor:pointer;font-family:inherit;font-size:.88em;border-radius:8px">🔴 DIFFICILE — Or: 45-75 🪙</button>
+        <button class="diff-btn" data-diff="easy"   style="background:#0a1a14;border:1px solid #22c55e;color:#22c55e;padding:12px;cursor:pointer;font-family:inherit;font-size:.88em;border-radius:8px">🟢 FACILE — 20-40 ✦</button>
+        <button class="diff-btn" data-diff="normal" style="background:#0a1a14;border:1px solid #42b0ff;color:#42b0ff;padding:12px;cursor:pointer;font-family:inherit;font-size:.88em;border-radius:8px">🔵 NORMAL — 30-55 ✦</button>
+        <button class="diff-btn" data-diff="hard"   style="background:#0a1a14;border:1px solid #ff2d4e;color:#ff2d4e;padding:12px;cursor:pointer;font-family:inherit;font-size:.88em;border-radius:8px">🔴 DIFFICILE — 45-75 ✦</button>
       </div>
       <button id="diff-cancel" style="margin-top:14px;background:transparent;border:none;color:#3a6655;cursor:pointer;font-family:inherit;font-size:.75em">Annuler</button>
     `;

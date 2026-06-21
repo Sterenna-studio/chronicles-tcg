@@ -71,18 +71,10 @@ export async function decrementPlayerPack(pack_type_id, count = 1) {
   return next;
 }
 
+/** Achète un pack via le RPC sécurisé (source de vérité : profiles.chronicles) */
 export async function buyPack(pack_type_id) {
-  const sb   = await getClient();
-  const user = await getUser();
-  const { data: pt } = await sb.from('pack_types').select('price').eq('id', pack_type_id).single();
-  if (!pt) return false;
-  const { data: player } = await sb.from('tcg_players').select('chronicles').eq('id', user.id).single();
-  if (!player || player.chronicles < pt.price) return false;
-  await sb.from('tcg_players').update({ chronicles: player.chronicles - pt.price }).eq('id', user.id);
-  const { data: existing } = await sb.from('tcg_player_packs').select('quantity').eq('player_id', user.id).eq('pack_type_id', pack_type_id).maybeSingle();
-  await sb.from('tcg_player_packs').upsert(
-    { player_id: user.id, pack_type_id, quantity: (existing?.quantity || 0) + 1 },
-    { onConflict: 'player_id,pack_type_id' }
-  );
-  return true;
+  const sb = await getClient();
+  const { data, error } = await sb.rpc('buy_pack_with_chronicles', { p_pack_type_id: pack_type_id });
+  if (error || !data?.ok) return { ok: false, error: data?.error || error?.message };
+  return { ok: true, chronicles_remaining: data.chronicles_remaining, pack_qty: data.pack_qty };
 }

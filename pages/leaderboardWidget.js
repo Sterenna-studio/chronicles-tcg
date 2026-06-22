@@ -84,12 +84,9 @@ export async function mount(container, currentUserId = null) {
 
   try {
     const sb = await getClient();
-    const { data, error } = await sb
-      .from('tcg_leaderboard')
-      .select('id, username, cards_count, gold, duels_won, has_legendary')
-      .order('cards_count', { ascending: false })
-      .order('gold',        { ascending: false })
-      .limit(20);
+    // Lecture via fonction RPC SECURITY DEFINER (la vue security-definer a été
+    // remplacée pour satisfaire l'audit sécurité Supabase).
+    const { data, error } = await sb.rpc('get_tcg_leaderboard', { p_limit: 20 });
 
     if (error) throw error;
 

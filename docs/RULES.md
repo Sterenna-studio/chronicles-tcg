@@ -23,8 +23,12 @@
 | Taille du deck | **6 cartes** | oui |
 | Main de départ | **3 cartes** | oui |
 | Énergie de départ (tour 1) | **1** | oui |
+| Mulligan (re-pioche unique de la main de départ) | **autorisé** | — |
 
 Contraintes de deck (voir §8) vérifiées par le deck builder.
+
+**Mulligan** : avant le tour 1, chaque joueur peut, **une seule fois**, remettre sa
+main dans le deck, mélanger et re-piocher 3 cartes.
 
 ---
 
@@ -78,7 +82,8 @@ Ordre de résolution d'une attaque : calcul des dégâts bruts → soustraction 
 
 En modèle salve, la plupart des cartes se défaussent. **Exceptions** qui restent en jeu :
 
-- **Objects** : restent sur le champ, fournissent leur `shield` en bouclier permanent. **Max 5** 🎚️ Objects ; au-delà, la nouvelle carte est refusée (ou remplace le plus faible — *à trancher*).
+- **Objects** : restent sur le champ, fournissent leur `shield` en bouclier permanent.
+- **Champ plein** : le champ (Objects + Companions) contient **max 5** 🎚️ cartes. Si le champ est plein, jouer une nouvelle carte de champ te demande de **défausser une carte du champ de ton choix** pour faire de la place.
 - **Companions** : restent en soutien, fournissent leur `shield` en bouclier permanent **tant qu'ils sont en jeu**, en plus de leur buff au moment où ils sont joués (cf §7).
 - **Terrain** : **un seul actif à la fois** par joueur. Jouer un nouveau Terrain remplace l'ancien. Effet passif tant qu'il est en jeu (cf §7).
 
@@ -116,8 +121,7 @@ Tout le reste (Champion, Event, Special, Team) se résout puis se défausse.
 - À la pose : inflige `round(P/2)` dégâts (petit impact immédiat) 🎚️.
 
 ### ✨ Special — joker
-- Inflige `P` dégâts **+** confère `S` garde.
-- **Ignore le bonus de Terrain adverse** (les dégâts ne sont pas réduits par l'effet Terrain ennemi). *(simplifiable si trop complexe)*
+- Inflige `P` dégâts **+** confère `S` garde. Effet volontairement **simple** : un couteau-suisse offense/défense, sans clause spéciale.
 
 ### 👥 Team — frappe lourde
 - Inflige `P` dégâts, **non modifiables par les buffs Companion**.
@@ -131,9 +135,12 @@ Tout le reste (Champion, Event, Special, Team) se résout puis se défausse.
 | Règle | Valeur | 🎚️ |
 |---|---|---|
 | Taille | exactement 6 | oui |
-| Champions | 1 à 2 | oui |
-| Mythical | max 1 | oui |
-| Doublons | autorisés selon collection (quantité possédée) | à trancher |
+| Champions | 1 à 2, **1 exemplaire max par Champion** | oui |
+| Légendaires | **max 1** (rareté `legendary`) | oui |
+| Autres cartes | doublons libres (limités par ta collection) | — |
+
+> Note : les **Mythiques** ne sont pas limitées pour l'instant. Comme elles sont
+> plus fortes que les légendaires, à confirmer si on veut aussi les plafonner.
 
 ---
 
@@ -155,7 +162,7 @@ Modificateurs de type appliqués ensuite (Champion P+1/E+1, Team P+2/S+1/E+2, et
 
 ## 10. Fin de partie & récompenses
 
-- Victoire dès que les PV adverses ≤ 0. Si les deux tombent à 0 le même tour → **nul** (relance ou priorité au joueur actif — *à trancher*).
+- Victoire dès que les PV adverses ≤ 0. Si les deux tombent à 0 le même tour → **match nul**.
 - Or (chronicles) crédité sur `profiles.chronicles` (déjà en place dans `battle.js`),
   barème selon difficulté + bonus de rapidité.
 
@@ -176,10 +183,12 @@ Modificateurs de type appliqués ensuite (Champion P+1/E+1, Team P+2/S+1/E+2, et
 
 ---
 
-## 12. Points à trancher (avant code)
+## 12. Décisions prises (2026-06-22)
 
-1. Champ plein (Objects+Companions) : **refuser** la pose ou **remplacer** la plus faible ?
-2. Doublons en deck : autorisés librement (limité par la collection) ou max 1 exemplaire par carte ?
-3. Match nul (double KO) : nul, ou victoire au joueur actif ?
-4. La clause « Special ignore le Terrain adverse » : on la garde ou on simplifie (Special = juste P dégâts + S garde) ?
-5. Veut-on un **mulligan** (re-piocher la main de départ une fois) ?
+1. **Champ plein** → on peut **défausser une carte du champ de son choix** pour faire de la place (§6).
+2. **Deck** → Champions : 1 exemplaire max chacun ; autres cartes : doublons libres ; **max 1 légendaire** (§8).
+3. **Double KO** → **match nul** (§10).
+4. **Special** → effet **simple** (P dégâts + S garde), sans clause Terrain (§7).
+5. **Mulligan** → **autorisé**, une fois (§2).
+
+Reste ouvert : plafonner ou non les Mythiques (§8).

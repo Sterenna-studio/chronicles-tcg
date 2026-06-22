@@ -103,9 +103,9 @@ export async function renderShop() {
 
 // ── HUB ───────────────────────────────────────────────────────
 async function fetchTotalCards(sb, user) {
-  const { data, error } = await sb.from('tcg_player_cards').select('qty').eq('player_id', user.id);
+  const { data, error } = await sb.from('tcg_player_cards').select('quantity').eq('user_id', user.id);
   if (error) { console.warn('[hub] tcg_player_cards', error); return 0; }
-  return (data || []).reduce((s, r) => s + (r.qty || 0), 0);
+  return (data || []).reduce((s, r) => s + (r.quantity || 0), 0);
 }
 
 export async function refreshHub() {

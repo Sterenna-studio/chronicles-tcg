@@ -225,11 +225,11 @@ export async function renderHome(root) {
       const user = await getUser();
       const [{ data: pl }, { data: cards }, { data: packs }] = await Promise.all([
         sb.from('tcg_players').select('chronicles').eq('id', user.id).single(),
-        sb.from('tcg_player_cards').select('qty').eq('player_id', user.id),
+        sb.from('tcg_player_cards').select('quantity').eq('user_id', user.id),
         sb.from('tcg_player_packs').select('quantity').eq('player_id', user.id),
       ]);
       const chronicles = pl?.chronicles ?? (state.chronicles || 0);
-      const totalCards = (cards || []).reduce((s, r) => s + (r.qty || 0), 0);
+      const totalCards = (cards || []).reduce((s, r) => s + (r.quantity || 0), 0);
       const totalPacks = (packs || []).reduce((s, r) => s + (r.quantity || 0), 0);
       statsEl.innerHTML = `
         <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px">

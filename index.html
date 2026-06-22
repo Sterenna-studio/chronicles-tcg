@@ -73,6 +73,10 @@
     .booster-img img{width:100%;height:100%;object-fit:contain}
     .booster-badge{position:absolute;top:4px;right:4px;font-size:.6em;font-weight:700;background:var(--cyan);color:#000;border-radius:4px;padding:1px 5px}
     .booster-name{font-size:.6em;color:var(--muted);letter-spacing:.06em;text-align:center;max-width:70px}.no-boosters{font-size:.7em;color:var(--muted);font-style:italic}
+    .booster-open-btn{margin-top:4px;font-family:inherit;font-size:.58em;letter-spacing:.06em;cursor:pointer;border-radius:5px;padding:3px 8px;background:var(--cyan);color:#04130d;border:1px solid var(--cyan);font-weight:700}
+    .booster-open-btn:hover{filter:brightness(1.1)}
+    .booster-openx-btn{margin-top:3px;font-family:inherit;font-size:.55em;letter-spacing:.06em;cursor:pointer;border-radius:5px;padding:3px 8px;background:transparent;color:var(--cyan);border:1px solid var(--cyan);font-weight:700}
+    .booster-openx-btn:hover{background:rgba(0,245,196,.12)}
     /* RIGHT — SHOP */
     .right-panel{border-left:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;overflow:hidden}
     .shop-title{font-size:.65em;color:var(--muted);letter-spacing:.15em;padding:10px 12px 6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;flex-shrink:0}
@@ -351,17 +355,20 @@ async function refreshHub(){
         grid.innerHTML='';
         owned.forEach(p=>{
           const imgSrc=`./assets/packs/${p.image_name||'set01.jpg'}`;
+          const multi=Math.min(10, p.quantity);
           const card=document.createElement('div');
           card.className='booster-card';
           card.innerHTML=`
             <div class="booster-img"><img src="${imgSrc}" alt="${p.name}" onerror="this.style.display='none'"></div>
             <div class="booster-name">${p.name}</div>
             <div class="booster-qty">×${p.quantity}</div>
-            <button class="booster-open-btn" data-id="${p.pack_type_id||p.id}">OUVRIR</button>`;
+            <button class="booster-open-btn">OUVRIR</button>
+            ${multi>1?`<button class="booster-openx-btn">OUVRIR ×${multi}</button>`:''}`;
+          const opts={ packTypeId:p.pack_type_id||p.id, setId:p.set_id, packImage:imgSrc, onDone:async()=>{await refreshHub();} };
+          card.querySelector('.booster-open-btn').addEventListener('click',()=>openOpeningOverlay({...opts, count:1}));
+          const xBtn=card.querySelector('.booster-openx-btn');
+          if(xBtn) xBtn.addEventListener('click',()=>openOpeningOverlay({...opts, count:multi}));
           grid.appendChild(card);
-        });
-        grid.querySelectorAll('.booster-open-btn').forEach(btn=>{
-          btn.addEventListener('click',()=>openOpeningOverlay(btn.dataset.id,async()=>{await refreshHub();}));
         });
       }
     }

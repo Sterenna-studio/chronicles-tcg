@@ -1,7 +1,8 @@
 // ui/openingOverlay.js
 import { generatePack } from '../logic/packGenerator.js';
 import { decrementPlayerPack } from '../data/packsRepo.js';
-import { getClient, getUser } from '../logic/supaRaw.js';
+import { addCardsBatch } from '../data/cardsRepo.js';
+import { getUser } from '../logic/supaRaw.js';
 import { url } from '../logic/paths.js';
 
 const SET_FILES = {
@@ -30,25 +31,9 @@ async function loadCards(setId) {
 }
 
 async function saveOpenedCards(cards) {
-  const sb = await getClient();
+  // Écrit dans tcg_player_cards (user_id / quantity) via le repo dédié
   const user = await getUser();
-  // Récupère toutes les quantités en une seule requête
-  const cardIds = cards.map(c => c.id);
-  const { data: rows } = await sb.from('player_cards')
-    .select('card_id, qty').eq('player_id', user.id).in('card_id', cardIds);
-  const qtyMap = Object.fromEntries((rows || []).map(r => [r.card_id, r.qty || 0]));
-  // Compte les doublons dans le pack lui-même
-  const newQtys = {};
-  for (const card of cards) newQtys[card.id] = (newQtys[card.id] || 0) + 1;
-  // Upsert en parallèle
-  await Promise.all(
-    Object.entries(newQtys).map(([card_id, gained]) =>
-      sb.from('player_cards').upsert(
-        { player_id: user.id, card_id, qty: (qtyMap[card_id] || 0) + gained },
-        { onConflict: 'player_id,card_id' }
-      )
-    )
-  );
+  await addCardsBatch(user.id, cards.map(c => c.id));
 }
 
 // ─── Pixel build-in : construit l'overlay tuile par tuile ────────────────────
@@ -165,7 +150,8 @@ function disintegrateToCollection(sourceEl, onDone) {
 }
 
 // ─── Export principal ─────────────────────────────────────────────────────────
-export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone } = {}) {
+export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone, count = 1 } = {}) {
+  count = Math.max(1, Math.min(10, Number(count) || 1));
 
   // Overlay full-screen, z-index maximal, PAS de modal chrome
   const overlay = document.createElement('div');
@@ -228,7 +214,11 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
   let cards, grouped;
   try {
     const allCards = await loadCards(setId || 'BZH01');
-    cards = generatePack({ cards: allCards, cardCount: 5, seedHex: String(packTypeId) + Date.now().toString(16) });
+    const base = Date.now().toString(16);
+    cards = [];
+    for (let i = 0; i < count; i++) {
+      cards.push(...generatePack({ cards: allCards, cardCount: 5, seedHex: String(packTypeId) + '-' + i + '-' + base }));
+    }
   } catch {
     overlay.innerHTML = '<div style="color:#ff8a8a;padding:40px">Erreur génération pack.</div>';
     overlay.style.opacity = '1';
@@ -242,8 +232,8 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
     else { seen[card.id] = grouped.length; grouped.push({ card, count: 1 }); }
   }
 
-  // Pixel build-in → révèle l'overlay
-  pixelBuildIn(overlay, showBoosterPhase);
+  // Pixel build-in → révèle l'overlay (booster animé en solo, grille agrégée en multi)
+  pixelBuildIn(overlay, count > 1 ? showMultiPhase : showBoosterPhase);
 
   // ── Phase booster (déchirure au drag) ───────────────────────────────────────
   let tearOpen = null;       // assignée dans showBoosterPhase, appelable via advancePhase
@@ -348,17 +338,23 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
     const rarityOrder = ['Mythical','Legendary','Epic','Rare','Common'];
     const best = rarityOrder.find(r => grouped.some(g => g.card.rarity === r));
     if (best) playRaritySound(best);
-    // Auto-sauvegarde 600ms après révélation complète
-    setTimeout(() => autoSave(), 600);
+    // Pas d'auto-rangement : on affiche le bouton, l'utilisateur range quand il veut
+    const revealBtn = zone.querySelector('#reveal-all');
+    const finishBtn = zone.querySelector('#finish-btn');
+    if (revealBtn) revealBtn.style.display = 'none';
+    if (finishBtn) finishBtn.style.display = '';
   }
 
-  async function autoSave() {
+  // Sauvegarde + transition finale, déclenchée manuellement (bouton « Ranger »)
+  async function saveAndFinish() {
     if (savedAlready) return;
     savedAlready = true;
+    const btn = zone.querySelector('#finish-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Rangement…'; }
     try {
       await saveOpenedCards(cards);
       if (typeof onDone === 'function') await onDone(cards);
-    } catch(e) { console.error('autoSave', e); }
+    } catch(e) { console.error('save', e); }
     showDonePhase();
   }
 
@@ -370,6 +366,7 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
       <div id="cards-grid" style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;padding:8px;width:100%;"></div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
         <button id="reveal-all" style="background:transparent;border:1px solid #00f5c4;color:#00f5c4;padding:6px 18px;cursor:pointer;font-family:inherit;font-size:.85em;">Tout révéler</button>
+        <button id="finish-btn" style="display:none;background:#22c55e;border:1px solid #22c55e;color:#04130d;font-weight:700;padding:6px 22px;cursor:pointer;font-family:inherit;font-size:.85em;border-radius:6px;">📥 Ranger dans la collection</button>
       </div>
     `;
     const grid = zone.querySelector('#cards-grid');
@@ -416,6 +413,46 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone 
     });
 
     zone.querySelector('#reveal-all').addEventListener('click', revealAll);
+    zone.querySelector('#finish-btn').addEventListener('click', saveAndFinish);
+  }
+
+  // ── Phase multi (ouverture rapide de plusieurs boosters) ────────────────────
+  async function showMultiPhase() {
+    phase = 'cards';
+    // Consomme les boosters ouverts
+    try { await decrementPlayerPack(packTypeId, count); } catch (e) { console.warn(e); }
+    const rarityOrder = ['Mythical','Legendary','Epic','Rare','Common'];
+    const best = rarityOrder.find(r => grouped.some(g => g.card.rarity === r));
+    if (best) playRaritySound(best);
+
+    const backSrc = url('/assets/card_back.png');
+    zone.innerHTML = `
+      <div style="font-weight:700;color:#42b0ff;font-size:.95em">✦ ${count} boosters ouverts — ${cards.length} cartes</div>
+      <div id="cards-grid" style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;padding:8px;width:100%;max-height:58vh;overflow-y:auto;"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+        <button id="finish-btn" style="background:#22c55e;border:1px solid #22c55e;color:#04130d;font-weight:700;padding:6px 22px;cursor:pointer;font-family:inherit;font-size:.85em;border-radius:6px;">📥 Ranger dans la collection</button>
+      </div>
+    `;
+    const grid = zone.querySelector('#cards-grid');
+    const order = { Mythical:0, Legendary:1, Epic:2, Rare:3, Common:4 };
+    [...grouped]
+      .sort((a, b) => (order[a.card.rarity] ?? 9) - (order[b.card.rarity] ?? 9))
+      .forEach(({ card, count: cnt }) => {
+        const rc = RARITY_COLOR[card.rarity] || '#9da7b3';
+        const imgSrc = url(`/assets/cards/${card.id}.jpg`);
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position:relative;width:96px;height:135px;border-radius:9px;overflow:hidden;border:1px solid ' + rc + ';box-shadow:0 0 12px ' + rc + '55;';
+        wrapper.innerHTML = `
+          <img src="${imgSrc}" style="width:100%;height:100%;object-fit:contain;background:#060c10" alt="${card.name}" onerror="this.src='${backSrc}'">
+          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.78);padding:3px 5px">
+            <div style="font-size:.55em;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${card.name}</div>
+            <div style="font-size:.5em;color:${rc}">${card.rarity}</div>
+          </div>
+          ${cnt > 1 ? `<span style="position:absolute;top:3px;right:3px;background:${rc};color:#000;font-weight:700;font-size:.55em;padding:1px 5px;border-radius:8px">x${cnt}</span>` : ''}
+        `;
+        grid.appendChild(wrapper);
+      });
+    zone.querySelector('#finish-btn').addEventListener('click', saveAndFinish);
   }
 
   // ── Phase terminée : message + désintégration ──────────────────────────────

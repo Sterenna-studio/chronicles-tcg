@@ -1,6 +1,6 @@
 // pages/dailyWidget.js — v1.0.0
 // Injectable daily-gold widget. Call mount(container) to attach.
-import { getDailyStatus, claimDaily, formatCountdown, DAILY_AMOUNT } from '../data/dailyRepo.js?v=3';
+import { getDailyStatus, claimDaily, formatCountdown } from '../logic/daily.js?v=3';
 
 const CSS = `
 .daily-widget {
@@ -47,8 +47,8 @@ export async function mount(container) {
   el.className = 'daily-widget';
   el.innerHTML = `
     <div class="daily-title">⛁ Or Quotidien</div>
-    <div class="daily-amount">+${DAILY_AMOUNT}</div>
-    <div class="daily-sub">par jour</div>
+    <div class="daily-amount" id="daily-amount">+…</div>
+    <div class="daily-sub">prochaine récompense</div>
     <button class="daily-btn" id="daily-claim-btn" disabled>Chargement…</button>
     <div class="daily-countdown" id="daily-countdown"></div>
     <div class="daily-msg"      id="daily-msg"></div>
@@ -58,6 +58,7 @@ export async function mount(container) {
   const btn       = el.querySelector('#daily-claim-btn');
   const countdown = el.querySelector('#daily-countdown');
   const msg       = el.querySelector('#daily-msg');
+  const amountEl  = el.querySelector('#daily-amount');
   let _intervalId  = null;
 
   function startCountdown(nextClaimAt) {
@@ -90,6 +91,7 @@ export async function mount(container) {
   // Init
   try {
     const status = await getDailyStatus();
+    amountEl.textContent = `+${status.nextReward}`;
     if (status.canClaim) {
       btn.disabled    = false;
       btn.textContent = 'Réclamer';
@@ -111,10 +113,15 @@ export async function mount(container) {
     msg.className   = 'daily-msg';
     try {
       const result    = await claimDaily();
-      btn.textContent = `+${DAILY_AMOUNT} ⛁ reçus !`;
-      msg.textContent = `Total or : ${result.gold} ⛁`;
+      btn.textContent = `+${result.amount} ⛁ reçus !`;
+      msg.textContent = `Total or : ${result.gold} ⛁ · série ${result.streak}`;
       window.dispatchEvent(new CustomEvent('tcg:gold', { detail: { gold: result.gold } }));
-      startCountdown(new Date(Date.now() + 24 * 60 * 60 * 1000));
+      // Recharge le statut : compte à rebours (minuit UTC) + prochaine récompense
+      try {
+        const status = await getDailyStatus();
+        amountEl.textContent = `+${status.nextReward}`;
+        if (status.nextClaimAt) startCountdown(status.nextClaimAt);
+      } catch (_) {}
     } catch (e) {
       btn.textContent = 'Déjà réclamé';
       msg.textContent = e?.message || String(e);

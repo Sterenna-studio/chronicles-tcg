@@ -338,7 +338,7 @@ async function refreshHub(){
     const chronicles = pl?.chronicles ?? 0;
     ['ub-gold','ub-chronicles','tb-chronicles'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=chronicles;});
     const name = getDisplayName();
-    ['ub-agent'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
+    ['ub-agent','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
     const statCards=document.getElementById('stat-cards');if(statCards)statCards.textContent=totalCards;
     const totalPacks=playerPacks.reduce((s,p)=>s+(p.quantity||0),0);
     const boostersCount=document.getElementById('boosters-count');if(boostersCount)boostersCount.textContent=totalPacks;

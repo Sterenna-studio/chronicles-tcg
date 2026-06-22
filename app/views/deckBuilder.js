@@ -161,6 +161,9 @@ export async function renderDeckBuilder(root) {
           if (deck.length >= MAX_DECK) { flashMsg('Deck plein (6 cartes max) !', '#ff8a8a'); return; }
           const champCount = deck.filter(d => d.type === 'Champion').length;
           if (card.type === 'Champion' && champCount >= MAX_CHAMPS) { flashMsg(`Max ${MAX_CHAMPS} Champions !`, '#ff8a8a'); return; }
+          const r = (card.rarity || '').toLowerCase();
+          if (r === 'legendary' && deck.some(d => (d.rarity || '').toLowerCase() === 'legendary')) { flashMsg('Max 1 légendaire !', '#ff8a8a'); return; }
+          if (r === 'mythical'  && deck.some(d => (d.rarity || '').toLowerCase() === 'mythical'))  { flashMsg('Max 1 mythique !', '#ff8a8a'); return; }
           deck.push(card);
         }
         renderGrid();
@@ -179,7 +182,7 @@ export async function renderDeckBuilder(root) {
     header.style.cssText = 'padding:10px 12px;border-bottom:1px solid #0e2a1f;flex-shrink:0';
     const champCount = deck.filter(d => d.type === 'Champion').length;
     const totalPower = deck.reduce((s, c) => s + c.power, 0);
-    const ready = deck.length === MAX_DECK;
+    const ready = deck.length === MAX_DECK && champCount >= 1;
     header.innerHTML = `
       <div style="font-size:.78em;color:#00f5c4;letter-spacing:.1em;margin-bottom:6px">MON DECK — <span id="deck-count" style="color:${ready ? '#22c55e' : '#ffbe46'}">${deck.length}/${MAX_DECK}</span></div>
       <div style="font-size:.65em;color:#3a6655;display:flex;gap:10px">

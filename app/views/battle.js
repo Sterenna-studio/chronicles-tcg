@@ -1,5 +1,5 @@
 // app/views/battle.js
-import { createBattle, playCard, endPlayerTurn, getBattleResult, drawCards } from '../../logic/battleEngine.js?v=3';
+import { createBattle, playCard, getBattleResult, startTurn, mulligan, START_HP } from '../../logic/battleEngine.js?v=3';
 import { runEnemyTurn } from '../../logic/aiEngine.js?v=3';
 import { getClient, getUser } from '../../logic/supaRaw.js?v=3';
 import { url } from '../../logic/paths.js?v=3';
@@ -176,7 +176,7 @@ export async function renderBattle(root, opts = {}) {
       <div style="flex:1;height:12px;background:#0e2a1f;border-radius:6px;overflow:hidden;border:1px solid #1a0a0f">
         <div id="enemy-hp-bar" style="height:100%;background:linear-gradient(90deg,#ff2d4e,#ff6080);transition:width .4s ease;border-radius:6px;width:100%"></div>
       </div>
-      <span id="enemy-hp" style="font-size:.82em;color:#ff2d4e;font-weight:700;min-width:60px;text-align:right;transition:color .3s">20 / 20</span>
+      <span id="enemy-hp" style="font-size:.82em;color:#ff2d4e;font-weight:700;min-width:60px;text-align:right;transition:color .3s">30 / 30</span>
       <div id="enemy-hand-count" style="font-size:.68em;color:#3a6655">Main: 3</div>
     </div>
     <div id="enemy-played-card" style="min-height:20px;margin-bottom:4px"></div>
@@ -198,12 +198,12 @@ export async function renderBattle(root, opts = {}) {
   const hpBar = document.createElement('div');
   hpBar.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 14px 4px';
   hpBar.innerHTML = `
-    <span style="font-size:.72em;color:#00f5c4;letter-spacing:.1em">⚡ <span id="player-energy">1</span>/<span id="player-energy-max">6</span></span>
+    <span style="font-size:.72em;color:#00f5c4;letter-spacing:.1em">⚡ <span id="player-energy">1</span>/<span id="player-energy-max">7</span></span>
     <span id="player-shield-badge" style="display:none;font-size:.68em;color:#42b0ff;background:#061828;border:1px solid #42b0ff44;padding:1px 7px;border-radius:10px;letter-spacing:.06em"></span>
     <div style="flex:1;height:12px;background:#0e2a1f;border-radius:6px;overflow:hidden;border:1px solid #082814">
       <div id="player-hp-bar" style="height:100%;background:linear-gradient(90deg,#00f5c4,#22c55e);transition:width .4s ease;border-radius:6px;width:100%"></div>
     </div>
-    <span id="player-hp" style="font-size:.82em;color:#00f5c4;font-weight:700;min-width:60px;text-align:right;transition:color .3s">20 / 20</span>
+    <span id="player-hp" style="font-size:.82em;color:#00f5c4;font-weight:700;min-width:60px;text-align:right;transition:color .3s">30 / 30</span>
   `;
   playerZone.appendChild(hpBar);
 
@@ -226,8 +226,8 @@ export async function renderBattle(root, opts = {}) {
   wrap.appendChild(playerZone);
 
   // ── Rendu état ───────────────────────────────────────────────────────────
-  let _prevPlayerHp = 20;
-  let _prevEnemyHp  = 20;
+  let _prevPlayerHp = START_HP;
+  let _prevEnemyHp  = START_HP;
 
   function flashHpBar(elBar, elText, accentColor) {
     elBar.style.background = accentColor;
@@ -243,7 +243,7 @@ export async function renderBattle(root, opts = {}) {
   }
 
   function renderState(s) {
-    const maxHp = 20;
+    const maxHp = START_HP;
 
     // HP bars + shake on damage
     const phBar  = document.getElementById('player-hp-bar');
@@ -306,9 +306,15 @@ export async function renderBattle(root, opts = {}) {
     (s.enemy.field || []).forEach(obj => {
       const chip = document.createElement('span');
       chip.style.cssText = 'font-size:.6em;background:#1a0810;border:1px solid #ff2d4e44;color:#ff8a8a;padding:2px 7px;border-radius:10px';
-      chip.textContent = `🔧 ${obj.name} (🛡${obj.shield})`;
+      chip.textContent = `${obj.kind === 'companion' ? '🐾' : '🔧'} ${obj.name} (🛡${obj.shield})`;
       ef.appendChild(chip);
     });
+    if (s.enemy.terrain) {
+      const t = document.createElement('span');
+      t.style.cssText = 'font-size:.6em;background:#101a08;border:1px solid #ffbe4644;color:#ffbe46;padding:2px 7px;border-radius:10px';
+      t.textContent = `🌍 ${s.enemy.terrain.name}`;
+      ef.appendChild(t);
+    }
 
     // Objets joueur
     const pf = document.getElementById('player-field-info');
@@ -323,9 +329,15 @@ export async function renderBattle(root, opts = {}) {
     (s.player.field || []).forEach(obj => {
       const chip = document.createElement('span');
       chip.style.cssText = 'font-size:.62em;background:#0a1a14;border:1px solid #00f5c444;color:#00f5c4;padding:2px 8px;border-radius:10px';
-      chip.textContent = `🔧 ${obj.name} (🛡${obj.shield})`;
+      chip.textContent = `${obj.kind === 'companion' ? '🐾' : '🔧'} ${obj.name} (🛡${obj.shield})`;
       pf.appendChild(chip);
     });
+    if (s.player.terrain) {
+      const t = document.createElement('span');
+      t.style.cssText = 'font-size:.62em;background:#101a08;border:1px solid #ffbe4644;color:#ffbe46;padding:2px 8px;border-radius:10px';
+      t.textContent = `🌍 ${s.player.terrain.name}`;
+      pf.appendChild(t);
+    }
 
     // Main joueur
     renderHand(s);
@@ -401,13 +413,14 @@ export async function renderBattle(root, opts = {}) {
 
   // ── Actions ──────────────────────────────────────────────────────────────
 
-  function onPlayCard(idx) {
+  function onPlayCard(idx, opts) {
     if (busy || state.phase !== 'player_turn') return;
     const card = state.player.hand[idx];
     const prevEnemyHp = state.enemy.hp;
-    const { state: next, ok, reason } = playCard(state, idx);
-    if (!ok) { flashBanner(reason || 'Impossible', '#ff8a8a'); return; }
-    state = next;
+    const res = playCard(state, 'player', idx, opts || {});
+    if (!res.ok && res.needsDiscard) { promptFieldDiscard(idx); return; }
+    if (!res.ok) { flashBanner(res.reason || 'Impossible', '#ff8a8a'); return; }
+    state = res.state;
 
     // ── Suivi contexte défis ────────────────────────────────────────────────
     if (card) {
@@ -420,7 +433,7 @@ export async function renderBattle(root, opts = {}) {
       else if (t === 'Special')   battleCtx.specialsPlayed++;
       else if (t === 'Team')      battleCtx.teamsPlayed++;
 
-      if (card.rarity && !['Common'].includes(card.rarity)) battleCtx.noRarePlayed = false;
+      if (card.rarity && card.rarity.toLowerCase() !== 'common') battleCtx.noRarePlayed = false;
 
       const dmg = Math.max(0, prevEnemyHp - state.enemy.hp);
       battleCtx.totalDamageDealt += dmg;
@@ -434,6 +447,33 @@ export async function renderBattle(root, opts = {}) {
     checkEnd();
   }
 
+  // Champ plein : choisir la carte du champ à défausser pour faire de la place
+  function promptFieldDiscard(idx) {
+    const fld = state.player.field || [];
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:25000;display:grid;place-items:center;padding:20px';
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#05080d;border:1px solid #00f5c4;border-radius:12px;padding:20px;max-width:460px;color:#c8ffe8;font-family:inherit;text-align:center';
+    box.innerHTML = '<div style="font-size:.9em;color:#00f5c4;margin-bottom:12px">Champ plein — défausse une carte pour faire de la place</div>';
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;justify-content:center';
+    fld.forEach((o, j) => {
+      const b = document.createElement('button');
+      b.style.cssText = 'background:#0a1a14;border:1px solid #00f5c455;color:#c8ffe8;padding:6px 10px;cursor:pointer;font-family:inherit;font-size:.72em;border-radius:6px';
+      b.textContent = `${o.kind === 'companion' ? '🐾' : '🔧'} ${o.name} (🛡${o.shield})`;
+      b.addEventListener('click', () => { overlay.remove(); onPlayCard(idx, { replaceFieldIndex: j }); });
+      row.appendChild(b);
+    });
+    box.appendChild(row);
+    const cancel = document.createElement('button');
+    cancel.style.cssText = 'margin-top:12px;background:transparent;border:none;color:#3a6655;cursor:pointer;font-family:inherit;font-size:.72em';
+    cancel.textContent = 'Annuler';
+    cancel.addEventListener('click', () => overlay.remove());
+    box.appendChild(cancel);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  }
+
   async function onEndTurn() {
     if (busy || state.phase !== 'player_turn') return;
     busy = true;
@@ -443,7 +483,8 @@ export async function renderBattle(root, opts = {}) {
     // Enregistre le plus haut dégât d'un seul tour avant de reset
     battleCtx._turnDamage = 0;
 
-    state = { ...state, phase: 'enemy_turn' };
+    // Début du tour ennemi : énergie, garde (reset + Terrain), pioche
+    state = startTurn('enemy', state);
 
     // Petite pause pour que le joueur voit la transition
     await delay(300);
@@ -471,18 +512,8 @@ export async function renderBattle(root, opts = {}) {
 
     if (checkEnd()) { busy = false; return; }
 
-    // Nouveau tour joueur
-    const newTurn = state.turn;
-    const newEnergy = Math.min(newTurn, state.energyMax);
-    state = {
-      ...state,
-      phase: 'player_turn',
-      turn: newTurn,
-      player: { ...state.player, energy: newEnergy, shieldTemp: 0 },
-      enemy:  { ...state.enemy,  energy: newEnergy, shieldTemp: 0 },
-    };
-    state = drawCards('player', state, 1);
-    state = drawCards('enemy',  state, 1);
+    // Nouveau tour joueur : turn+1, énergie, garde (reset + Terrain), pioche
+    state = startTurn('player', state);
 
     renderState(state);
     document.getElementById('btn-end-turn').disabled = false;
@@ -502,6 +533,7 @@ export async function renderBattle(root, opts = {}) {
 
   async function showEndScreen(result) {
     const won  = result.winner === 'player';
+    const draw = result.winner === 'draw';
     const gold = calcGold(difficulty, won, result.turns);
 
     // ── Défis quotidiens ────────────────────────────────────────────────────
@@ -536,8 +568,8 @@ export async function renderBattle(root, opts = {}) {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:20000;display:grid;place-items:center;animation:fadeIn .4s ease';
     const box = document.createElement('div');
-    const accentColor = won ? '#00f5c4' : '#ff2d4e';
-    const glowColor   = won ? 'rgba(0,245,196,.25)' : 'rgba(255,45,78,.25)';
+    const accentColor = won ? '#00f5c4' : draw ? '#ffbe46' : '#ff2d4e';
+    const glowColor   = won ? 'rgba(0,245,196,.25)' : draw ? 'rgba(240,165,0,.25)' : 'rgba(255,45,78,.25)';
     box.style.cssText = 'background:#05080d;border:2px solid ' + accentColor + ';border-radius:16px;padding:28px 32px;'
       + 'color:#c8ffe8;font-family:"Share Tech Mono",monospace;'
       + 'text-align:center;width:min(380px,94vw);'
@@ -546,7 +578,7 @@ export async function renderBattle(root, opts = {}) {
     const baseGoldHtml     = bonusGold > 0 ? '+' + gold + ' <span style="font-size:.65em;color:#3a6655">🪙 base</span>' : '+' + gold + ' 🪙';
     const totalGoldHtml    = bonusGold > 0 ? '<div style="font-size:.9em;color:#ffbe46;margin-bottom:14px;font-weight:700">Total : +' + totalGold + ' 🪙</div>' : '';
     box.innerHTML = '<div style="font-family:\'VT323\',monospace;font-size:3em;color:' + accentColor + ';letter-spacing:.2em;margin-bottom:8px">'
-      + (won ? 'VICTOIRE' : 'DÉFAITE')
+      + (won ? 'VICTOIRE' : draw ? 'ÉGALITÉ' : 'DÉFAITE')
       + '</div>'
       + '<div style="font-size:.85em;color:#6fa694;margin-bottom:12px">' + result.turns + ' tours · ' + DIFFICULTY_LABELS[difficulty] + '</div>'
       + '<div style="font-size:1.2em;font-weight:700;color:#ffbe46;margin-bottom:' + goldMarginBottom + '">' + baseGoldHtml + '</div>'
@@ -612,7 +644,30 @@ export async function renderBattle(root, opts = {}) {
     document.head.appendChild(style);
   }
 
+  // Mulligan (une fois) avant le tour 1
+  function offerMulligan() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:25000;display:grid;place-items:center;padding:20px';
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#05080d;border:1px solid #00f5c4;border-radius:12px;padding:22px 26px;max-width:420px;color:#c8ffe8;font-family:inherit;text-align:center';
+    box.innerHTML = '<div style="font-family:\'VT323\',monospace;font-size:1.5em;color:#00f5c4;letter-spacing:.12em;margin-bottom:8px">MAIN DE DÉPART</div>'
+      + '<div style="font-size:.78em;color:#6fa694;margin-bottom:14px">Tu peux re-piocher une nouvelle main (une seule fois).</div>'
+      + '<div style="display:flex;gap:10px;justify-content:center">'
+      + '<button id="mull-keep" style="background:#0a1a14;border:1px solid #00f5c4;color:#00f5c4;padding:8px 18px;cursor:pointer;font-family:inherit;font-size:.82em;border-radius:6px">Garder</button>'
+      + '<button id="mull-redraw" style="background:transparent;border:1px solid #ffbe46;color:#ffbe46;padding:8px 18px;cursor:pointer;font-family:inherit;font-size:.82em;border-radius:6px">🔄 Mulligan</button>'
+      + '</div>';
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    box.querySelector('#mull-keep').addEventListener('click', () => overlay.remove());
+    box.querySelector('#mull-redraw').addEventListener('click', () => {
+      state = mulligan('player', state);
+      renderState(state);
+      overlay.remove();
+    });
+  }
+
   renderState(state);
+  offerMulligan();
 }
 
 function renderDailyChallenges() {

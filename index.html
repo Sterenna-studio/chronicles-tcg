@@ -332,6 +332,7 @@ async function refreshHub(){
     const sb=await getClient(); const user=await getUser(); if(!user) return;
     const [totalCards, playerPacks, {data:pl}] = await Promise.all([
       fetchTotalCards(sb,user),
+      loadPlayerPacks(),
       sb.from('profiles').select('chronicles').eq('id',user.id).single()
     ]);
     const chronicles = pl?.chronicles ?? 0;

@@ -50,7 +50,7 @@ export async function initPlayer(sb, user) {
   if (!existing) {
     const username = await resolveUsername();
     _displayName = username;
-    await sb.from('tcg_players').insert({ id: user.id, chronicles: 0, username });
+    await sb.from('tcg_players').insert({ id: user.id, username });
     const { data } = await sb.from('tcg_players').select('*').eq('id', user.id).single();
     return data;
   }

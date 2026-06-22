@@ -35,7 +35,7 @@ export async function renderShop() {
     }
     const [packs, { data: pl }] = await Promise.all([
       loadPackTypes(),
-      sb.from('tcg_players').select('chronicles').eq('id', user.id).single()
+      sb.from('profiles').select('chronicles').eq('id', user.id).single()
     ]);
     const chronicles = pl?.chronicles ?? 0;
     const ubEl = document.getElementById('ub-chronicles');
@@ -74,10 +74,10 @@ export async function renderShop() {
         try {
           const sb2   = await getClient();
           const user2 = await getUser();
-          const { data: pl2 } = await sb2.from('tcg_players').select('chronicles').eq('id', user2.id).single();
+          const { data: pl2 } = await sb2.from('profiles').select('chronicles').eq('id', user2.id).single();
           const cur = pl2?.chronicles || 0;
           if (cur < price) { showMsg('Chronicles insuffisants !', '#ff8a8a'); btn.disabled = false; return; }
-          await sb2.from('tcg_players').update({ chronicles: cur - price }).eq('id', user2.id);
+          await sb2.from('profiles').update({ chronicles: cur - price }).eq('id', user2.id);
           const { data: row } = await sb2.from('tcg_player_packs')
             .select('quantity').eq('player_id', user2.id).eq('pack_type_id', packId).maybeSingle();
           const qty = (row?.quantity || 0) + 1;
@@ -116,7 +116,7 @@ export async function refreshHub() {
     const [totalCards, playerPacks, { data: pl }] = await Promise.all([
       fetchTotalCards(sb, user),
       loadPlayerPacks(),
-      sb.from('tcg_players').select('chronicles').eq('id', user.id).single()
+      sb.from('profiles').select('chronicles').eq('id', user.id).single()
     ]);
     const totalPacks = playerPacks.reduce((s, p) => s + (p.quantity || 0), 0);
     const chronicles = pl?.chronicles ?? 0;

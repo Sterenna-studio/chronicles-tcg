@@ -117,7 +117,7 @@ export async function render(root) {
 
   // Sync solde en temps réel
   const syncChr = async () => {
-    const { data } = await sb.from('tcg_players').select('chronicles').eq('id', player?.id).single();
+    const { data } = await sb.from('profiles').select('chronicles').eq('id', player?.id).single();
     setChr(data?.chronicles ?? 0);
   };
   window.addEventListener('tcg:chronicles', syncChr);

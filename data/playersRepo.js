@@ -23,7 +23,7 @@ export async function ensurePlayer(supabase, user) {
     .maybeSingle();
   if (!player) {
     const displayName = await resolveDisplayName(supabase, user);
-    await supabase.from('tcg_players').insert({ id: userId, username: displayName, chronicles: 0 });
+    await supabase.from('tcg_players').insert({ id: userId, username: displayName });
   } else if (!player.username) {
     const displayName = await resolveDisplayName(supabase, user);
     await supabase.from('tcg_players').update({ username: displayName }).eq('id', userId);
@@ -42,8 +42,8 @@ export async function saveGold(supabase, userId, delta) {
 }
 
 export async function saveChronicles(supabase, userId, delta) {
-  const { data: pl } = await supabase.from('tcg_players').select('chronicles').eq('id', userId).single();
+  const { data: pl } = await supabase.from('profiles').select('chronicles').eq('id', userId).single();
   const chronicles = Math.max(0, (pl?.chronicles || 0) + (delta || 0));
-  await supabase.from('tcg_players').update({ chronicles }).eq('id', userId);
+  await supabase.from('profiles').update({ chronicles }).eq('id', userId);
   return chronicles;
 }

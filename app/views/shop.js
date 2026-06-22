@@ -76,7 +76,7 @@ export async function renderShop(root) {
         try {
           const sb = await getClient();
           const user = await getUser();
-          const { data: pl } = await sb.from('tcg_players').select('chronicles').eq('id', user.id).single();
+          const { data: pl } = await sb.from('profiles').select('chronicles').eq('id', user.id).single();
           const currentChronicles = pl?.chronicles || 0;
           if (currentChronicles < price) {
             showMsg('Chronicles insuffisants !', '#ff8a8a');
@@ -85,7 +85,7 @@ export async function renderShop(root) {
             return;
           }
           const newChronicles = currentChronicles - price;
-          await sb.from('tcg_players').update({ chronicles: newChronicles }).eq('id', user.id);
+          await sb.from('profiles').update({ chronicles: newChronicles }).eq('id', user.id);
           // Incrément pack
           const { data: row } = await sb.from('tcg_player_packs').select('quantity')
             .eq('player_id', user.id).eq('pack_type_id', packId).maybeSingle();

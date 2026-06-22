@@ -196,13 +196,14 @@ export async function getAchievements() {
   const user = await getUser();
   if (!user) return ACHIEVEMENTS.map(a => ({ ...a, unlocked: false }));
 
-  // Parallel fetch
-  const [{ data: player }, { data: cards }] = await Promise.all([
+  // Parallel fetch (chronicles vit sur profiles, streak/last_daily_at sur tcg_players)
+  const [{ data: player }, { data: prof }, { data: cards }] = await Promise.all([
     sb.from('tcg_players').select('*').eq('id', user.id).maybeSingle(),
+    sb.from('profiles').select('chronicles').eq('id', user.id).maybeSingle(),
     sb.from('tcg_player_cards').select('set_id, rarity, quantity').eq('user_id', user.id),
   ]);
 
-  const p = player ?? {};
+  const p = { ...(player ?? {}), chronicles: prof?.chronicles ?? 0 };
 
   // Build stats from cards
   const rarityMap = {};

@@ -224,7 +224,7 @@ export async function renderHome(root) {
       const sb = await getClient();
       const user = await getUser();
       const [{ data: pl }, { data: cards }, { data: packs }] = await Promise.all([
-        sb.from('tcg_players').select('chronicles').eq('id', user.id).single(),
+        sb.from('profiles').select('chronicles').eq('id', user.id).single(),
         sb.from('tcg_player_cards').select('quantity').eq('user_id', user.id),
         sb.from('tcg_player_packs').select('quantity').eq('player_id', user.id),
       ]);

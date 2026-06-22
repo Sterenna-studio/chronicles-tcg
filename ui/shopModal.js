@@ -42,7 +42,7 @@ async function renderShop(content, shell, { onBought }) {
   async function renderGrid() {
     const sb   = await getClient();
     const user = await getUser();
-    const { data: pl } = await sb.from('tcg_players').select('chronicles').eq('id', user.id).single();
+    const { data: pl } = await sb.from('profiles').select('chronicles').eq('id', user.id).single();
     const chronicles = pl?.chronicles || 0;
 
     // Mise à jour affichage solde dans la topbar si présent
@@ -104,12 +104,12 @@ async function renderShop(content, shell, { onBought }) {
         try {
           const sb   = await getClient();
           const user = await getUser();
-          const { data: pl } = await sb.from('tcg_players').select('chronicles').eq('id', user.id).single();
+          const { data: pl } = await sb.from('profiles').select('chronicles').eq('id', user.id).single();
           const current = pl?.chronicles || 0;
           if (current < price) { showMsg('Chronicles insuffisants !', '#ff8a8a'); btn.disabled = false; return; }
           // Débit chronicles
-          await sb.from('tcg_players')
-            .update({ chronicles: current - price, updated_at: new Date().toISOString() })
+          await sb.from('profiles')
+            .update({ chronicles: current - price })
             .eq('id', user.id);
           // Ajout pack inventaire
           const { data: row } = await sb.from('tcg_player_packs')

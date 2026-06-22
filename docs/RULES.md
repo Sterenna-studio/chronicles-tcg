@@ -137,10 +137,8 @@ Tout le reste (Champion, Event, Special, Team) se résout puis se défausse.
 | Taille | exactement 6 | oui |
 | Champions | 1 à 2, **1 exemplaire max par Champion** | oui |
 | Légendaires | **max 1** (rareté `legendary`) | oui |
+| Mythiques | **max 1** (rareté `mythical`) | oui |
 | Autres cartes | doublons libres (limités par ta collection) | — |
-
-> Note : les **Mythiques** ne sont pas limitées pour l'instant. Comme elles sont
-> plus fortes que les légendaires, à confirmer si on veut aussi les plafonner.
 
 ---
 
@@ -186,9 +184,10 @@ Modificateurs de type appliqués ensuite (Champion P+1/E+1, Team P+2/S+1/E+2, et
 ## 12. Décisions prises (2026-06-22)
 
 1. **Champ plein** → on peut **défausser une carte du champ de son choix** pour faire de la place (§6).
-2. **Deck** → Champions : 1 exemplaire max chacun ; autres cartes : doublons libres ; **max 1 légendaire** (§8).
+2. **Deck** → Champions : 1 exemplaire max chacun ; **max 1 légendaire** ; **max 1 mythique** ; autres cartes : doublons libres (§8).
 3. **Double KO** → **match nul** (§10).
 4. **Special** → effet **simple** (P dégâts + S garde), sans clause Terrain (§7).
 5. **Mulligan** → **autorisé**, une fois (§2).
+6. **Mythiques** → plafonnées à **1 par deck** (§8).
 
-Reste ouvert : plafonner ou non les Mythiques (§8).
+✅ Tous les points sont tranchés — le spec est prêt pour l'implémentation (§11).

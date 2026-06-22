@@ -67,7 +67,7 @@ export async function claimDailyReward(supabase, userId) {
 
   const { data: pl, error } = await supabase
     .from('tcg_players')
-    .select('chronicles, daily_streak, last_daily_at')
+    .select('daily_streak, last_daily_at')
     .eq('id', userId)
     .single();
 
@@ -102,17 +102,15 @@ export async function claimDailyReward(supabase, userId) {
   const reward    = STREAK_REWARDS[idx];
   const isSeventh = newStreak % 7 === 0;
 
-  const { error: updateErr } = await supabase
-    .from('tcg_players')
-    .update({
-      chronicles:    (pl.chronicles || 0) + reward,
-      daily_streak:  newStreak,
-      last_daily_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
+  // Crédite sur profiles.chronicles (source de vérité)
+  const { data: prof } = await supabase.from('profiles').select('chronicles').eq('id', userId).single();
+  const [{ error: profErr }, { error: updateErr }] = await Promise.all([
+    supabase.from('profiles').update({ chronicles: (prof?.chronicles || 0) + reward }).eq('id', userId),
+    supabase.from('tcg_players').update({ daily_streak: newStreak, last_daily_at: new Date().toISOString() }).eq('id', userId),
+  ]);
 
-  if (updateErr) {
-    console.warn('[daily] mise à jour échouée', updateErr);
+  if (profErr || updateErr) {
+    console.warn('[daily] mise à jour échouée', profErr || updateErr);
     return { rewarded: false, amount: 0, streak: pl.daily_streak };
   }
 

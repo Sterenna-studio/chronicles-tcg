@@ -99,6 +99,49 @@
     .challenge-desc{font-size:.55em;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .challenge-gold{font-size:.62em;color:var(--amber);font-weight:700;flex-shrink:0}
     .challenge-check{font-size:.85em;flex-shrink:0}
+
+    /* ── DAILY BONUS ──────────────────────────────────── */
+    .daily-bonus-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px}
+    .daily-streak-dots{display:flex;gap:3px;margin-top:5px}
+    .streak-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s}
+    .streak-dot.done{background:var(--amber);box-shadow:0 0 5px rgba(240,165,0,.6)}
+    .streak-dot.today{background:var(--cyan);box-shadow:0 0 7px var(--cyan)}
+    .btn-daily-claim{background:transparent;border:1px solid var(--amber);color:var(--amber);padding:2px 8px;font-family:var(--font);font-size:.62em;cursor:pointer;border-radius:3px;letter-spacing:.08em}
+    .btn-daily-claim:disabled{border-color:var(--muted);color:var(--muted);cursor:default}
+    .btn-daily-claim:not(:disabled):hover{background:var(--amber);color:#000}
+
+    /* ── MODAL GÉNÉRIQUE ──────────────────────────────── */
+    .tcg-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:5000;display:grid;place-items:center;padding:16px}
+    .tcg-modal{background:#05080d;border:1px solid var(--border);border-radius:14px;width:min(640px,96vw);max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(0,245,196,.08)}
+    .tcg-modal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+    .tcg-modal-title{font-family:'VT323',monospace;font-size:1.4em;color:var(--cyan);letter-spacing:.15em}
+    .tcg-modal-close{background:transparent;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;padding:2px 8px;line-height:1}
+    .tcg-modal-close:hover{color:var(--red)}
+    .tcg-modal-body{flex:1;overflow-y:auto;padding:14px 16px}
+
+    /* ── MOBILE RESPONSIVE ────────────────────────────── */
+    .mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:48px;background:#020508;border-top:1px solid var(--border);align-items:stretch;z-index:100}
+    .mob-nav-btn{flex:1;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:.62em;letter-spacing:.1em;cursor:pointer;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .18s}
+    .mob-nav-btn.active,.mob-nav-btn:hover{color:var(--cyan)}
+    .mob-nav-btn span:first-child{font-size:1.3em}
+    .mob-overlay-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49}
+    @media (max-width: 768px) {
+      .shell{grid-template-columns:1fr !important;grid-template-rows:42px 1fr !important}
+      .center-panel{padding-bottom:60px !important}
+      .left-panel{display:none;position:fixed;inset:0 auto 0 0;width:82vw;max-width:300px;z-index:50;overflow-y:auto}
+      .left-panel.mob-open{display:flex}
+      .right-panel{display:none;position:fixed;inset:0 0 0 auto;width:88vw;max-width:340px;z-index:50;overflow-y:auto}
+      .right-panel.mob-open{display:flex}
+      .mob-nav{display:flex !important}
+      .mob-overlay-bg{display:block}
+      .tb-brand-ver,.tb-clock,.tb-chronicles,.tb-streak{display:none !important}
+      .tb-brand-name{font-size:1.1em}
+      .modules-grid{grid-template-columns:1fr !important}
+      .modules-grid .module-card:last-child{grid-column:1}
+      .ticker{display:none}
+      .tb-spacer{display:none}
+      #ub-gold{display:none}
+    }
   </style>
 </head>
 <body>
@@ -137,15 +180,28 @@
     <button class="tb-eject" id="btn-logout">EJECT</button>
   </header>
 
-  <aside class="left-panel">
+  <aside class="left-panel" id="left-panel">
     <div class="panel-section">
       <div class="panel-title">AGENT STATS</div>
-      <div class="stat-row"><span class="stat-label">GOLD</span><span class="stat-val" id="stat-gold">---</span></div>
-      <div class="stat-row"><span class="stat-label">CARDS</span><span class="stat-val" id="stat-cards">---</span></div>
+      <div class="stat-row"><span class="stat-label">CHRONICLES</span><span class="stat-val" id="stat-gold">---</span></div>
+      <div class="stat-row"><span class="stat-label">CARTES</span><span class="stat-val" id="stat-cards">---</span></div>
       <div class="stat-row"><span class="stat-label">PACKS</span><span class="stat-val" id="stat-packs">---</span></div>
     </div>
     <div class="panel-section">
-      <div class="panel-title">SYSTEMS</div>
+      <div class="panel-title">BONUS JOURNALIER</div>
+      <div class="daily-bonus-row">
+        <div>
+          <div style="font-size:.62em;color:var(--fg)">STREAK <span id="daily-streak-num" style="color:var(--amber);font-family:'VT323',monospace;font-size:1.3em">—</span></div>
+          <div id="daily-reward-label" style="font-size:.58em;color:var(--muted)">Chargement…</div>
+        </div>
+        <button class="btn-daily-claim" id="btn-daily-claim" disabled>CLAIM</button>
+      </div>
+      <div class="daily-streak-dots" id="streak-dots">
+        ${[1,2,3,4,5,6,7].map(d=>`<div class="streak-dot" title="Jour ${d}"></div>`).join('')}
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">SYSTÈMES</div>
       <div class="sys-row"><span class="sys-dot dot-on"></span><span class="sys-name">AUTH</span></div>
       <div class="sys-row"><span class="sys-dot dot-on"></span><span class="sys-name">DATABASE</span></div>
       <div class="sys-row"><span class="sys-dot dot-on"></span><span class="sys-name">PACKS</span></div>
@@ -164,7 +220,9 @@
     <div class="modules-title">MODULES · <span id="mod-count">2</span> SYSTEMES ONLINE</div>
     <div class="modules-grid">
       <div class="module-card" id="card-collection"><span class="module-status">ONLINE</span><div class="module-icon">◦</div><div class="module-name">COLLECTION</div><div class="module-desc">Album · BZH01 · BZH02</div></div>
-      <div class="module-card" id="card-arena"><span class="module-status" style="color:var(--magenta)">ONLINE</span><div class="module-icon">⚔</div><div class="module-name" style="color:var(--magenta)">COMBAT</div><div class="module-desc">Construis ton deck · Affronte l'IA · Gagne de l'or</div></div>
+      <div class="module-card" id="card-arena"><span class="module-status" style="color:var(--magenta)">ONLINE</span><div class="module-icon">⚔</div><div class="module-name" style="color:var(--magenta)">COMBAT</div><div class="module-desc">Construis ton deck · Affronte l'IA · Gagne des chronicles</div></div>
+      <div class="module-card" id="card-achievements" style="cursor:pointer"><span class="module-status" style="color:var(--amber)">ONLINE</span><div class="module-icon">🏅</div><div class="module-name" style="color:var(--amber)">SUCCÈS</div><div class="module-desc">Débloquez des succès en jouant</div></div>
+      <div class="module-card" id="card-leaderboard" style="cursor:pointer"><span class="module-status" style="color:#cc00ff">ONLINE</span><div class="module-icon">🏆</div><div class="module-name" style="color:#cc00ff">CLASSEMENT</div><div class="module-desc">Top joueurs de la saison</div></div>
       <div class="module-card" style="grid-column:1/-1"><span class="module-status">ONLINE</span><div class="module-icon">✦</div><div class="module-name">OUVERTURE</div><div class="module-desc">Directement depuis les boosters possédés ci-dessous</div></div>
     </div>
     <div class="boosters-title">BOOSTERS POSSEDES · <span id="boosters-count">0</span> EN STOCK</div>
@@ -274,93 +332,219 @@ async function refreshHub(){
     const sb=await getClient(); const user=await getUser(); if(!user) return;
     const [totalCards, playerPacks, {data:pl}] = await Promise.all([
       fetchTotalCards(sb,user),
-      loadPlayerPacks(),
       sb.from('profiles').select('chronicles').eq('id',user.id).single()
     ]);
-    const totalPacks = playerPacks.reduce((s,p)=>s+(p.quantity||0),0);
-    const chronicles = pl?.chronicles??0;
-    document.getElementById('stat-gold').textContent = chronicles;
-    document.getElementById('stat-cards').textContent = totalCards;
-    document.getElementById('stat-packs').textContent = totalPacks;
-    const ubGold=document.getElementById('ub-gold'); if(ubGold) ubGold.textContent=chronicles;
-    const ubChr=document.getElementById('ub-chronicles'); if(ubChr) ubChr.textContent=chronicles;
-    renderBoosters(playerPacks);
-  }catch(e){console.warn('[hub] refresh',e);}
+    const chronicles = pl?.chronicles ?? 0;
+    ['ub-gold','ub-chronicles','tb-chronicles'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=chronicles;});
+    const name = getDisplayName();
+    ['ub-agent'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
+    const statCards=document.getElementById('stat-cards');if(statCards)statCards.textContent=totalCards;
+    const totalPacks=playerPacks.reduce((s,p)=>s+(p.quantity||0),0);
+    const boostersCount=document.getElementById('boosters-count');if(boostersCount)boostersCount.textContent=totalPacks;
+    const grid=document.getElementById('boosters-grid');
+    if(grid){
+      const owned=playerPacks.filter(p=>p.quantity>0);
+      if(!owned.length){
+        grid.innerHTML='<span class="no-boosters">Aucun booster en stock — achetez dans la boutique</span>';
+      } else {
+        grid.innerHTML='';
+        owned.forEach(p=>{
+          const imgSrc=`./assets/packs/${p.image_name||'set01.jpg'}`;
+          const card=document.createElement('div');
+          card.className='booster-card';
+          card.innerHTML=`
+            <div class="booster-img"><img src="${imgSrc}" alt="${p.name}" onerror="this.style.display='none'"></div>
+            <div class="booster-name">${p.name}</div>
+            <div class="booster-qty">×${p.quantity}</div>
+            <button class="booster-open-btn" data-id="${p.pack_type_id||p.id}">OUVRIR</button>`;
+          grid.appendChild(card);
+        });
+        grid.querySelectorAll('.booster-open-btn').forEach(btn=>{
+          btn.addEventListener('click',()=>openOpeningOverlay(btn.dataset.id,async()=>{await refreshHub();}));
+        });
+      }
+    }
+  }catch(e){console.warn('[hub]',e);}
 }
 
-function renderBoosters(packs){
-  const grid=document.getElementById('boosters-grid');
-  const countEl=document.getElementById('boosters-count');
-  const owned=(packs||[]).filter(b=>b.quantity>0);
-  countEl.textContent=owned.reduce((s,b)=>s+b.quantity,0);
-  if(!owned.length){grid.innerHTML='<span class="no-boosters">Aucun booster en stock</span>';return;}
-  grid.innerHTML='';
-  owned.forEach(b=>{
-    const imgFile=b.image_name||'set01.jpg';
-    const img='./assets/packs/'+imgFile;
-    const el=document.createElement('div');
-    el.className='booster-thumb';
-    el.title=(b.name||b.id)+' x'+b.quantity;
-    el.innerHTML=`<div class="booster-img"><img src="${img}" alt="${b.name||b.id}"></div><span class="booster-badge">x${b.quantity}</span><div class="booster-name">${b.name||b.id}</div>`;
-    el.addEventListener('click',()=>openOpeningOverlay({packTypeId:b.pack_type_id??b.id,setId:b.set_id||b.id,packImage:img,onDone:async()=>{await refreshHub();await renderShop();}}));
-    grid.appendChild(el);
+// ── DAILY CHALLENGES ─────────────────────────────────────────
+function renderDailyChallenges(){
+  const list=document.getElementById('daily-challenges-list');
+  if(!list)return;
+  try{
+    const challenges=getDailyChallenges();
+    list.innerHTML='';
+    challenges.forEach(ch=>{
+      const prog=getChallengeProgress(ch.id);
+      const done=prog>=ch.target;
+      const pct=Math.min(100,Math.round((prog/ch.target)*100));
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;flex-direction:column;gap:3px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)';
+      row.innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:.65em;color:${done?'var(--cyan)':'#c8d0d8'}">${ch.label}</span>
+          <span style="font-size:.6em;color:${done?'var(--cyan)':'var(--muted)'}">${done?'✓':prog+'/'+ch.target}</span>
+        </div>
+        <div style="height:3px;background:#0d1a14;border-radius:2px">
+          <div style="height:100%;width:${pct}%;background:${done?'var(--cyan)':'#2a5a40'};border-radius:2px;transition:width .3s"></div>
+        </div>`;
+      list.appendChild(row);
+    });
+  }catch(e){console.warn('[challenges]',e);}
+}
+
+// ── STREAK UI ─────────────────────────────────────────────────
+function updateStreakUI(streak, rewarded, amount){
+  const dotsEl=document.getElementById('streak-dots');
+  const numEl=document.getElementById('daily-streak-num');
+  const rewardEl=document.getElementById('daily-reward-label');
+  const claimBtn=document.getElementById('btn-daily-claim');
+  const REWARDS=[50,75,100,125,150,175,300];
+  const idx=(streak-1)%7;
+  if(numEl) numEl.textContent=streak||0;
+  if(rewardEl){
+    const next=REWARDS[rewarded ? (streak%7) : idx]||50;
+    rewardEl.textContent=rewarded?`+${amount} chronicles reçus`:`Prochain: +${next} chronicles`;
+  }
+  if(claimBtn){
+    claimBtn.disabled=true;
+    claimBtn.textContent=rewarded?'REÇU ✓':'DÉJÀ RÉCLAMÉ';
+  }
+  if(dotsEl){
+    const dots=dotsEl.querySelectorAll('.streak-dot');
+    dots.forEach((d,i)=>{
+      d.style.background=i<(streak%7||7)?'var(--cyan)':'rgba(255,255,255,.08)';
+      d.style.boxShadow=i<(streak%7||7)?'0 0 5px var(--cyan)':'none';
+    });
+  }
+}
+
+// ── ACHIEVEMENTS MODAL ────────────────────────────────────────
+async function openAchievementsModal(){
+  const { mount } = await import('./pages/achievementsWidget.js');
+  const overlay=document.createElement('div');
+  overlay.className='tcg-modal-overlay';
+  overlay.innerHTML=`
+    <div class="tcg-modal">
+      <div class="tcg-modal-header">
+        <span class="tcg-modal-title">🏅 SUCCÈS</span>
+        <button class="tcg-modal-close">✕</button>
+      </div>
+      <div class="tcg-modal-body" id="ach-modal-body"></div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('.tcg-modal-close').addEventListener('click',()=>overlay.remove());
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  await mount(overlay.querySelector('#ach-modal-body'));
+}
+
+// ── LEADERBOARD MODAL ─────────────────────────────────────────
+async function openLeaderboardModal(){
+  const { mount } = await import('./pages/leaderboardWidget.js');
+  const sb=await getClient();
+  const user=await getUser();
+  const overlay=document.createElement('div');
+  overlay.className='tcg-modal-overlay';
+  overlay.innerHTML=`
+    <div class="tcg-modal">
+      <div class="tcg-modal-header">
+        <span class="tcg-modal-title">🏆 CLASSEMENT</span>
+        <button class="tcg-modal-close">✕</button>
+      </div>
+      <div class="tcg-modal-body" id="lb-modal-body"></div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('.tcg-modal-close').addEventListener('click',()=>overlay.remove());
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  await mount(overlay.querySelector('#lb-modal-body'), user?.id);
+}
+
+// ── MOBILE NAV ────────────────────────────────────────────────
+function initMobileNav(){
+  const nav=document.getElementById('mob-nav');
+  if(!nav)return;
+  const leftPanel=document.querySelector('.left-panel');
+  const rightPanel=document.querySelector('.right-panel');
+  let overlay=null;
+  function closeAll(){
+    leftPanel?.classList.remove('mob-open');
+    rightPanel?.classList.remove('mob-open');
+    overlay?.remove(); overlay=null;
+  }
+  function showOverlay(){
+    if(overlay)return;
+    overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90';
+    overlay.addEventListener('click',closeAll);
+    document.body.appendChild(overlay);
+  }
+  nav.querySelectorAll('.mob-nav-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const target=btn.dataset.panel;
+      if(target==='left'){
+        const open=leftPanel?.classList.toggle('mob-open');
+        rightPanel?.classList.remove('mob-open');
+        open?showOverlay():closeAll();
+      } else if(target==='right'){
+        const open=rightPanel?.classList.toggle('mob-open');
+        leftPanel?.classList.remove('mob-open');
+        open?showOverlay():closeAll();
+      } else {
+        closeAll();
+      }
+      nav.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
   });
 }
 
+// ── INIT ──────────────────────────────────────────────────────
 async function init(){
   try{
-    const sb=await getClient(); const user=await getUser();
-    if(!user){document.getElementById('tb-name').textContent='???';return;}
-    const player=await initPlayer(sb,user);
-    document.getElementById('tb-name').textContent=getDisplayName();
+    const sb=await getClient();
+    const user=await getUser();
+    if(!user){ console.warn('[hub] non connecté'); return; }
+
+    await initPlayer(sb, user);
     await refreshHub();
     await renderShop();
-  }catch(e){console.warn('[hub] init',e);renderBoosters([]);}
+    renderDailyChallenges();
+
+    // Daily streak
+    const { claimDailyReward } = await import('./logic/daily.js');
+    const result = await claimDailyReward(sb, user.id);
+    updateStreakUI(result.streak, result.rewarded, result.amount);
+
+    // btn claim (désactivé si déjà fait — sinon proposer le claim manuel n'est pas nécessaire
+    // car claimDailyReward est appelé automatiquement au login)
+    const claimBtn=document.getElementById('btn-daily-claim');
+    if(claimBtn && !result.rewarded){
+      // streak déjà réclamé aujourd'hui — bouton reste disabled
+    }
+
+    // Module cards
+    document.getElementById('card-collection')?.addEventListener('click',()=>navigate('collection'));
+    document.getElementById('card-arena')?.addEventListener('click',()=>navigate('deck-builder'));
+    document.getElementById('card-achievements')?.addEventListener('click',openAchievementsModal);
+    document.getElementById('card-leaderboard')?.addEventListener('click',openLeaderboardModal);
+
+    // Modules count
+    const modCount=document.getElementById('mod-count');
+    if(modCount) modCount.textContent='4';
+
+    initMobileNav();
+    boot();
+  }catch(e){ console.error('[hub] init',e); }
 }
+
 init();
-
-// ── DÉFIS QUOTIDIENS ─────────────────────────────────────────
-function renderDailyChallenges() {
-  const el = document.getElementById('daily-challenges-list');
-  if (!el) return;
-  const challenges = getDailyChallenges();
-  const progress   = getChallengeProgress();
-  el.innerHTML = '';
-  challenges.forEach(ch => {
-    const done = !!progress[ch.id]?.completed;
-    const item = document.createElement('div');
-    item.className = 'challenge-item' + (done ? ' done' : '');
-    if (!done) item.style.borderColor = 'rgba(0,245,196,.2)';
-    item.innerHTML = `
-      <span class="challenge-icon">${ch.icon}</span>
-      <div class="challenge-info">
-        <div class="challenge-label">${ch.label}</div>
-        <div class="challenge-desc">${ch.desc}</div>
-      </div>
-      <span class="challenge-gold">${done ? '<span style="color:#3a6655">✓</span>' : '+'+ch.gold+'🪙'}</span>
-    `;
-    el.appendChild(item);
-  });
-}
-renderDailyChallenges();
-
-window.addEventListener('tcg:challenge-completed', () => renderDailyChallenges());
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) renderDailyChallenges();
-});
-
-function goToView(hash) {
-  document.querySelector('.shell').style.display = 'none';
-  document.getElementById('app-root').style.display = 'block';
-  navigate(hash);
-}
-document.getElementById('btn-collection').addEventListener('click', () => goToView('#/collection'));
-document.getElementById('card-collection').addEventListener('click', () => goToView('#/collection'));
-document.getElementById('btn-arena').addEventListener('click', () => goToView('#/deck-builder'));
-document.getElementById('tb-nav-cig').addEventListener('click',()=>window.location.href='./pages/cig/index.html');
-document.getElementById('card-arena').addEventListener('click', () => goToView('#/deck-builder'));
-document.getElementById('btn-logout').addEventListener('click',async()=>{try{const sb=await getClient();await sb.auth.signOut();}catch(e){}location.reload();});
-boot();
 </script>
+
+<nav class="mob-nav" id="mob-nav">
+  <button class="mob-nav-btn" data-panel="left"><span>☰</span><span>STATS</span></button>
+  <button class="mob-nav-btn active" data-panel="hub"><span>⌂</span><span>HUB</span></button>
+  <button class="mob-nav-btn" data-panel="right"><span>◈</span><span>SHOP</span></button>
+</nav>
+
 </body>
 </html>

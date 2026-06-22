@@ -40,7 +40,8 @@ export async function addCardsBatch(userId, cards) {
     counts[c.id] = (counts[c.id] || 0) + 1;
     if (!meta[c.id]) {
       meta[c.id] = {
-        rarity: c.rarity ?? null,
+        // rarity en minuscules : contrainte tcg_player_cards_rarity_check
+        rarity: c.rarity ? String(c.rarity).toLowerCase() : null,
         set_id: c.set_id ?? (c.id.includes('_') ? c.id.split('_')[0] : null),
       };
     }

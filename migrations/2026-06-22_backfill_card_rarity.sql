@@ -3,8 +3,9 @@
 -- Makes has_legendary + rarity achievements retroactive for cards saved before
 -- the rarity-storing code shipped. Idempotent: re-running just re-syncs to JSON.
 
+-- rarity stored lowercase to satisfy tcg_player_cards_rarity_check
 UPDATE tcg_player_cards c
-SET rarity = v.rarity, set_id = v.set_id
+SET rarity = lower(v.rarity), set_id = v.set_id
 FROM (VALUES
   ('BZH01_RC001','Rare','BZH01'),
   ('BZH01_RC002','Rare','BZH01'),

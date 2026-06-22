@@ -530,9 +530,19 @@ async function init(){
       // streak déjà réclamé aujourd'hui — bouton reste disabled
     }
 
-    // Module cards
-    document.getElementById('card-collection')?.addEventListener('click',()=>navigate('collection'));
-    document.getElementById('card-arena')?.addEventListener('click',()=>navigate('deck-builder'));
+    // Affiche une vue routée : montre #app-root, masque le hub, puis route
+    // (le hash DOIT correspondre aux clés du routeur : '#/collection', etc.).
+    const openView = (hash) => {
+      document.querySelector('.shell').style.display = 'none';
+      document.getElementById('app-root').style.display = 'block';
+      navigate(hash);
+    };
+
+    // Module cards + boutons topbar
+    ['card-collection','btn-collection'].forEach(id =>
+      document.getElementById(id)?.addEventListener('click',()=>openView('#/collection')));
+    ['card-arena','btn-arena'].forEach(id =>
+      document.getElementById(id)?.addEventListener('click',()=>openView('#/deck-builder')));
     document.getElementById('card-achievements')?.addEventListener('click',openAchievementsModal);
     document.getElementById('card-leaderboard')?.addEventListener('click',openLeaderboardModal);
 

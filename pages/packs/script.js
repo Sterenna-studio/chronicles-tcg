@@ -56,7 +56,7 @@ function toBzhSetId(s) {
           packImage: packType.image_name,
           ownedSet,
           onFinish: async (cards) => {
-            await addCardsBatch(player.id, cards.map(c => c.id));
+            await addCardsBatch(player.id, cards);
             statsIncBoostersOpened(1);
             statsIncCardsObtained(cards.length);
             rootOpen.innerHTML = '';

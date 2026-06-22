@@ -60,7 +60,7 @@ function toBzhSetId(s){ const t = String(s??'').toLowerCase(); const m=t.match(/
             picks,
             ownedSet,
             onFinish: async (cards) => {
-              await addCardsBatch(player.id, cards.map(c => c.id));
+              await addCardsBatch(player.id, cards);
               statsIncBoostersOpened(1);
               statsIncCardsObtained(cards.length);
               await refresh();

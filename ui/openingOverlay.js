@@ -33,7 +33,7 @@ async function loadCards(setId) {
 async function saveOpenedCards(cards) {
   // Écrit dans tcg_player_cards (user_id / quantity) via le repo dédié
   const user = await getUser();
-  await addCardsBatch(user.id, cards.map(c => c.id));
+  await addCardsBatch(user.id, cards);
 }
 
 // ─── Pixel build-in : construit l'overlay tuile par tuile ────────────────────

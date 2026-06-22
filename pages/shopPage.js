@@ -1,6 +1,6 @@
 // pages/shopPage.js — v5.0.0 (chronicles)
-import { getClient, getUser } from '../logic/supaRaw.js';
-import { getCachedPlayer, initPlayer } from '../data/supabaseData.js';
+import { getClient, getUser } from '../logic/supaRaw.js?v=3';
+import { getCachedPlayer, initPlayer } from '../data/supabaseData.js?v=3';
 
 const CHR = '◆'; // symbole Chronicles
 

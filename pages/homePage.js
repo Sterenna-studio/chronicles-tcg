@@ -1,10 +1,10 @@
 // pages/homePage.js — v3.0.0
 // Home: greeting + stats + daily + leaderboard/nav row + achievements
-import { mount as mountDaily }        from './dailyWidget.js';
-import { mount as mountLeaderboard }  from './leaderboardWidget.js';
-import { mount as mountAchievements } from './achievementsWidget.js';
-import { getCachedPlayer }            from '../data/supabaseData.js';
-import { getUser }                    from '../logic/supaRaw.js';
+import { mount as mountDaily }        from './dailyWidget.js?v=3';
+import { mount as mountLeaderboard }  from './leaderboardWidget.js?v=3';
+import { mount as mountAchievements } from './achievementsWidget.js?v=3';
+import { getCachedPlayer }            from '../data/supabaseData.js?v=3';
+import { getUser }                    from '../logic/supaRaw.js?v=3';
 
 const NAV_ITEMS = [
   { hash: '#/packs',      icon: '\u{1F0CF}', label: 'Boosters'   },

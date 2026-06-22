@@ -1,9 +1,9 @@
 // ui-shell.js — modernisé (ESM only)
-import { navigate } from './router.js';
-import { set } from './state.js';
-import { getClient, getUser, requireLogin } from '../logic/supaRaw.js';
-import { getDisplayName, initPlayer } from '../data/supabaseData.js';
-import { openCIG } from '../ui/cigModal.js';
+import { navigate } from './router.js?v=3';
+import { set } from './state.js?v=3';
+import { getClient, getUser, requireLogin } from '../logic/supaRaw.js?v=3';
+import { getDisplayName, initPlayer } from '../data/supabaseData.js?v=3';
+import { openCIG } from '../ui/cigModal.js?v=3';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const top = document.getElementById('topbar');

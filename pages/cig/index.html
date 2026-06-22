@@ -6,9 +6,9 @@
   <title>CIG</title>
   <link rel="stylesheet" href="../../styles/cig.css?v=classic-lab-1.3.0">
   <script type="module">
-    import { url,bust } from '../../logic/paths.js';
-    import { getClient,getUser } from '../../logic/supaRaw.js';
-    import { loadPlayerCollection, loadPackTypes } from '../../supabaseData.js';
+    import { url,bust } from '../../logic/paths.js?v=3';
+    import { getClient,getUser } from '../../logic/supaRaw.js?v=3';
+    import { loadPlayerCollection, loadPackTypes } from '../../supabaseData.js?v=3';
 
     async function main(){
       const supabase = await getClient();

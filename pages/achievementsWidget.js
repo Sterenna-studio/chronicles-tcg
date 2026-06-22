@@ -1,6 +1,6 @@
 // pages/achievementsWidget.js — v1.0.0
 // Injectable achievements grid with tier colours + locked/unlocked states
-import { getAchievements, TIERS } from '../data/achievementsRepo.js';
+import { getAchievements, TIERS } from '../data/achievementsRepo.js?v=3';
 
 const TIER_COLOR = {
   [TIERS.bronze]:    { bg: '#1a1008', border: '#7c4a10', badge: '#cd7f32', glow: 'rgba(180,100,30,.22)' },

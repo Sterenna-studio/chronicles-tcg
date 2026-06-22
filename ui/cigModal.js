@@ -1,5 +1,5 @@
 // ui/cigModal.js — v6 (uses modalShell)
-import { openModalShell } from './modalShell.js';
+import { openModalShell } from './modalShell.js?v=3';
 
 export function openCIG() {
   return openModalShell({

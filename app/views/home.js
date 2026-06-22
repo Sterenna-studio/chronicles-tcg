@@ -1,9 +1,9 @@
 // app/views/home.js
-import { loadPlayerPacks } from '../../data/packsRepo.js';
-import { getClient, getUser } from '../../logic/supaRaw.js';
-import { state } from '../state.js';
-import { navigate } from '../router.js';
-import { url } from '../../logic/paths.js';
+import { loadPlayerPacks } from '../../data/packsRepo.js?v=3';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=3';
+import { state } from '../state.js?v=3';
+import { navigate } from '../router.js?v=3';
+import { url } from '../../logic/paths.js?v=3';
 
 const RARITY_PROBA = [
   { label: 'Common',    color: '#9da7b3', prob: '60%' },

@@ -143,4 +143,4 @@ export async function addCardsBatch(playerId, cardIds) {
 }
 
 // Facade alias
-export { ensurePlayer as initPlayer } from './localData.js';
+export { ensurePlayer as initPlayer } from './localData.js?v=3';

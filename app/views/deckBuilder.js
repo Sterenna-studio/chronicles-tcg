@@ -1,6 +1,6 @@
 // app/views/deckBuilder.js
-import { getClient, getUser } from '../../logic/supaRaw.js';
-import { url } from '../../logic/paths.js';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=3';
+import { url } from '../../logic/paths.js?v=3';
 
 const SETS = [
   { id: 'BZH01', file: '/data/BZH01.json', label: 'BZH01' },
@@ -273,7 +273,7 @@ export async function renderDeckBuilder(root) {
         root.innerHTML = '';
         document.querySelector('.shell')?.style.setProperty('display', 'none');
         document.getElementById('app-root').style.display = 'block';
-        import('./battle.js').then(m => m.renderBattle(root, { playerDeck, allCards }));
+        import('./battle.js?v=3').then(m => m.renderBattle(root, { playerDeck, allCards }));
       });
     });
     box.querySelector('#diff-cancel').addEventListener('click', () => overlay.remove());

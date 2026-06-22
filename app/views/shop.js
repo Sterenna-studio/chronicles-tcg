@@ -1,8 +1,8 @@
 // app/views/shop.js — rework complet
-import { loadPackTypes } from '../../data/packsRepo.js';
-import { getClient, getUser } from '../../logic/supaRaw.js';
-import { state, set } from '../state.js';
-import { url } from '../../logic/paths.js';
+import { loadPackTypes } from '../../data/packsRepo.js?v=3';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=3';
+import { state, set } from '../state.js?v=3';
+import { url } from '../../logic/paths.js?v=3';
 
 export async function renderShop(root) {
   const el = document.createElement('div');

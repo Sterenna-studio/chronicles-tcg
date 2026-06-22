@@ -1,7 +1,7 @@
-import { requireLogin } from '../../tcg_auth.js';
+import { requireLogin } from '../../tcg_auth.js?v=3';
 // Use the shared data layer to load player state from Supabase.
-import { initPlayer, loadPlayerCollection } from '../../../shared/supabaseData.js';
-import { renderCollection } from '../../ui/collectionRenderer.js';
+import { initPlayer, loadPlayerCollection } from '../../../shared/supabaseData.js?v=3';
+import { renderCollection } from '../../ui/collectionRenderer.js?v=3';
 
 function bust(url){ return `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`; }
 

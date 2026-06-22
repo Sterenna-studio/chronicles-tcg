@@ -1,10 +1,10 @@
-import { requireLogin } from '../../tcg_auth.js';
+import { requireLogin } from '../../tcg_auth.js?v=3';
 // Pull shared data accessors from the common lab/shared folder.  These
 // functions talk to Supabase via the shared client rather than using
 // tcg_beta's own data layer.
-import { initPlayer, getPlayer, loadPackTypes, loadPlayerPacks, buyPack } from '../../../shared/supabaseData.js';
-import { renderShop } from '../../ui/shopRenderer.js';
-import { cartAdd, cartClear, cartCount, cartTotal, statsIncGoldSpent } from '../../state/store.js';
+import { initPlayer, getPlayer, loadPackTypes, loadPlayerPacks, buyPack } from '../../../shared/supabaseData.js?v=3';
+import { renderShop } from '../../ui/shopRenderer.js?v=3';
+import { cartAdd, cartClear, cartCount, cartTotal, statsIncGoldSpent } from '../../state/store.js?v=3';
 
 (async function main(){
   await requireLogin();

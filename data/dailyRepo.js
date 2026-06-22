@@ -1,6 +1,6 @@
 // data/dailyRepo.js — v1.0.0
 // Daily gold claim: 24h cooldown, +50 gold
-import { getClient, getUser } from '../logic/supaRaw.js';
+import { getClient, getUser } from '../logic/supaRaw.js?v=3';
 
 export const DAILY_AMOUNT     = 50;
 export const DAILY_COOLDOWN_MS = 24 * 60 * 60 * 1000;

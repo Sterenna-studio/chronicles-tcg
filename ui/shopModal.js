@@ -1,8 +1,8 @@
 // ui/shopModal.js — v3 (uses modalShell)
-import { loadPackTypes } from '../data/packsRepo.js';
-import { getClient, getUser } from '../logic/supaRaw.js';
-import { url } from '../logic/paths.js';
-import { openModalShell } from './modalShell.js';
+import { loadPackTypes } from '../data/packsRepo.js?v=3';
+import { getClient, getUser } from '../logic/supaRaw.js?v=3';
+import { url } from '../logic/paths.js?v=3';
+import { openModalShell } from './modalShell.js?v=3';
 
 export function openShopModal({ onBought } = {}) {
   return openModalShell({

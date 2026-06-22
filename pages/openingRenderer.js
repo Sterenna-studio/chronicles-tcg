@@ -1,13 +1,13 @@
 // pages/openingRenderer.js — v4.3.0
 // Fix: all import paths corrected for TCG/pages/ location
-import { openOnePack }                   from '../shared/packsRepo.js';
-import { decrementPlayerPack }           from '../data/packsRepo.js';
-import { getSettings }                   from '../app/ui-settings.js';
-import { cardArtworkUrl }                from '../shared/assetHelpers.js';
-import { burstParticles, celebrateCard } from '../shared/effects/animations.js';
-import { saveCards }                     from '../data/cardsRepo.js';
-import { syncStatsAfterPack }            from '../data/playersRepo.js';
-import { getClient, getUser }            from '../logic/supaRaw.js';
+import { openOnePack }                   from '../shared/packsRepo.js?v=3';
+import { decrementPlayerPack }           from '../data/packsRepo.js?v=3';
+import { getSettings }                   from '../app/ui-settings.js?v=3';
+import { cardArtworkUrl }                from '../shared/assetHelpers.js?v=3';
+import { burstParticles, celebrateCard } from '../shared/effects/animations.js?v=3';
+import { saveCards }                     from '../data/cardsRepo.js?v=3';
+import { syncStatsAfterPack }            from '../data/playersRepo.js?v=3';
+import { getClient, getUser }            from '../logic/supaRaw.js?v=3';
 
 const SFX = {
   common:    'common.mp3',

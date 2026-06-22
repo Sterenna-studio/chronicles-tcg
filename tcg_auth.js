@@ -1,7 +1,7 @@
 // Use the shared Supabase client through the supaRaw helper.  This avoids
 // duplicating Supabase configuration in the tcg_beta folder.  See
 // lab/shared/supaRaw.js for details.
-import { getClient } from '../shared/supaRaw.js'
+import { getClient } from '../shared/supaRaw.js?v=3'
 
 export async function requireLogin(redirect = '../lab/login.html') {
   const sb = await getClient();

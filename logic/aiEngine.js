@@ -2,7 +2,7 @@
 // IA pour le moteur de combat — 3 niveaux de difficulté
 // Dépend de battleEngine.js pour la simulation (niveau hard)
 
-import { playCard as enginePlayCard, getBattleResult } from './battleEngine.js';
+import { playCard as enginePlayCard, getBattleResult } from './battleEngine.js?v=3';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 

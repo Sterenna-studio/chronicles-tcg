@@ -1,9 +1,9 @@
-import { requireLogin } from '../../tcg_auth.js';
+import { requireLogin } from '../../tcg_auth.js?v=3';
 // Import data accessors from the shared supabase data layer instead of the local mocks.
-import { initPlayer, getPlayer, loadPackTypes, loadPlayerPacks, loadPlayerCollection, decrementPlayerPack, addCardsBatch } from '../../../shared/supabaseData.js';
-import { generatePack } from '../../logic/packGenerator.js';
-import { renderDragOpen } from '../../ui/dragOpenRenderer.js';
-import { statsIncBoostersOpened, statsIncCardsObtained } from '../../state/store.js';
+import { initPlayer, getPlayer, loadPackTypes, loadPlayerPacks, loadPlayerCollection, decrementPlayerPack, addCardsBatch } from '../../../shared/supabaseData.js?v=3';
+import { generatePack } from '../../logic/packGenerator.js?v=3';
+import { renderDragOpen } from '../../ui/dragOpenRenderer.js?v=3';
+import { statsIncBoostersOpened, statsIncCardsObtained } from '../../state/store.js?v=3';
 
 function bust(url){ return `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`; }
 function toBzhSetId(s){ const t = String(s??'').toLowerCase(); const m=t.match(/(\d+)/); if(!m) return 'bzh_set01'; const n=String(parseInt(m[1],10)).padStart(2,'0'); return `bzh_set${n}`; }

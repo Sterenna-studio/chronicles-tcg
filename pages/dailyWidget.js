@@ -1,6 +1,6 @@
 // pages/dailyWidget.js — v1.0.0
 // Injectable daily-gold widget. Call mount(container) to attach.
-import { getDailyStatus, claimDaily, formatCountdown, DAILY_AMOUNT } from '../data/dailyRepo.js';
+import { getDailyStatus, claimDaily, formatCountdown, DAILY_AMOUNT } from '../data/dailyRepo.js?v=3';
 
 const CSS = `
 .daily-widget {

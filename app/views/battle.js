@@ -1,9 +1,9 @@
 // app/views/battle.js
-import { createBattle, playCard, endPlayerTurn, getBattleResult, drawCards } from '../../logic/battleEngine.js';
-import { runEnemyTurn } from '../../logic/aiEngine.js';
-import { getClient, getUser } from '../../logic/supaRaw.js';
-import { url } from '../../logic/paths.js';
-import { getDailyChallenges, checkAndCompleteChallenges, getChallengeProgress } from '../../logic/challengeEngine.js';
+import { createBattle, playCard, endPlayerTurn, getBattleResult, drawCards } from '../../logic/battleEngine.js?v=3';
+import { runEnemyTurn } from '../../logic/aiEngine.js?v=3';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=3';
+import { url } from '../../logic/paths.js?v=3';
+import { getDailyChallenges, checkAndCompleteChallenges, getChallengeProgress } from '../../logic/challengeEngine.js?v=3';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -124,7 +124,7 @@ export async function renderBattle(root, opts = {}) {
         <button id="go-deck" style="background:transparent;border:1px solid #00f5c4;color:#00f5c4;padding:8px 20px;cursor:pointer;font-family:inherit">Construire un deck</button>
       </div>`;
     root.querySelector('#go-deck').addEventListener('click', () => {
-      import('./deckBuilder.js').then(m => m.renderDeckBuilder(root));
+      import('./deckBuilder.js?v=3').then(m => m.renderDeckBuilder(root));
     });
     return;
   }
@@ -566,7 +566,7 @@ export async function renderBattle(root, opts = {}) {
     });
     box.querySelector('#end-deck').addEventListener('click', () => {
       overlay.remove();
-      import('./deckBuilder.js').then(m => m.renderDeckBuilder(root));
+      import('./deckBuilder.js?v=3').then(m => m.renderDeckBuilder(root));
     });
     box.querySelector('#end-hub').addEventListener('click', () => {
       overlay.remove();
@@ -618,7 +618,7 @@ export async function renderBattle(root, opts = {}) {
 function renderDailyChallenges() {
   const el = document.getElementById('daily-challenges-list');
   if (!el) return;
-  import('../../logic/challengeEngine.js').then(({ getDailyChallenges, getChallengeProgress }) => {
+  import('../../logic/challengeEngine.js?v=3').then(({ getDailyChallenges, getChallengeProgress }) => {
     const challenges = getDailyChallenges();
     const progress   = getChallengeProgress();
     el.innerHTML = '';

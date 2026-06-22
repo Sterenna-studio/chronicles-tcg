@@ -1,9 +1,9 @@
 // pages/packsPage.js — v4.0.0
 // Full packs page: header + owned pack grid + opening flow
 // Fixes: correct import paths, styled empty state, reload on tcg:refresh
-import { getClient, getUser }  from '../logic/supaRaw.js';
-import { getCachedPlayer }     from '../data/supabaseData.js';
-import { runOpeningFlow }      from './openingRenderer.js';
+import { getClient, getUser }  from '../logic/supaRaw.js?v=3';
+import { getCachedPlayer }     from '../data/supabaseData.js?v=3';
+import { runOpeningFlow }      from './openingRenderer.js?v=3';
 
 const CSS = `
 .packs-page {

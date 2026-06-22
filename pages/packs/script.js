@@ -1,11 +1,11 @@
-import { requireLogin } from '../../tcg_auth.js';
+import { requireLogin } from '../../tcg_auth.js?v=3';
 // Fetch Supabase data via the shared layer.  This centralizes all DB
 // interactions in lab/shared.
-import { initPlayer, loadPackTypes, loadPlayerPacks, decrementPlayerPack, addCardsBatch, loadPlayerCollection } from '../../../shared/supabaseData.js';
-import { renderPackShelf, renderInventory } from '../../ui/renderer.js';
-import { renderOpening } from '../../ui/openingRenderer.js';
-import { generatePack } from '../../logic/packGenerator.js';
-import { statsIncBoostersOpened, statsIncCardsObtained } from '../../state/store.js';
+import { initPlayer, loadPackTypes, loadPlayerPacks, decrementPlayerPack, addCardsBatch, loadPlayerCollection } from '../../../shared/supabaseData.js?v=3';
+import { renderPackShelf, renderInventory } from '../../ui/renderer.js?v=3';
+import { renderOpening } from '../../ui/openingRenderer.js?v=3';
+import { generatePack } from '../../logic/packGenerator.js?v=3';
+import { statsIncBoostersOpened, statsIncCardsObtained } from '../../state/store.js?v=3';
 
 function bust(url){ return `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`; }
 

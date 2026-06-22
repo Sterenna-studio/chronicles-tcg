@@ -1,10 +1,10 @@
 // app/hub.js — logique Bridge (extrait de l'ancien inline index.html)
-import { getClient, getUser } from '../logic/supaRaw.js';
-import { initPlayer, getDisplayName } from '../data/supabaseData.js';
-import { loadPlayerPacks, loadPackTypes } from '../data/packsRepo.js';
-import { openOpeningOverlay } from '../ui/openingOverlay.js';
-import { claimDailyReward } from '../logic/daily.js';
-import { boot, navigate } from './router.js';
+import { getClient, getUser } from '../logic/supaRaw.js?v=3';
+import { initPlayer, getDisplayName } from '../data/supabaseData.js?v=3';
+import { loadPlayerPacks, loadPackTypes } from '../data/packsRepo.js?v=3';
+import { openOpeningOverlay } from '../ui/openingOverlay.js?v=3';
+import { claimDailyReward } from '../logic/daily.js?v=3';
+import { boot, navigate } from './router.js?v=3';
 
 // ── CLOCK ─────────────────────────────────────────────────────
 const pad = n => String(n).padStart(2, '0');

@@ -1,6 +1,6 @@
 // app/views/collection.js
-import { getClient, getUser } from '../../logic/supaRaw.js';
-import { url } from '../../logic/paths.js';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=3';
+import { url } from '../../logic/paths.js?v=3';
 
 const SETS = [
   { id: 'BZH01', label: 'Set 1 — BZH Chronicles', file: '/data/BZH01.json' },

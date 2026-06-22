@@ -19,7 +19,7 @@ const SFX = {
 
 function rarityClass(r){ return `rarity-${(r||'').toLowerCase()}`; }
 
-import { getFxSettings } from '../state/settings.js';
+import { getFxSettings } from '../state/settings.js?v=3';
 
 export function renderDragOpen(root, { packImage, picks, ownedSet, onFinish }){
   const overlay = document.createElement('div');

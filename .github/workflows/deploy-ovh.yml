@@ -19,6 +19,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache-bust module imports
+        # Stamp a unique ?v=<run_number> on every local import before deploy so
+        # browsers refetch changed modules. Not committed back — only the
+        # rsync'd copy is stamped.
+        run: node dev/bump-cache.mjs "${{ github.run_number }}"
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh

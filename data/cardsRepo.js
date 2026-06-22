@@ -29,19 +29,20 @@ export async function addCardsBatch(userId, cardIds) {
 
   const { data: existing } = await sb
     .from('tcg_player_cards')
-    .select('id, card_id, quantity')
+    .select('card_id, quantity')
     .eq('user_id', uid)
     .in('card_id', Object.keys(counts));
 
-  const existingMap = Object.fromEntries((existing || []).map(r => [r.card_id, r]));
+  const existingMap = Object.fromEntries((existing || []).map(r => [r.card_id, r.quantity || 0]));
 
-  const rows = Object.entries(counts).map(([card_id, qty]) => {
-    const ex = existingMap[card_id];
-    if (ex) {
-      return { id: ex.id, user_id: uid, card_id, quantity: (ex.quantity || 0) + qty };
-    }
-    return { user_id: uid, card_id, quantity: qty };
-  });
+  // Pas de colonne `id` ici : l'upsert résout insert/update via onConflict
+  // (user_id,card_id). Inclure `id` enverrait id=null sur les nouvelles cartes
+  // → violation NOT NULL de la PK.
+  const rows = Object.entries(counts).map(([card_id, qty]) => ({
+    user_id: uid,
+    card_id,
+    quantity: (existingMap[card_id] || 0) + qty,
+  }));
 
   const { error } = await sb
     .from('tcg_player_cards')

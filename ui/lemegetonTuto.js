@@ -2,6 +2,7 @@
  * lemegetonTuto.js
  * Modale d'accueil Lemegeton — Quête tuto_01
  * S'affiche automatiquement si le joueur n'a pas encore réclamé tuto_01.
+ * Fix : sb + user passés en param depuis init() pour éviter le timing auth null.
  */
 import { getClient, getUser } from '../logic/supaRaw.js?v=3';
 
@@ -196,11 +197,8 @@ function buildModal() {
 
 function typewrite(el, html, speed = 22) {
   return new Promise(resolve => {
-    // On parse les balises HTML proprement
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
-    const text = tmp.innerHTML; // HTML avec balises
-    // On va afficher caractère par caractère sur le textContent brut puis swap
     const plain = tmp.textContent;
     let i = 0;
     el.innerHTML = '<span class="lem-cursor"></span>';
@@ -211,7 +209,6 @@ function typewrite(el, html, speed = 22) {
       span.textContent = plain.slice(0, ++i);
       if (i >= plain.length) {
         clearInterval(interval);
-        // Remplace par le HTML complet une fois fini
         span.innerHTML = html;
         resolve();
       }
@@ -219,10 +216,20 @@ function typewrite(el, html, speed = 22) {
   });
 }
 
-export async function showLemegetonTuto(onDone) {
-  const sb = await getClient();
-  const user = await getUser();
-  if (!user) return;
+/**
+ * showLemegetonTuto(onDone)
+ * Accepte optionnellement sb et user pré-résolus pour éviter
+ * le problème de timing où auth.uid() est encore NULL.
+ */
+export async function showLemegetonTuto(onDone, { sb: sbIn, user: userIn } = {}) {
+  // Utilise les instances passées en param si dispo, sinon résout en interne
+  const sb   = sbIn   ?? await getClient();
+  const user = userIn ?? await getUser();
+
+  if (!user) {
+    console.warn('[lemegeton] user non résolu, tuto ignoré');
+    return;
+  }
 
   const already = await hasClaimedTuto(sb, user.id);
   if (already) return;
@@ -259,9 +266,10 @@ export async function showLemegetonTuto(onDone) {
     try {
       const { data, error } = await sb.rpc('claim_quest', { p_quest_id: QUEST_ID });
       if (error || !data?.ok) {
-        btnClaim.textContent = data?.error || 'Erreur';
+        btnClaim.textContent = data?.error || error?.message || 'Erreur';
         btnClaim.style.borderColor = '#ff2d4e';
         btnClaim.style.color = '#ff2d4e';
+        btnClaim.disabled = false;
         return;
       }
       btnClaim.textContent = `✦ +${data.chronicles_earned} CHRONICLES REÇUS — BONNE CHANCE, AGENT`;
@@ -280,6 +288,5 @@ export async function showLemegetonTuto(onDone) {
 
   btnSkip.addEventListener('click', () => overlay.remove());
 
-  // Démarre le premier dialogue
   showStep(0);
 }

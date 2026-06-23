@@ -144,7 +144,6 @@
       .modules-grid .module-card:last-child{grid-column:1}
       .ticker{display:none}
       .tb-spacer{display:none}
-      #ub-gold{display:none}
     }
   </style>
 </head>
@@ -163,13 +162,9 @@
       <button class="tb-nav-btn" id="tb-nav-cig">CIG</button>
     </nav>
     <div class="tb-spacer"></div>
-    <div style="display:flex;align-items:center;gap:5px;padding:0 12px;border-left:1px solid var(--border);height:100%">
-      <span id="ub-gold" style="font-family:'VT323',monospace;font-size:1.4em;color:#ffbe46;letter-spacing:.08em">0</span>
-      <span style="color:var(--muted);font-size:.8em">🪙</span>
-    </div>
     <div class="tb-chronicles">
       <span class="tb-chr-icon">✦</span>
-      <span class="tb-chr-val" id="ub-chronicles">0</span>
+      <span class="tb-chr-val" id="ub-chronicles" id="ub-gold">0</span>
       <span class="tb-chr-label">CHR</span>
     </div>
     <div class="tb-streak" id="tb-streak-block" title="Login streak">
@@ -281,10 +276,8 @@ async function renderShop(){
       sb.from('profiles').select('chronicles').eq('id',user.id).single()
     ]);
     const chronicles = pl?.chronicles ?? 0;
-    const ubGold = document.getElementById('ub-gold');
-    if(ubGold) ubGold.textContent = chronicles;
-    const ubChr = document.getElementById('ub-chronicles');
-    if(ubChr) ubChr.textContent = chronicles;
+    const ubEl = document.getElementById('ub-chronicles');
+    if(ubEl) ubEl.textContent = chronicles;
     if(!packs.length){ shopList.innerHTML='<div style="padding:12px;font-size:.72em;opacity:.6">Aucun article</div>'; return; }
     shopList.innerHTML='';
     packs.forEach(p=>{
@@ -340,7 +333,7 @@ async function refreshHub(){
       sb.from('profiles').select('chronicles').eq('id',user.id).single()
     ]);
     const chronicles = pl?.chronicles ?? 0;
-    ['ub-gold','ub-chronicles','tb-chronicles'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=chronicles;});
+    ['ub-chronicles','tb-chronicles'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=chronicles;});
     const name = getDisplayName();
     ['ub-agent','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
     const statCards=document.getElementById('stat-cards');if(statCards)statCards.textContent=totalCards;
@@ -523,22 +516,17 @@ async function init(){
     const result = await claimDailyReward(sb, user.id);
     updateStreakUI(result.streak, result.rewarded, result.amount);
 
-    // btn claim (désactivé si déjà fait — sinon proposer le claim manuel n'est pas nécessaire
-    // car claimDailyReward est appelé automatiquement au login)
     const claimBtn=document.getElementById('btn-daily-claim');
     if(claimBtn && !result.rewarded){
       // streak déjà réclamé aujourd'hui — bouton reste disabled
     }
 
-    // Affiche une vue routée : montre #app-root, masque le hub, puis route
-    // (le hash DOIT correspondre aux clés du routeur : '#/collection', etc.).
     const openView = (hash) => {
       document.querySelector('.shell').style.display = 'none';
       document.getElementById('app-root').style.display = 'block';
       navigate(hash);
     };
 
-    // Module cards + boutons topbar
     ['card-collection','btn-collection'].forEach(id =>
       document.getElementById(id)?.addEventListener('click',()=>openView('#/collection')));
     ['card-arena','btn-arena'].forEach(id =>
@@ -546,7 +534,6 @@ async function init(){
     document.getElementById('card-achievements')?.addEventListener('click',openAchievementsModal);
     document.getElementById('card-leaderboard')?.addEventListener('click',openLeaderboardModal);
 
-    // Modules count
     const modCount=document.getElementById('mod-count');
     if(modCount) modCount.textContent='4';
 

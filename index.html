@@ -103,7 +103,6 @@
     .challenge-desc{font-size:.55em;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .challenge-gold{font-size:.62em;color:var(--amber);font-weight:700;flex-shrink:0}
     .challenge-check{font-size:.85em;flex-shrink:0}
-
     /* ── DAILY BONUS ──────────────────────────────────── */
     .daily-bonus-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px}
     .daily-streak-dots{display:flex;gap:3px;margin-top:5px}
@@ -113,7 +112,6 @@
     .btn-daily-claim{background:transparent;border:1px solid var(--amber);color:var(--amber);padding:2px 8px;font-family:var(--font);font-size:.62em;cursor:pointer;border-radius:3px;letter-spacing:.08em}
     .btn-daily-claim:disabled{border-color:var(--muted);color:var(--muted);cursor:default}
     .btn-daily-claim:not(:disabled):hover{background:var(--amber);color:#000}
-
     /* ── MODAL GÉNÉRIQUE ──────────────────────────────── */
     .tcg-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:5000;display:grid;place-items:center;padding:16px}
     .tcg-modal{background:#05080d;border:1px solid var(--border);border-radius:14px;width:min(640px,96vw);max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(0,245,196,.08)}
@@ -122,7 +120,6 @@
     .tcg-modal-close{background:transparent;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;padding:2px 8px;line-height:1}
     .tcg-modal-close:hover{color:var(--red)}
     .tcg-modal-body{flex:1;overflow-y:auto;padding:14px 16px}
-
     /* ── MOBILE RESPONSIVE ────────────────────────────── */
     .mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:48px;background:#020508;border-top:1px solid var(--border);align-items:stretch;z-index:100}
     .mob-nav-btn{flex:1;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:.62em;letter-spacing:.1em;cursor:pointer;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .18s}
@@ -164,7 +161,7 @@
     <div class="tb-spacer"></div>
     <div class="tb-chronicles">
       <span class="tb-chr-icon">✦</span>
-      <span class="tb-chr-val" id="ub-chronicles" id="ub-gold">0</span>
+      <span class="tb-chr-val" id="ub-chronicles">0</span>
       <span class="tb-chr-label">CHR</span>
     </div>
     <div class="tb-streak" id="tb-streak-block" title="Login streak">
@@ -253,6 +250,7 @@ import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=3';
 import { openOpeningOverlay } from './ui/openingOverlay.js?v=3';
 import { boot, navigate } from './app/router.js?v=3';
 import { getDailyChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=3';
+import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=1';
 
 const pad = n => String(n).padStart(2,'0');
 function tickClock(){const now=new Date();document.getElementById('tb-clock').textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());}
@@ -333,7 +331,7 @@ async function refreshHub(){
       sb.from('profiles').select('chronicles').eq('id',user.id).single()
     ]);
     const chronicles = pl?.chronicles ?? 0;
-    ['ub-chronicles','tb-chronicles'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=chronicles;});
+    ['ub-chronicles'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=chronicles;});
     const name = getDisplayName();
     ['ub-agent','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
     const statCards=document.getElementById('stat-cards');if(statCards)statCards.textContent=totalCards;
@@ -507,19 +505,21 @@ async function init(){
     if(!user){ console.warn('[hub] non connecté'); return; }
 
     await initPlayer(sb, user);
+
+    // Tuto Lemegeton — s'affiche uniquement si tuto_01 pas encore réclamé
+    // onDone rafraîchit le hub + shop pour afficher les 1000 CHR
+    showLemegetonTuto(async () => {
+      await refreshHub();
+      await renderShop();
+    });
+
     await refreshHub();
     await renderShop();
     renderDailyChallenges();
 
-    // Daily streak
     const { claimDailyReward } = await import('./logic/daily.js?v=3');
     const result = await claimDailyReward(sb, user.id);
     updateStreakUI(result.streak, result.rewarded, result.amount);
-
-    const claimBtn=document.getElementById('btn-daily-claim');
-    if(claimBtn && !result.rewarded){
-      // streak déjà réclamé aujourd'hui — bouton reste disabled
-    }
 
     const openView = (hash) => {
       document.querySelector('.shell').style.display = 'none';

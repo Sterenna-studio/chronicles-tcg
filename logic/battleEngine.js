@@ -1,20 +1,23 @@
-// logic/battleEngine.js — moteur de combat v2 (modèle « salve »)
+// logic/battleEngine.js — moteur de combat v3 (Phase 2 : skills Champion)
 // Voir docs/RULES.md. Fonctions quasi-pures : chaque appel renvoie un nouvel état.
 //
 // API publique :
 //   createBattle(playerDeck, enemyDeck)
 //   mulligan(sideKey, state)
-//   startTurn(sideKey, state)             -> début de tour (énergie, garde, pioche)
+//   startTurn(sideKey, state)             -> début de tour (énergie, garde, pioche, cooldowns)
 //   playCard(state, sideKey, cardIndex, opts?) -> { state, ok, reason?, needsDiscard?, card? }
+//   useChampionSkill(state, sideKey)      -> { state, ok, reason?, log } [NOUVEAU v3]
 //   drawCards(sideKey, state, count)
 //   getBattleResult(state)
-//   endPlayerTurn(state, difficulty)      -> wrapper pratique (non utilisé par l'UI)
+//   endPlayerTurn(state, difficulty)      -> wrapper pratique
+
+import { tickSkillCooldowns, setActiveChampion, useSkill, canUseSkill } from './skillEngine.js';
 
 export const START_HP     = 30;
 export const ENERGY_MAX   = 7;
-export const FIELD_MAX     = 5;   // Objects + Companions
-export const FATIGUE       = 2;   // PV perdus par pioche sur deck vide
-export const TERRAIN_GUARD = 1;   // garde gagnée en début de tour si Terrain actif
+export const FIELD_MAX     = 5;
+export const FATIGUE       = 2;
+export const TERRAIN_GUARD = 1;
 export const START_HAND    = 3;
 
 const other = (k) => (k === 'player' ? 'enemy' : 'player');
@@ -34,17 +37,18 @@ function shuffle(a) {
 function fieldShield(side) {
   return (side.field || []).reduce((a, c) => a + (c.shield || 0), 0);
 }
-/** Réduction totale : garde temporaire + boucliers permanents (champ). */
 function totalShield(side) {
   return (side.shieldTemp || 0) + fieldShield(side);
 }
-/** Applique des dégâts réduits par le bouclier (réduction à plat, non consommée). */
 function applyDamage(side, raw) {
-  const blocked = Math.min(raw, totalShield(side));
-  const dealt   = raw - blocked;
-  return { ...side, hp: Math.max(0, side.hp - dealt), _lastDmg: dealt, _blocked: blocked };
+  if (side._absorbAllThisTurn) return { ...side, _lastDmg: 0, _blocked: raw };
+  if (side._fullDodgeThisTurn) return { ...side, _lastDmg: 0, _blocked: raw };
+  let effective = raw;
+  if (side._halfDmgThisTurn) effective = Math.ceil(raw / 2);
+  const blocked = Math.min(effective, totalShield(side));
+  const dealt   = effective - blocked;
+  return { ...side, hp: Math.max(0, side.hp - dealt), _lastDmg: dealt, _blocked: blocked + (raw - effective) };
 }
-/** Vide la file de buffs Companion et renvoie le bonus total. */
 function drainBuffs(side) {
   const bonus = (side.buffs || []).reduce((a, b) => a + (b.powerBoost || 0), 0);
   return { bonus, side: { ...side, buffs: [] } };
@@ -58,10 +62,21 @@ export function createBattle(playerDeck, enemyDeck) {
     energy: 1,
     hand: [],
     deck: [...deck],
-    field: [],       // { name, shield, kind:'object'|'companion' }
-    terrain: null,   // { name, power }
-    buffs: [],       // { powerBoost }
-    shieldTemp: 0,   // garde (persiste jusqu'au début du tour suivant du même camp)
+    discard: [],
+    field: [],
+    terrain: null,
+    buffs: [],
+    shieldTemp: 0,
+    activeChampion: null,      // { id, name, skill, power, shield } — v3
+    skillCooldowns: {},        // { [cardId]: turnsLeft } — v3
+    stunnedTurns: 0,           // tours d'étourdissement restants — v3
+    _halfDmgThisTurn: false,
+    _absorbAllThisTurn: false,
+    _fullDodgeThisTurn: false,
+    _dodgeNextAttack: false,
+    _nextSkillNegated: false,
+    _nextCardNegated: false,
+    _doubleTurnNext: false,
   });
 
   let s = {
@@ -78,7 +93,7 @@ export function createBattle(playerDeck, enemyDeck) {
   return s;
 }
 
-// ─── Mulligan (avant le tour 1) ────────────────────────────────────────────────
+// ─── Mulligan ─────────────────────────────────────────────────────────────────
 
 export function mulligan(sideKey, state) {
   const s = clone(state);
@@ -90,7 +105,7 @@ export function mulligan(sideKey, state) {
   return s;
 }
 
-// ─── Pioche (avec fatigue) ──────────────────────────────────────────────────────
+// ─── Pioche ───────────────────────────────────────────────────────────────────
 
 export function drawCards(sideKey, state, count = 1) {
   const s = clone(state);
@@ -104,54 +119,124 @@ export function drawCards(sideKey, state, count = 1) {
   return s;
 }
 
-// ─── Début de tour d'un camp ────────────────────────────────────────────────────
+// ─── Début de tour ────────────────────────────────────────────────────────────
 
 export function startTurn(sideKey, state) {
   let s = clone(state);
-  if (sideKey === 'player') s.turn += 1;          // un round = un tour joueur
-  const side = s[sideKey];
-  side.energy = Math.min(s.turn, s.energyMax);
-  side.shieldTemp = side.terrain ? TERRAIN_GUARD : 0; // reset garde + bonus Terrain
+  if (sideKey === 'player') s.turn += 1;
+
+  // Réinitialise les flags one-shot
+  s[sideKey].shieldTemp           = s[sideKey].terrain ? TERRAIN_GUARD : 0;
+  s[sideKey]._halfDmgThisTurn     = false;
+  s[sideKey]._absorbAllThisTurn   = false;
+  s[sideKey]._fullDodgeThisTurn   = false;
+
+  // Étourdissement : le camp ne peut pas jouer de cartes
+  if (s[sideKey].stunnedTurns > 0) {
+    s[sideKey].stunnedTurns--;
+    s.log.push(`  😵 ${label(sideKey)} est étourdi ce tour — aucune action possible.`);
+    s.phase = sideKey === 'player' ? 'player_stunned' : 'enemy_stunned';
+    return s;
+  }
+
+  s[sideKey].energy = Math.min(s.turn, s.energyMax);
   s.phase = sideKey === 'player' ? 'player_turn' : 'enemy_turn';
+
+  // Tick cooldowns skills
+  s = tickSkillCooldowns(s, sideKey);
+
+  // Retour objets hijackés
+  s = returnHijackedObjects(s, sideKey);
+
   s = drawCards(sideKey, s, 1);
   if (s[sideKey].terrain) s.log.push(`  🌍 ${label(sideKey)} : Terrain — +${TERRAIN_GUARD} garde`);
   s.log.push(`\n⚔️  ${sideKey === 'player' ? 'Ton tour' : 'Tour ennemi'} — Tour ${s.turn} · Énergie ${s[sideKey].energy}`);
   return s;
 }
 
-// ─── Jouer une carte ────────────────────────────────────────────────────────────
+function returnHijackedObjects(state, sideKey) {
+  const s = clone(state);
+  const field = s[sideKey].field || [];
+  const expired = field.filter(c => c._hijacked && c._returnAfterTurn <= (s.turn || 1));
+  if (!expired.length) return s;
+  s[sideKey].field = field.filter(c => !(c._hijacked && c._returnAfterTurn <= (s.turn || 1)));
+  // Remet les objets à l'ennemi
+  expired.forEach(obj => {
+    const def = other(sideKey);
+    s[def].field = [...(s[def].field || []), { ...obj, _hijacked: false }];
+    s.log.push(`  🔄 "${obj.name}" retourné à ${label(def)}`);
+  });
+  return s;
+}
+
+// ─── Jouer une carte ──────────────────────────────────────────────────────────
 
 export function playCard(state, sideKey, cardIndex, opts = {}) {
-  const atkKey = sideKey;
-  const card = state[atkKey].hand[cardIndex];
+  const card = state[sideKey].hand[cardIndex];
   if (!card) return { state, ok: false, reason: 'Carte introuvable.' };
-  if (state[atkKey].energy < card.energy) {
-    return { state, ok: false, reason: `Énergie insuffisante (${state[atkKey].energy}/${card.energy}).` };
+
+  // Carte annulée par negate_next_card
+  if (state[sideKey]._nextCardNegated) {
+    let s = clone(state);
+    s[sideKey]._nextCardNegated = false;
+    s[sideKey].hand.splice(cardIndex, 1);
+    s.log.push(`  🚫 Carte "${card.name}" annulée par l'adversaire.`);
+    return { state: s, ok: false, reason: 'Carte annulée.', card };
+  }
+
+  if (state[sideKey].energy < card.energy) {
+    return { state, ok: false, reason: `Énergie insuffisante (${state[sideKey].energy}/${card.energy}).` };
   }
 
   const isField = card.type === 'Object' || card.type === 'Companion';
-  const fieldFull = isField && (state[atkKey].field || []).length >= FIELD_MAX;
+  const fieldFull = isField && (state[sideKey].field || []).length >= FIELD_MAX;
   if (fieldFull && opts.replaceFieldIndex == null) {
     return { state, ok: false, reason: 'Champ plein', needsDiscard: true };
   }
 
   let s = clone(state);
-  s[atkKey].energy -= card.energy;
-  s[atkKey].hand.splice(cardIndex, 1);
+  s[sideKey].energy -= card.energy;
+  s[sideKey].hand.splice(cardIndex, 1);
 
   if (fieldFull && opts.replaceFieldIndex != null) {
-    const removed = s[atkKey].field.splice(opts.replaceFieldIndex, 1)[0];
-    if (removed) s.log.push(`  🗑️ ${label(atkKey)} défausse ${removed.name} du champ`);
+    const removed = s[sideKey].field.splice(opts.replaceFieldIndex, 1)[0];
+    if (removed) {
+      s[sideKey].discard = [...(s[sideKey].discard || []), removed];
+      s.log.push(`  🗑️ ${label(sideKey)} défausse ${removed.name} du champ`);
+    }
   }
 
-  s = applyCardEffect(s, card, atkKey, other(atkKey));
-  s.log.push(`🃏 ${label(atkKey)} joue [${card.name}] (${card.type} ${card.rarity}) — énergie ${s[atkKey].energy}`);
+  s = applyCardEffect(s, card, sideKey, other(sideKey));
+  s.log.push(`🃏 ${label(sideKey)} joue [${card.name}] (${card.type} ${card.rarity}) — énergie ${s[sideKey].energy}`);
 
   if (s.player.hp <= 0 || s.enemy.hp <= 0) s.phase = 'end';
   return { state: s, ok: true, card };
 }
 
-// ─── Effets par type (voir RULES §7) ────────────────────────────────────────────
+// ─── Skill Champion (nouvelle API v3) ────────────────────────────────────────
+
+export function useChampionSkill(state, sideKey) {
+  // Bloqué si étourdi
+  if (state[sideKey].stunnedTurns > 0) {
+    return { state, ok: false, reason: 'Champion étourdi, skill indisponible.' };
+  }
+  // Bloqué par negate_next_skill
+  if (state[sideKey]._nextSkillNegated) {
+    let s = clone(state);
+    s[sideKey]._nextSkillNegated = false;
+    s.log.push(`  🚫 Skill de ${label(sideKey)} annulée par l'adversaire.`);
+    return { state: s, ok: false, reason: 'Skill annulée par l\'adversaire.' };
+  }
+  const result = useSkill(state, sideKey);
+  if (result.state.player.hp <= 0 || result.state.enemy.hp <= 0) {
+    result.state.phase = 'end';
+  }
+  return result;
+}
+
+export { canUseSkill, getSkillCooldownLeft } from './skillEngine.js';
+
+// ─── Effets par type ──────────────────────────────────────────────────────────
 
 function applyCardEffect(s, card, atkKey, defKey) {
   const P = card.power || 0;
@@ -161,10 +246,12 @@ function applyCardEffect(s, card, atkKey, defKey) {
     case 'Champion': {
       const { bonus, side: buffed } = drainBuffs(s[atkKey]);
       s[atkKey] = { ...buffed, shieldTemp: (buffed.shieldTemp || 0) + S };
+      // Enregistre le Champion actif (avec sa skill)
+      if (card.skill) s = setActiveChampion(s, atkKey, card);
       const tb  = s[atkKey].terrain ? 1 : 0;
       const dmg = P + bonus + tb;
       s[defKey] = applyDamage(s[defKey], dmg);
-      s.log.push(`  ⚔️ ${card.name} : ${dmg} dmg${bonus ? ` (+${bonus} Companion)` : ''}${tb ? ' (+1 Terrain)' : ''} — reçu ${s[defKey]._lastDmg}, bloqué ${s[defKey]._blocked}`);
+      s.log.push(`  ⚔️ ${card.name} : ${dmg} dmg${bonus ? ` (+${bonus} Companion)` : ''}${tb ? ' (+1 Terrain)' : ''} — reçu ${s[defKey]._lastDmg}, bloqué ${s[defKey]._blocked}${card.skill ? ` | Skill: ${card.skill.name} (CD ${card.skill.cooldown})` : ''}`);
       break;
     }
     case 'Companion': {
@@ -213,7 +300,7 @@ function applyCardEffect(s, card, atkKey, defKey) {
   return s;
 }
 
-// ─── Résultat ────────────────────────────────────────────────────────────────
+// ─── Résultat ─────────────────────────────────────────────────────────────────
 
 export function getBattleResult(state) {
   if (state.phase !== 'end' && state.player.hp > 0 && state.enemy.hp > 0) return null;
@@ -223,19 +310,17 @@ export function getBattleResult(state) {
   if (playerDead && enemyDead) winner = 'draw';
   else if (playerDead)         winner = 'enemy';
   else                         winner = 'player';
-
   const baseGold   = winner === 'player' ? 30 : winner === 'draw' ? 15 : 10;
   const speedBonus = winner === 'player' ? Math.max(0, (10 - state.turn) * 3) : 0;
   return { winner, turns: state.turn, goldReward: baseGold + speedBonus };
 }
 
-// ─── Wrapper pratique (non utilisé par l'UI, garde l'API historique) ─────────────
+// ─── Wrapper endPlayerTurn ────────────────────────────────────────────────────
 
 export function endPlayerTurn(state, difficulty = 'normal') {
-  // Optionnel : enchaîne tour ennemi (IA basique) + début tour joueur.
   let s = startTurn('enemy', state);
   let guard = 0;
-  while (s.phase !== 'end') {
+  while (s.phase === 'enemy_turn') {
     const playable = s.enemy.hand
       .map((c, i) => ({ c, i }))
       .filter(({ c }) => c.energy <= s.enemy.energy);

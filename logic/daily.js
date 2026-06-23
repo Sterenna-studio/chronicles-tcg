@@ -124,15 +124,22 @@ export async function claimDailyReward(supabase, userId) {
   const isSeventh = newStreak % 7 === 0;
 
   // Crédite sur profiles.chronicles (source de vérité)
-  const { data: prof } = await supabase.from('profiles').select('chronicles').eq('id', userId).single();
+  // upsert évite le 400 PostgREST si la row n'existe pas encore
+  const { data: prof } = await supabase.from('profiles').select('chronicles').eq('id', userId).maybeSingle();
   const newGold = (prof?.chronicles || 0) + reward;
+
   const [{ error: profErr }, { error: updateErr }] = await Promise.all([
-    supabase.from('profiles').update({ chronicles: newGold }).eq('id', userId),
-    supabase.from('tcg_players').update({ daily_streak: newStreak, last_daily_at: new Date().toISOString() }).eq('id', userId),
+    supabase
+      .from('profiles')
+      .upsert({ id: userId, chronicles: newGold }, { onConflict: 'id' }),
+    supabase
+      .from('tcg_players')
+      .update({ daily_streak: newStreak, last_daily_at: new Date().toISOString() })
+      .eq('id', userId),
   ]);
 
   if (profErr || updateErr) {
-    console.warn('[daily] mise à jour échouée', profErr || updateErr);
+    console.warn('[daily] mise à jour échouée — profErr:', profErr, '— updateErr:', updateErr);
     return { rewarded: false, amount: 0, streak: pl.daily_streak, gold: null };
   }
 
@@ -182,6 +189,6 @@ export async function claimDaily() {
   if (!user) throw new Error('Non connecté');
 
   const res = await claimDailyReward(sb, user.id);
-  if (!res.rewarded) throw new Error('Déjà réclamé aujourd’hui. Reviens demain.');
+  if (!res.rewarded) throw new Error('Déjà réclamé aujourd\'hui. Reviens demain.');
   return res;
 }

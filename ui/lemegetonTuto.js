@@ -264,6 +264,17 @@ export async function showLemegetonTuto({ sb, user }, onDone) {
     btnClaim.disabled = true;
     btnClaim.textContent = 'CONNEXION EN COURS...';
     try {
+      // Guard session — re-vérifie que le JWT est toujours valide avant le RPC
+      const { data: { session }, error: sessionErr } = await sb.auth.getSession();
+      if (sessionErr || !session) {
+        btnClaim.textContent = 'SESSION EXPIRÉE — RECONNECTEZ-VOUS';
+        btnClaim.style.borderColor = '#ff2d4e';
+        btnClaim.style.color = '#ff2d4e';
+        btnClaim.disabled = false;
+        console.warn('[lemegeton] session absente au moment du claim', sessionErr);
+        return;
+      }
+
       const { data, error } = await sb.rpc('claim_quest', { p_quest_id: QUEST_ID });
       if (error || !data?.ok) {
         btnClaim.textContent = data?.error || error?.message || 'Erreur';

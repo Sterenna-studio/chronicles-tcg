@@ -264,9 +264,9 @@ function showMsg(txt, color='#42b0ff'){
   setTimeout(()=>{if(shopMsg)shopMsg.innerHTML='';},2500);
 }
 
-async function renderShop(){
+// sb passé par paramètre — pas de re-fetch getClient() dans les callbacks
+async function renderShop(sb){
   try{
-    const sb = await getClient();
     const { data: { session } } = await sb.auth.getSession();
     const user = session?.user ?? null;
     if(!user){ shopList.innerHTML='<div style="padding:12px;font-size:.72em;opacity:.6">Non connecté</div>'; return; }
@@ -304,12 +304,11 @@ async function renderShop(){
         const price  = Number(btn.dataset.price);
         btn.disabled=true;
         try{
-          const sb = await getClient();
           const {data, error} = await sb.rpc('buy_pack_with_chronicles', {p_pack_type_id: packId});
           if(error || !data?.ok){showMsg(data?.error||'Erreur achat','#ff8a8a');btn.disabled=false;return;}
           showMsg(`✅ Pack acheté ! ✦ ${data.chronicles_remaining} restants`,'#22c55e');
-          await refreshHub();
-          await renderShop();
+          await refreshHub(sb);
+          await renderShop(sb);
         }catch(err){console.error(err);showMsg("Erreur achat",'#ff8a8a');btn.disabled=false;}
       });
     });
@@ -323,9 +322,8 @@ async function fetchTotalCards(sb, user){
   return (data||[]).reduce((s,r)=>s+(r.quantity||0),0);
 }
 
-async function refreshHub(){
+async function refreshHub(sb){
   try{
-    const sb=await getClient();
     const { data: { session } } = await sb.auth.getSession();
     const user = session?.user ?? null;
     if(!user) return;
@@ -359,7 +357,7 @@ async function refreshHub(){
             <div class="booster-qty">×${p.quantity}</div>
             <button class="booster-open-btn">OUVRIR</button>
             ${multi>1?`<button class="booster-openx-btn">OUVRIR ×${multi}</button>`:''}`;
-          const opts={ packTypeId:p.pack_type_id||p.id, setId:p.set_id, packImage:imgSrc, onDone:async()=>{await refreshHub();} };
+          const opts={ packTypeId:p.pack_type_id||p.id, setId:p.set_id, packImage:imgSrc, onDone:async()=>{await refreshHub(sb);} };
           card.querySelector('.booster-open-btn').addEventListener('click',()=>openOpeningOverlay({...opts, count:1}));
           const xBtn=card.querySelector('.booster-openx-btn');
           if(xBtn) xBtn.addEventListener('click',()=>openOpeningOverlay({...opts, count:multi}));
@@ -442,9 +440,8 @@ async function openAchievementsModal(){
 }
 
 // ── LEADERBOARD MODAL ─────────────────────────────────────────
-async function openLeaderboardModal(){
+async function openLeaderboardModal(sb){
   const { mount } = await import('./pages/leaderboardWidget.js?v=3');
-  const sb=await getClient();
   const { data: { session } } = await sb.auth.getSession();
   const user = session?.user ?? null;
   const overlay=document.createElement('div');
@@ -514,16 +511,29 @@ async function init(){
 
     if(!user){ console.warn('[hub] non connecté'); return; }
 
+    // Guard session expirée ou déconnexion forcée
+    sb.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        window.location.href = '/login.html';
+      }
+    });
+
+    // EJECT button — signOut + redirect
+    document.getElementById('btn-logout')?.addEventListener('click', async () => {
+      await sb.auth.signOut();
+      window.location.href = '/login.html';
+    });
+
     await initPlayer(sb, user);
 
     // Tuto Lemegeton — sb+user injectés avec session garantie
     showLemegetonTuto({ sb, user }, async () => {
-      await refreshHub();
-      await renderShop();
+      await refreshHub(sb);
+      await renderShop(sb);
     });
 
-    await refreshHub();
-    await renderShop();
+    await refreshHub(sb);
+    await renderShop(sb);
     renderDailyChallenges();
 
     const { claimDailyReward } = await import('./logic/daily.js?v=3');
@@ -541,7 +551,7 @@ async function init(){
     ['card-arena','btn-arena'].forEach(id =>
       document.getElementById(id)?.addEventListener('click',()=>openView('#/deck-builder')));
     document.getElementById('card-achievements')?.addEventListener('click',openAchievementsModal);
-    document.getElementById('card-leaderboard')?.addEventListener('click',openLeaderboardModal);
+    document.getElementById('card-leaderboard')?.addEventListener('click',()=>openLeaderboardModal(sb));
 
     const modCount=document.getElementById('mod-count');
     if(modCount) modCount.textContent='4';

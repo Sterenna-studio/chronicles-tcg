@@ -244,7 +244,7 @@
 <div id="topbar"></div>
 
 <script type="module">
-import { getClient, getUser } from './logic/supaRaw.js?v=3';
+import { getClient } from './logic/supaRaw.js?v=3';
 import { initPlayer, getDisplayName } from './data/supabaseData.js?v=3';
 import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=3';
 import { openOpeningOverlay } from './ui/openingOverlay.js?v=3';
@@ -267,7 +267,8 @@ function showMsg(txt, color='#42b0ff'){
 async function renderShop(){
   try{
     const sb = await getClient();
-    const user = await getUser();
+    const { data: { session } } = await sb.auth.getSession();
+    const user = session?.user ?? null;
     if(!user){ shopList.innerHTML='<div style="padding:12px;font-size:.72em;opacity:.6">Non connecté</div>'; return; }
     const [packs, {data:pl}] = await Promise.all([
       loadPackTypes(),
@@ -324,7 +325,10 @@ async function fetchTotalCards(sb, user){
 
 async function refreshHub(){
   try{
-    const sb=await getClient(); const user=await getUser(); if(!user) return;
+    const sb=await getClient();
+    const { data: { session } } = await sb.auth.getSession();
+    const user = session?.user ?? null;
+    if(!user) return;
     const [totalCards, playerPacks, {data:pl}] = await Promise.all([
       fetchTotalCards(sb,user),
       loadPlayerPacks(),
@@ -441,7 +445,8 @@ async function openAchievementsModal(){
 async function openLeaderboardModal(){
   const { mount } = await import('./pages/leaderboardWidget.js?v=3');
   const sb=await getClient();
-  const user=await getUser();
+  const { data: { session } } = await sb.auth.getSession();
+  const user = session?.user ?? null;
   const overlay=document.createElement('div');
   overlay.className='tcg-modal-overlay';
   overlay.innerHTML=`
@@ -500,14 +505,18 @@ function initMobileNav(){
 // ── INIT ──────────────────────────────────────────────────────
 async function init(){
   try{
-    const sb=await getClient();
-    const user=await getUser();
+    const sb = await getClient();
+
+    // getSession() lit localStorage sans appel réseau
+    // — garantit que auth.uid() est résolu côté BDD avant tout rpc()
+    const { data: { session } } = await sb.auth.getSession();
+    const user = session?.user ?? null;
+
     if(!user){ console.warn('[hub] non connecté'); return; }
 
     await initPlayer(sb, user);
 
-    // Tuto Lemegeton — sb+user injectés, évite tout re-fetch interne
-    // onDone rafraîchit le hub + shop pour afficher les 1000 CHR
+    // Tuto Lemegeton — sb+user injectés avec session garantie
     showLemegetonTuto({ sb, user }, async () => {
       await refreshHub();
       await renderShop();

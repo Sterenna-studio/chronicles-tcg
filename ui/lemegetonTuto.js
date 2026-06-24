@@ -1,12 +1,6 @@
 /**
  * lemegetonTuto.js
  * Modale d'accueil Lemegeton — Quête tuto_01
- * S'affiche automatiquement si le joueur n'a pas encore réclamé tuto_01.
- *
- * Signature : showLemegetonTuto({ sb, user }, onDone)
- *   - sb   : client Supabase déjà résolu depuis init()
- *   - user : objet user Supabase déjà résolu depuis init()
- *   - onDone : callback async appelé après claim réussi
  */
 
 const QUEST_ID = 'tuto_01';
@@ -21,117 +15,120 @@ const DIALOGUE = [
 const CSS = `
   .lem-overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,.85);
+    background: rgba(0,0,0,.88);
     z-index: 8000;
     display: grid; place-items: center;
-    padding: 16px;
+    padding: 24px;
     animation: lem-fade-in .3s ease;
   }
-  @keyframes lem-fade-in { from { opacity:0 } to { opacity:1 } }
+  @keyframes lem-fade-in { from { opacity:0; transform:scale(.97) } to { opacity:1; transform:scale(1) } }
+
   .lem-modal {
     background: #03080f;
     border: 1px solid #00f5c4;
-    border-radius: 12px;
-    width: min(520px, 95vw);
-    box-shadow: 0 0 60px rgba(0,245,196,.18), 0 0 120px rgba(0,245,196,.06);
+    border-radius: 16px;
+    width: min(780px, 96vw);
+    box-shadow: 0 0 80px rgba(0,245,196,.2), 0 0 160px rgba(0,245,196,.07);
     overflow: hidden;
     display: flex;
     flex-direction: column;
   }
+
   .lem-header {
-    display: flex; align-items: center; gap: 12px;
-    padding: 14px 18px;
+    display: flex; align-items: center; gap: 18px;
+    padding: 20px 28px;
     border-bottom: 1px solid #0e2a1f;
     background: linear-gradient(90deg, #020d10 0%, #031410 100%);
   }
   .lem-avatar {
-    width: 44px; height: 44px; border-radius: 50%;
+    width: 60px; height: 60px; border-radius: 50%;
     border: 2px solid #00f5c4;
     background: #010a0d;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.4em;
-    box-shadow: 0 0 14px rgba(0,245,196,.5);
+    font-size: 1.9em;
+    box-shadow: 0 0 18px rgba(0,245,196,.5);
     flex-shrink: 0;
     animation: lem-pulse 3s ease-in-out infinite;
   }
   @keyframes lem-pulse {
-    0%,100% { box-shadow: 0 0 10px rgba(0,245,196,.4); }
-    50%      { box-shadow: 0 0 22px rgba(0,245,196,.8); }
+    0%,100% { box-shadow: 0 0 12px rgba(0,245,196,.4); }
+    50%      { box-shadow: 0 0 28px rgba(0,245,196,.85); }
   }
   .lem-header-info { flex: 1; }
   .lem-title {
     font-family: 'VT323', monospace;
-    font-size: 1.5em; letter-spacing: .2em;
+    font-size: 2em; letter-spacing: .22em;
     color: #00f5c4;
-    text-shadow: 0 0 10px rgba(0,245,196,.7);
+    text-shadow: 0 0 12px rgba(0,245,196,.7);
   }
-  .lem-subtitle { font-size: .62em; color: #3a6655; letter-spacing: .12em; margin-top: 1px; }
+  .lem-subtitle { font-size: .72em; color: #3a6655; letter-spacing: .14em; margin-top: 2px; }
   .lem-status {
-    font-size: .6em; color: #00f5c4; letter-spacing: .1em;
-    display: flex; align-items: center; gap: 5px;
+    font-size: .68em; color: #00f5c4; letter-spacing: .12em;
+    display: flex; align-items: center; gap: 6px;
   }
   .lem-status::before {
     content: ''; display: inline-block;
-    width: 6px; height: 6px; border-radius: 50%;
+    width: 7px; height: 7px; border-radius: 50%;
     background: #00f5c4;
-    box-shadow: 0 0 6px #00f5c4;
+    box-shadow: 0 0 7px #00f5c4;
     animation: lem-blink 1.2s step-end infinite;
   }
   @keyframes lem-blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-  .lem-body { padding: 20px 20px 8px; display: flex; flex-direction: column; gap: 12px; }
+  .lem-body { padding: 28px 32px 12px; display: flex; flex-direction: column; gap: 16px; }
   .lem-dialogue-box {
     background: #010d0a;
     border: 1px solid #0e2a1f;
-    border-radius: 8px;
-    padding: 14px 16px;
-    min-height: 80px;
-    font-size: .78em; line-height: 1.7; letter-spacing: .04em;
+    border-radius: 10px;
+    padding: 20px 24px;
+    min-height: 110px;
+    font-size: .93em; line-height: 1.8; letter-spacing: .04em;
     color: #c8ffe8;
     position: relative;
   }
   .lem-cursor {
     display: inline-block;
-    width: 8px; height: 1em;
+    width: 9px; height: 1.1em;
     background: #00f5c4;
     vertical-align: text-bottom;
     animation: lem-blink 1s step-end infinite;
     margin-left: 2px;
   }
-  .lem-nav { display: flex; justify-content: flex-end; gap: 6px; padding: 0 20px 14px; }
+
+  .lem-nav { display: flex; justify-content: flex-end; gap: 8px; padding: 0 32px 16px; }
   .lem-btn-next {
     background: transparent; border: 1px solid #3a6655;
-    color: #3a6655; font-family: var(--font); font-size: .7em;
-    letter-spacing: .1em; padding: 4px 14px; cursor: pointer;
-    border-radius: 4px; transition: all .18s;
+    color: #3a6655; font-family: var(--font); font-size: .8em;
+    letter-spacing: .12em; padding: 6px 20px; cursor: pointer;
+    border-radius: 5px; transition: all .18s;
   }
   .lem-btn-next:hover { border-color: #00f5c4; color: #00f5c4; }
 
   .lem-footer {
-    padding: 14px 20px 18px;
+    padding: 20px 32px 26px;
     border-top: 1px solid #0e2a1f;
     background: #020b0e;
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
   }
   .lem-reward {
-    display: flex; align-items: center; gap: 8px;
-    font-family: 'VT323', monospace; font-size: 1.3em;
-    color: #f0a500; letter-spacing: .12em;
-    text-shadow: 0 0 10px rgba(240,165,0,.5);
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'VT323', monospace; font-size: 1.6em;
+    color: #f0a500; letter-spacing: .14em;
+    text-shadow: 0 0 12px rgba(240,165,0,.55);
   }
   .lem-btn-claim {
     width: 100%;
     background: linear-gradient(90deg, #003d2e 0%, #004d38 100%);
     border: 1px solid #00f5c4; color: #00f5c4;
-    font-family: var(--font); font-size: .78em; letter-spacing: .12em;
-    padding: 10px 0; cursor: pointer; border-radius: 6px;
+    font-family: var(--font); font-size: .9em; letter-spacing: .14em;
+    padding: 14px 0; cursor: pointer; border-radius: 8px;
     transition: all .2s;
     text-shadow: 0 0 8px rgba(0,245,196,.4);
-    box-shadow: 0 0 18px rgba(0,245,196,.1);
+    box-shadow: 0 0 20px rgba(0,245,196,.12);
   }
   .lem-btn-claim:hover:not(:disabled) {
     background: linear-gradient(90deg, #005a42 0%, #006e50 100%);
-    box-shadow: 0 0 28px rgba(0,245,196,.25);
+    box-shadow: 0 0 34px rgba(0,245,196,.28);
   }
   .lem-btn-claim:disabled { opacity: .5; cursor: default; }
   .lem-btn-claim.claimed {
@@ -142,7 +139,7 @@ const CSS = `
   .lem-name   { color: #00f5c4; font-weight: 700; }
   .lem-accent { color: #f0a500; }
   .lem-skip {
-    font-size: .58em; color: #3a6655; letter-spacing: .1em;
+    font-size: .66em; color: #3a6655; letter-spacing: .12em;
     cursor: pointer; background: none; border: none;
     font-family: var(--font); transition: color .18s;
   }
@@ -219,12 +216,6 @@ function typewrite(el, html, speed = 22) {
   });
 }
 
-/**
- * showLemegetonTuto({ sb, user }, onDone)
- *
- * @param {{ sb, user }} ctx  - instances déjà résolues depuis init()
- * @param {Function}    onDone - callback async post-claim
- */
 export async function showLemegetonTuto({ sb, user }, onDone) {
   if (!sb || !user) {
     console.warn('[lemegeton] sb ou user manquant, tuto ignoré');
@@ -264,7 +255,6 @@ export async function showLemegetonTuto({ sb, user }, onDone) {
     btnClaim.disabled = true;
     btnClaim.textContent = 'CONNEXION EN COURS...';
     try {
-      // Guard session — re-vérifie que le JWT est toujours valide avant le RPC
       const { data: { session }, error: sessionErr } = await sb.auth.getSession();
       if (sessionErr || !session) {
         btnClaim.textContent = 'SESSION EXPIRÉE — RECONNECTEZ-VOUS';

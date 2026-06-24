@@ -2,9 +2,12 @@
  * lemegetonTuto.js
  * Modale d'accueil Lemegeton — Quête tuto_01
  * S'affiche automatiquement si le joueur n'a pas encore réclamé tuto_01.
- * Fix : sb + user passés en param depuis init() pour éviter le timing auth null.
+ *
+ * Signature : showLemegetonTuto({ sb, user }, onDone)
+ *   - sb   : client Supabase déjà résolu depuis init()
+ *   - user : objet user Supabase déjà résolu depuis init()
+ *   - onDone : callback async appelé après claim réussi
  */
-import { getClient, getUser } from '../logic/supaRaw.js?v=3';
 
 const QUEST_ID = 'tuto_01';
 
@@ -217,17 +220,14 @@ function typewrite(el, html, speed = 22) {
 }
 
 /**
- * showLemegetonTuto(onDone)
- * Accepte optionnellement sb et user pré-résolus pour éviter
- * le problème de timing où auth.uid() est encore NULL.
+ * showLemegetonTuto({ sb, user }, onDone)
+ *
+ * @param {{ sb, user }} ctx  - instances déjà résolues depuis init()
+ * @param {Function}    onDone - callback async post-claim
  */
-export async function showLemegetonTuto(onDone, { sb: sbIn, user: userIn } = {}) {
-  // Utilise les instances passées en param si dispo, sinon résout en interne
-  const sb   = sbIn   ?? await getClient();
-  const user = userIn ?? await getUser();
-
-  if (!user) {
-    console.warn('[lemegeton] user non résolu, tuto ignoré');
+export async function showLemegetonTuto({ sb, user }, onDone) {
+  if (!sb || !user) {
+    console.warn('[lemegeton] sb ou user manquant, tuto ignoré');
     return;
   }
 

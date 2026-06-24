@@ -255,13 +255,15 @@ export async function showLemegetonTuto({ sb, user }, onDone) {
     btnClaim.disabled = true;
     btnClaim.textContent = 'CONNEXION EN COURS...';
     try {
-      const { data: { session }, error: sessionErr } = await sb.auth.getSession();
-      if (sessionErr || !session) {
+      // getUser() fait un appel réseau qui valide et rafraîchit le JWT si nécessaire,
+      // contrairement à getSession() qui lit uniquement le cache mémoire.
+      const { data: { user: freshUser }, error: sessionErr } = await sb.auth.getUser();
+      if (sessionErr || !freshUser) {
         btnClaim.textContent = 'SESSION EXPIRÉE — RECONNECTEZ-VOUS';
         btnClaim.style.borderColor = '#ff2d4e';
         btnClaim.style.color = '#ff2d4e';
         btnClaim.disabled = false;
-        console.warn('[lemegeton] session absente au moment du claim', sessionErr);
+        console.warn('[lemegeton] user absent au moment du claim', sessionErr);
         return;
       }
 

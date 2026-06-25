@@ -5,8 +5,8 @@ async function guardOnboarding() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    // Pas connecté → login
-    window.location.href = '/index.html';
+    // Pas connecté → login du hub, avec retour ici après connexion
+    window.location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
     return false;
   }
 

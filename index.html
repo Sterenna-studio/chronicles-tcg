@@ -509,12 +509,21 @@ async function init(){
     const { data: { session } } = await sb.auth.getSession();
     const user = session?.user ?? null;
 
-    if(!user){ console.warn('[hub] non connecté'); return; }
+    // Login délégué au hub (nitro.sterenna.fr/login.html). On y renvoie avec
+    // ?next= pour revenir sur TCG après connexion. (En local on ne redirige pas.)
+    const LOGIN = () => '/login.html?next=' + encodeURIComponent(location.pathname + location.hash);
+    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+    if(!user){
+      console.warn('[hub] non connecté');
+      if (!isLocal) window.location.href = LOGIN();
+      return;
+    }
 
     // Guard session expirée ou déconnexion forcée
     sb.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
-        window.location.href = '/login.html';
+        window.location.href = LOGIN();
       }
     });
 

@@ -46,17 +46,17 @@ export async function initPlayer(sb, user) {
       || 'Joueur';
   }
 
-  const { data: existing } = await sb.from('tcg_players').select('*').eq('id', user.id).maybeSingle();
-  if (!existing) {
-    const username = await resolveUsername();
-    _displayName = username;
-    await sb.from('tcg_players').insert({ id: user.id, username });
-    const { data } = await sb.from('tcg_players').select('*').eq('id', user.id).single();
-    return data;
+  const { data: rpc, error } = await sb.rpc('ensure_tcg_player');
+  if (error) console.error('[initPlayer] ensure_tcg_player error:', error.message);
+
+  const { data: player } = await sb.from('tcg_players').select('*').eq('id', user.id).maybeSingle();
+  if (player) {
+    _displayName = player.username || (await resolveUsername());
+    return player;
   }
 
-  _displayName = existing.username || (await resolveUsername());
-  return existing;
+  _displayName = await resolveUsername();
+  return null;
 }
 
 // Re-exports depuis les repos Supabase

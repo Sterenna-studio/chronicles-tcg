@@ -279,34 +279,82 @@ export function getSquadResult(state) {
   return { winner, turns: state.turn, goldReward: baseGold + speedBonus };
 }
 
-// ─── IA basique (placeholder — lot 5 l'enrichira) ────────────────────────────────
+// ─── IA d'escouade (difficulté : easy / normal / hard) ───────────────────────────
 
-export function autoPlaySquadTurn(state, sideKey) {
+/**
+ * Estime les dégâts effectifs au pool adverse pour chaque action légale et
+ * abordable d'un champion. Le bouclier réduit chaque coup (sauf Event qui
+ * l'ignore) — d'où la valeur de l'Event quand le bouclier est haut.
+ */
+function actionCandidates(state, sideKey, i) {
+  const side = state[sideKey];
+  const ch = side.champions[i];
+  const S = teamShield(state[other(sideKey)]);
+  const out = [];
+
+  if (side.energy >= (ch.energy || 0)) {
+    const raw = championAttackPower(side, i);
+    out.push({ action: { type: 'basic' }, cost: ch.energy || 0, est: Math.max(0, raw - S), kind: 'basic' });
+  }
+
+  if (ch.skill) {
+    const cd = side.skillCooldowns?.[ch.id] || 0;
+    const cost = (ch.energy || 0) + SKILL_EXTRA_COST;
+    if (cd === 0 && side.energy >= cost) {
+      // estimation grossière : la plupart des skills offensives ~ power du champion
+      out.push({ action: { type: 'skill' }, cost, est: ch.power || 0, kind: 'skill' });
+    }
+  }
+
+  ch.equipment.forEach((e, idx) => {
+    const tb = side.terrain ? TERRAIN_DMG : 0;
+    if (e.type === 'Special' && side.energy >= (e.energy || 0)) {
+      out.push({ action: { type: 'active', equipIndex: idx }, cost: e.energy || 0, est: Math.max(0, (e.power || 0) + tb - S), kind: 'special' });
+    } else if (ONESHOT_TYPES.includes(e.type) && !ch.usedActives[idx] && side.energy >= (e.energy || 0)) {
+      const est = e.type === 'Event' ? (e.power || 0) + tb : Math.max(0, (e.power || 0) + tb - S);
+      out.push({ action: { type: 'active', equipIndex: idx }, cost: e.energy || 0, est, kind: 'oneshot' });
+    }
+  });
+
+  return out;
+}
+
+function pickAction(cands, difficulty, enemyHp) {
+  if (!cands.length) return null;
+  if (difficulty === 'easy') {
+    return cands.find((c) => c.kind === 'basic') || null;   // attaques de base seulement
+  }
+  if (difficulty === 'normal') {
+    return cands.find((c) => c.kind === 'skill') || cands.find((c) => c.kind === 'basic') || null;
+  }
+  // hard : maximise les dégâts, sécurise le létal, garde les one-shot pour quand ça vaut le coup
+  const lethal = cands.filter((c) => c.est >= enemyHp).sort((a, b) => a.cost - b.cost)[0];
+  if (lethal) return lethal;
+  const bestRep = cands.filter((c) => c.kind !== 'oneshot').sort((a, b) => b.est - a.est)[0];
+  const bestOne = cands.filter((c) => c.kind === 'oneshot').sort((a, b) => b.est - a.est)[0];
+  if (bestOne && (!bestRep || bestOne.est > bestRep.est)) return bestOne;
+  return bestRep || bestOne || null;
+}
+
+export function autoPlaySquadTurn(state, sideKey, difficulty = 'normal') {
   let s = clone(state);
   if (s.phase === `${sideKey}_stunned`) return s;
 
-  // Ordonne les champions par puissance d'attaque décroissante
-  const order = s[sideKey].champions
-    .map((_, i) => i)
-    .sort((a, b) => championAttackPower(s[sideKey], b) - championAttackPower(s[sideKey], a));
-
   let guard = 0;
   let progressed = true;
-  while (progressed && s.phase !== 'end' && ++guard < 30) {
+  while (progressed && s.phase !== 'end' && ++guard < 40) {
     progressed = false;
+    // (Re)trie les champions actifs par puissance d'attaque décroissante à chaque passe
+    const order = s[sideKey].champions
+      .map((_, i) => i)
+      .filter((i) => canChampionAct(s, sideKey, i))
+      .sort((a, b) => championAttackPower(s[sideKey], b) - championAttackPower(s[sideKey], a));
+
     for (const i of order) {
       if (!canChampionAct(s, sideKey, i)) continue;
-      const ch = s[sideKey].champions[i];
-      const skillCost = (ch.energy || 0) + SKILL_EXTRA_COST;
-      const cd = s[sideKey].skillCooldowns?.[ch.id] || 0;
-      let res;
-      if (ch.skill && cd === 0 && s[sideKey].energy >= skillCost) {
-        res = championAct(s, sideKey, i, { type: 'skill' });
-      } else if (s[sideKey].energy >= (ch.energy || 0)) {
-        res = championAct(s, sideKey, i, { type: 'basic' });
-      } else {
-        continue; // pas assez d'énergie pour ce champion
-      }
+      const pick = pickAction(actionCandidates(s, sideKey, i), difficulty, s[other(sideKey)].hp);
+      if (!pick) continue;
+      const res = championAct(s, sideKey, i, pick.action);
       if (res.ok) { s = res.state; progressed = true; if (s.phase === 'end') break; }
     }
   }
@@ -318,7 +366,7 @@ export function autoPlaySquadTurn(state, sideKey) {
 export function endSquadPlayerTurn(state, difficulty = 'normal') {
   let s = startSquadTurn('enemy', state);
   if (s.phase === 'enemy_turn') {
-    s = autoPlaySquadTurn(s, 'enemy');
+    s = autoPlaySquadTurn(s, 'enemy', difficulty);
   }
   if (getSquadResult(s)) { s.phase = 'end'; return s; }
   return startSquadTurn('player', s);

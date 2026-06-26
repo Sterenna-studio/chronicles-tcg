@@ -222,4 +222,41 @@ test('autoPlaySquadTurn : l\'IA agit et inflige des dégâts', () => {
   assert.ok(after.enemy.champions.some(c => c.actedThisTurn), 'au moins un champion ennemi a agi');
 });
 
+test('IA easy : attaques de base uniquement (pas de skill)', () => {
+  const ai = squad([
+    slot(champ({ id: 'E1', power: 5, energy: 1, skill: { name: 'x', effect: 'true_damage', cooldown: 2, desc: '' } })),
+    slot(champ({ id: 'E2', energy: 1 })), slot(champ({ id: 'E3', energy: 1 })),
+  ]);
+  let s = E.createSquadBattle(baseSquad(), ai);
+  s.enemy.energy = 7;
+  const after = E.autoPlaySquadTurn(s, 'enemy', 'easy');
+  assert.equal(after.enemy.skillCooldowns['E1'] ?? 0, 0, 'la skill ne doit pas être utilisée en easy');
+  assert.ok(after.player.hp < 30, 'des attaques de base ont touché');
+});
+
+test('IA hard : utilise l\'Event pour percer un gros bouclier', () => {
+  const ai = squad([
+    slot(champ({ id: 'A1', power: 3, energy: 1 }), [event({ id: 'EV', power: 6, energy: 1 })]),
+    slot(champ({ id: 'A2', power: 1, energy: 1 })), slot(champ({ id: 'A3', power: 1, energy: 1 })),
+  ]);
+  const def = squad([
+    slot(champ({ id: 'D1' }), [object({ id: 'OD', shield: 6 })]),
+    slot(champ({ id: 'D2' })), slot(champ({ id: 'D3' })),
+  ]);
+  let s = E.createSquadBattle(def, ai);
+  s.enemy.energy = 7;
+  const after = E.autoPlaySquadTurn(s, 'enemy', 'hard');
+  assert.equal(after.enemy.champions[0].usedActives[0], true, 'l\'Event doit être déclenché');
+  assert.ok(after.player.hp <= 30 - 6, 'l\'Event ignore le bouclier 6 et inflige 6');
+});
+
+test('IA hard : achève quand c\'est létal', () => {
+  let s = E.createSquadBattle(baseSquad(), baseSquad());
+  s.player.hp = 4;          // un coup de base (5) suffit
+  s.enemy.energy = 7;
+  const after = E.autoPlaySquadTurn(s, 'enemy', 'hard');
+  assert.equal(after.player.hp, 0);
+  assert.equal(after.phase, 'end');
+});
+
 console.log(`\n${pass} tests OK`);

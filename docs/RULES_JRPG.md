@@ -1,6 +1,7 @@
 # Chronicles TCG — Mode Escouade (3 Champions) — Règles v1
 
-> Statut : **PROPOSITION à valider** (2026-06-26).
+> Statut : **VALIDÉ — prêt pour implémentation** (2026-06-26). Toutes les décisions de
+> game design sont tranchées (§12, §13).
 > Spécification de référence pour le futur moteur `logic/squadEngine.js` + le tuto
 > scénarisé `ui/squadTuto.js`. Les valeurs marquées 🎚️ sont des **paramètres
 > d'équilibrage** ajustables.
@@ -35,8 +36,9 @@ Avant de lancer un combat, le joueur compose son escouade dans un écran dédié
 | Légendaires dans l'escouade | **max 1** | oui |
 | Mythiques dans l'escouade | **max 1** | oui |
 | Slots d'équipement par Champion | **3** (colonne `cards.slots`, déjà en base) | oui |
-| Équipement | cartes de type **Object** de la collection | — |
-| Même Object sur 2 champions | autorisé **seulement si** tu en possèdes 2 exemplaires | — |
+| Cartes équipables | **toute carte non-Champion** de la collection (Object, Companion, Special, Event, Team) — cf §5 | — |
+| Slot Terrain d'équipe | **1** slot dédié pour toute l'escouade (hors des 3×3 slots champion) | oui |
+| Même carte sur 2 slots | autorisé **seulement si** tu en possèdes 2 exemplaires | — |
 
 L'escouade est **persistée** (table `tcg_squads`, cf §9) pour être rejouée sans la
 remonter à chaque fois. Un joueur peut sauvegarder plusieurs escouades et choisir
@@ -69,14 +71,19 @@ Le joueur actif enchaîne :
    - Décrémente les **cooldowns** de skills de ce camp.
    - Applique les effets de début de tour (étourdissement, objets « retournés »…).
 2. **Phase d'actions** : tant qu'il reste de l'énergie, le joueur fait **agir ses
-   champions**. Chaque Champion peut agir **une fois par tour** 🎚️.
+   champions**. Chaque Champion **agit une seule fois par tour** 🎚️ et choisit
+   **une** des actions suivantes :
    - **Attaque de base** : coûte l'`energy` du Champion. Inflige
-     `power_champion + bonus_équipement` (cf §5).
+     `power_champion + bonus_équipement passif` (cf §5).
    - **Attaque spéciale (skill)** : coûte l'`energy` du Champion **+1** 🎚️, et n'est
      dispo que si le cooldown est à 0. Applique l'effet de `card.skill.effect`
      (moteur `skillEngine.js`, déjà écrit), puis pose le cooldown.
-   - Un Champion **étourdi** ou **KO-able ?** (non : pool partagé, pas de KO
-     individuel — cf §7) ne peut pas être bloqué individuellement.
+   - **Déclencher un actif équipé** (Special / Event / Team posé sur ce Champion,
+     cf §5) : coûte l'`energy` de la carte équipée. **Consomme l'action du tour**
+     de ce Champion (il n'attaque pas en plus). Event/Team sont **à usage unique**
+     dans le combat.
+   - Un Champion **étourdi** ne peut pas agir ce tour. (Pas de KO individuel :
+     pool partagé, cf §7.)
 3. **Fin de tour** : passe la main. La **garde n'est PAS réinitialisée ici**
    (seulement au début du tour suivant — même correction que le mode salve).
 
@@ -84,24 +91,37 @@ L'énergie non dépensée est **perdue** (pas de report) 🎚️.
 
 ---
 
-## 5. Équipement & attaques (règle centrale du mode)
+## 5. Équipement & cartes de soutien (règle centrale du mode)
 
-Chaque Champion a **3 slots**. On y attache des cartes **Object**. L'équipement
-modifie **les attaques de CE Champion uniquement** :
+Chaque Champion a **3 slots**. On y attache **n'importe quelle carte non-Champion**
+de la collection. Tout l'équipement est figé au loadout (§13.4). Selon son type, une
+carte équipée est soit un **passif** (toujours actif), soit un **actif** (déclenché
+en combat, consomme l'action du Champion, cf §4).
 
-- **Bonus d'attaque** : l'attaque de base du Champion devient
-  `power_champion + Σ(power des Objects équipés sur lui)`.
-- **Bouclier d'équipe** : le `shield` de chaque Object équipé alimente le
-  **bouclier permanent partagé** du camp (cf §6). Le bouclier protège le pool,
-  pas un champion en particulier.
-- **Effets d'équipement (v1.1, 🎚️ optionnel)** : certains Objects rares pourront
-  porter un mot-clé (`pierce` = ignore le bouclier, `lifesteal` = soigne le pool,
-  etc.). En **v1**, on s'en tient à `power`/`shield` pour garder le moteur simple ;
-  les mots-clés sont une extension documentée mais non implémentée d'emblée.
+> `P` = `power`, `S` = `shield` de la carte équipée. « ce Champion » = celui qui
+> porte la carte.
 
-Exemple : Champion `power 7`, équipé de *Rose Blade* (P3/S4) et *Cyber Bow*
-(P2/S4) → attaque de base = **7 + 3 + 2 = 12**, et le camp gagne **+8** de bouclier
-permanent tant que ces Objects sont en jeu.
+| Type | Slot | Nature | Effet |
+|---|---|---|---|
+| 🔧 **Object** | champion | passif | +`P` à l'attaque de base de ce Champion ; +`S` au bouclier d'équipe |
+| 🐾 **Companion** | champion | passif | +`P` en **aura** sur ce Champion (boost permanent d'attaque) ; +`S` au bouclier d'équipe |
+| ✨ **Special** | champion | actif récurrent | action : `P` dégâts + `S` garde d'équipe (pas de cooldown, recoûte son énergie à chaque usage) |
+| ⚡ **Event** | champion | actif **1×/combat** | action : `P` dégâts directs qui **ignorent le bouclier** |
+| 👥 **Team** | champion | actif **1×/combat** | action : `P` dégâts (frappe lourde, non réductible par les buffs) |
+| 🌍 **Terrain** | **équipe** | passif d'équipe | aura tant qu'en jeu : **+1 dégât** à toutes les attaques de l'escouade **et** +1 garde/tour 🎚️ |
+
+**Attaque de base d'un Champion** = `power_champion + Σ(P des passifs Object/Companion équipés sur lui)` (+1 si Terrain).
+
+**Bouclier d'équipe** = somme des `S` de tous les passifs équipés (Object/Companion)
+sur les 3 Champions — protège le **pool** partagé, pas un champion précis (cf §6).
+
+Exemple : Champion `power 7`, équipé de *Rose Blade* (Object P3/S4) et d'un
+Companion (P2/S3) → attaque de base = **7 + 3 + 2 = 12**, et le camp gagne **+7** de
+bouclier permanent. Le 3ᵉ slot porte un *Event* (P6) gardé pour une frappe perçante
+unique au bon moment (consomme le tour du Champion).
+
+**Mots-clés avancés (v1.1, 🎚️ optionnel)** : `pierce`, `lifesteal`, etc. sur des
+cartes rares — documentés mais non implémentés en v1 pour garder le moteur simple.
 
 ---
 
@@ -144,12 +164,13 @@ sauf mention « ignore le bouclier ».
 
 ## 9. Données / persistance
 
-**Le catalogue de cartes** est dans `data/BZH01.json` + `BZH02.json` (Champions,
-Companions, Events, Objects, Specials, Terrains, Teams), mais la table `public.cards`
+**Le catalogue de cartes** est dans `data/BZH01.json` (+ `BZH02.json`, mais le jeu est
+restreint au **Set 01** pour l'instant — cf `logic/sets.js`). La table `public.cards`
 **ne contient aujourd'hui que les 30 Champions**. Pour le mode Escouade il faut donc :
 
-1. **Seeder les Objects** (équipement) dans `public.cards` depuis les JSON
-   (migration de seed) — sinon aucun équipement disponible.
+1. **Seeder toutes les cartes non-Champion du Set 01** (Object, Companion, Event,
+   Special, Terrain, Team) dans `public.cards` depuis `data/BZH01.json` — sinon aucune
+   carte équipable n'est disponible.
 2. **Nouvelle table `tcg_squads`** (escouade sauvegardée) :
 
 ```
@@ -158,20 +179,22 @@ tcg_squads (
   player_id   uuid not null references profiles(id) on delete cascade,
   name        text not null default 'Escouade 1',
   is_active   boolean not null default false,
-  -- 3 champions + leurs équipements
+  -- 3 champions + leurs cartes équipées (n'importe quel type non-Champion, max 3)
   slot1_champion_id text references cards(id),
-  slot1_equipment   text[] default '{}',   -- ids d'Objects, max 3
+  slot1_equipment   text[] default '{}',
   slot2_champion_id text references cards(id),
   slot2_equipment   text[] default '{}',
   slot3_champion_id text references cards(id),
   slot3_equipment   text[] default '{}',
+  terrain_id        text references cards(id),  -- slot Terrain d'équipe (1, optionnel)
   created_at  timestamptz default now(),
   updated_at  timestamptz default now()
 )
 ```
    - RLS : un joueur ne lit/écrit que **ses** escouades (`player_id = auth.uid()`).
-   - Validation de possession (champions/objets réellement dans la collection) faite
-     côté RPC `save_squad(...)` SECURITY DEFINER, pour ne pas faire confiance au client.
+   - Validation côté RPC `save_squad(...)` SECURITY DEFINER (ne pas faire confiance
+     au client) : possession réelle des cartes, max 3 par slot, `terrain_id` de type
+     Terrain, équipement non-Champion, respect des limites légendaire/mythique.
 
 ---
 
@@ -202,7 +225,7 @@ relancer.
 
 | # | Lot | Fichiers | Dépend de |
 |---|---|---|---|
-| 1 | **Seed Objects** dans `cards` | migration `…_seed_object_cards.sql` | — |
+| 1 | **Seed des cartes non-Champion du Set 01** dans `cards` (Object/Companion/Event/Special/Terrain/Team) | migration `…_seed_set01_support_cards.sql` | — |
 | 2 | **Table `tcg_squads`** + RPC `save_squad`/`load_squad` | migration `…_create_tcg_squads.sql` | — |
 | 3 | **Moteur** `logic/squadEngine.js` (état, attaque de base, skill, bouclier, pool) | réutilise `skillEngine.js` | 1 |
 | 4 | **Tests** `tests/squadEngine.test.mjs` | — | 3 |
@@ -222,12 +245,22 @@ L'ordre 1→4 est purement back/logique (testable sans UI). 6→8 est le front.
 2. **Équipement** → **attaché à un champion** via ses 3 slots, booste ses attaques (§5).
 3. **Tuto** → **combat scénarisé guidé** (§10).
 4. **Process** → **design doc d'abord** (ce document), validation avant code (§11).
+5. **Périmètre cartes** → **Set 01 uniquement** pour l'instant (`logic/sets.js`) (§9).
 
-## 13. Questions ouvertes (à trancher avant le lot 3)
+## 13. Décisions de game design (résolues — 2026-06-26)
 
-- **Action par tour** : 1 action/champion/tour (proposé §4) ou énergie libre sans
-  limite d'actions ? → impacte fortement l'équilibrage.
-- **Coût du spécial** : `energy +1` (proposé) ou coût fixe ?
-- **Autres types de cartes** (Companion/Event/Terrain/Special/Team) : exclus de la v1
-  (mode 100 % champions+équipement) ou réintroduits comme « cartes tactiques » à part ?
-- **Équipement pendant le combat** : figé au loadout (proposé) ou ré-équipable en jeu ?
+1. **Action par tour** → **1 action / champion / tour** (§4). Chaque champion choisit
+   une seule action : attaque de base, skill, ou déclencher un actif équipé.
+2. **Coût du spécial (skill)** → **`energy` du champion +1** (§4), en plus du cooldown.
+3. **Autres types de cartes** → **tous intégrés comme cartes équipables** (§5), pas
+   exclus : Object/Companion en passifs, Special en actif récurrent, Event/Team en
+   actifs à usage unique, Terrain en aura d'équipe (slot dédié).
+4. **Équipement pendant le combat** → **figé au loadout** (§5). Tout se décide à
+   l'Atelier d'escouade ; rien ne se ré-équipe en combat.
+5. **Déclenchement d'un actif équipé** → **consomme l'action du tour** du champion
+   porteur (§4).
+6. **Slot Terrain** → **slot d'équipe dédié** (1 par escouade), hors des 3×3 slots
+   champion (§2, §5).
+
+➡️ Toutes les décisions sont tranchées. Le spec est prêt pour l'implémentation
+(lot 1 : seed des cartes de soutien Set 01 → lot 3 : `logic/squadEngine.js`).

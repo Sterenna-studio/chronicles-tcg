@@ -1,6 +1,6 @@
-import { renderCollection }  from './views/collection.js?v=3';
-import { renderDeckBuilder }  from './views/deckBuilder.js?v=3';
-import { renderBattle }       from './views/battle.js?v=3';
+import { renderCollection }  from './views/collection.js?v=4';
+import { renderDeckBuilder }  from './views/deckBuilder.js?v=4';
+import { renderBattle }       from './views/battle.js?v=4';
 
 const routes = {
   '#/collection':  renderCollection,

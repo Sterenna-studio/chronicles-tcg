@@ -1,11 +1,10 @@
 // app/views/deckBuilder.js
-import { getClient, getUser } from '../../logic/supaRaw.js?v=3';
-import { url } from '../../logic/paths.js?v=3';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=4';
+import { url } from '../../logic/paths.js?v=4';
+import { playableSets } from '../../logic/sets.js?v=4';
 
-const SETS = [
-  { id: 'BZH01', file: '/data/BZH01.json', label: 'BZH01' },
-  { id: 'BZH02', file: '/data/BZH02.json', label: 'BZH02' },
-];
+// Sets jouables uniquement (Set 02 visible en collection mais hors combat).
+const SETS = playableSets();
 const MAX_DECK   = 6;
 const MAX_CHAMPS = 2;
 const DECK_KEY   = 'tcg_saved_deck'; // localStorage
@@ -276,7 +275,7 @@ export async function renderDeckBuilder(root) {
         root.innerHTML = '';
         document.querySelector('.shell')?.style.setProperty('display', 'none');
         document.getElementById('app-root').style.display = 'block';
-        import('./battle.js?v=3').then(m => m.renderBattle(root, { playerDeck, allCards }));
+        import('./battle.js?v=4').then(m => m.renderBattle(root, { playerDeck, allCards }));
       });
     });
     box.querySelector('#diff-cancel').addEventListener('click', () => overlay.remove());

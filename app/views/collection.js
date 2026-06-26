@@ -1,11 +1,10 @@
 // app/views/collection.js
-import { getClient, getUser } from '../../logic/supaRaw.js?v=3';
-import { url } from '../../logic/paths.js?v=3';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=4';
+import { url } from '../../logic/paths.js?v=4';
+import { ALL_SETS, isPlayableSet } from '../../logic/sets.js?v=4';
 
-const SETS = [
-  { id: 'BZH01', label: 'Set 1 — BZH Chronicles', file: '/data/BZH01.json' },
-  { id: 'BZH02', label: 'Set 2 — BZH Chronicles', file: '/data/BZH02.json' },
-];
+// La collection montre TOUS les sets (cartes Set 02 possédées restent visibles).
+const SETS = ALL_SETS;
 
 const RARITY_COLORS = {
   Common: '#9da7b3', Rare: '#42b0ff', Epic: '#bb55d3',
@@ -88,7 +87,7 @@ export async function renderCollection(root) {
       <button id="coll-back" class="btn-nav">← Retour</button>
     </div>
     <div style="padding:8px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      ${SETS.map(s => `<button class="btn-nav btn-set" data-set="${s.id}">${s.label}</button>`).join('')}
+      ${SETS.map(s => `<button class="btn-nav btn-set" data-set="${s.id}">${s.label}${isPlayableSet(s.id) ? '' : ' · à venir'}</button>`).join('')}
       <span id="coll-stats" style="margin-left:auto;color:var(--muted);font-size:.9em"></span>
     </div>
     <div id="coll-grid" style="
@@ -133,6 +132,13 @@ export async function renderCollection(root) {
     statsEl.textContent = `${ownedCount} / ${cards.length} cartes`;
     gridEl.innerHTML = '';
     const frag = document.createDocumentFragment();
+    // Set non jouable : bandeau d'info (cartes visibles mais hors combat)
+    if (!isPlayableSet(setId)) {
+      const note = document.createElement('div');
+      note.style.cssText = 'grid-column:1/-1;padding:10px 12px;margin-bottom:4px;border:1px solid #2a3a4a;border-radius:8px;background:#0a1420;color:#7a96a8;font-size:.78em;line-height:1.5';
+      note.innerHTML = '⏳ <strong style="color:#9ab">Set à venir</strong> — ces cartes sont visibles dans ta collection mais ne sont pas encore achetables ni utilisables en combat.';
+      frag.appendChild(note);
+    }
     cards.forEach(card => {
       const qty = owned[card.id] || 0;
       const hasCard = qty > 0;

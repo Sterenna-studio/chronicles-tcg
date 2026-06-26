@@ -1,5 +1,5 @@
 // data/packsRepo.js — v7
-import { getClient, getUser } from '../logic/supaRaw.js?v=3';
+import { getClient, getUser } from '../logic/supaRaw.js?v=4';
 
 const PACK_IMAGE_MAP = {
   'BZH01-default': 'set01.jpg',
@@ -26,9 +26,11 @@ function normalizePack(pack) {
 
 export async function loadPackTypes() {
   const sb = await getClient();
+  // Boutique : uniquement les packs actifs (Set 02 désactivé → non achetable).
   const { data, error } = await sb
     .from('pack_types')
     .select('*')
+    .eq('is_active', true)
     .order('created_at', { ascending: true });
   if (error) throw error;
   return (data || []).map(normalizePack);

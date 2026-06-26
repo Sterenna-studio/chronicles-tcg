@@ -3,7 +3,7 @@
 // Paliers basés sur le streak : j1=+50, j2=+75, j3=+100, j4=+125, j5=+150, j6=+175, j7=+300 puis reset.
 // Reset si le joueur a manqué plus d'un jour calendaire UTC.
 // Source de vérité : streak/last_daily_at sur tcg_players, or sur profiles.chronicles.
-import { getClient, getUser } from './supaRaw.js?v=5';
+import { getClient, getUser } from './supaRaw.js?v=6';
 
 export const STREAK_REWARDS = [50, 75, 100, 125, 150, 175, 300];
 

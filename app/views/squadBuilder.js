@@ -2,9 +2,9 @@
 // Monte une escouade de 3 Champions, équipe chacun (max 3 cartes non-Champion),
 // choisit 1 Terrain d'équipe, puis sauvegarde via le RPC save_squad.
 // Voir docs/RULES_JRPG.md §2 (loadout) et §9 (persistance).
-import { getClient, getUser } from '../../logic/supaRaw.js?v=5';
-import { url } from '../../logic/paths.js?v=5';
-import { playableSets } from '../../logic/sets.js?v=5';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=6';
+import { url } from '../../logic/paths.js?v=6';
+import { playableSets } from '../../logic/sets.js?v=6';
 
 const MAX_EQUIP = 3;
 const EQUIP_TYPES = ['Object', 'Companion', 'Special', 'Event', 'Team'];
@@ -243,7 +243,8 @@ export async function renderSquadBuilder(root) {
       <label style="font-size:.66em;color:#3a6655;display:flex;align-items:center;gap:6px;cursor:pointer">
         <input type="checkbox" id="sb-active" ${squad.is_active ? 'checked' : ''}> Définir comme escouade active</label>
       <div id="sb-msg" style="font-size:.68em;min-height:18px;text-align:center"></div>
-      <button id="sb-save" style="background:${ready ? '#00f5c422' : '#0a1a14'};border:1px solid ${ready ? '#00f5c4' : '#0e2a1f'};color:${ready ? '#00f5c4' : '#3a6655'};padding:9px;cursor:${ready ? 'pointer' : 'default'};font-family:inherit;font-size:.85em;font-weight:700;letter-spacing:.1em">💾 SAUVEGARDER L'ESCOUADE</button>`;
+      <button id="sb-save" style="background:${ready ? '#00f5c422' : '#0a1a14'};border:1px solid ${ready ? '#00f5c4' : '#0e2a1f'};color:${ready ? '#00f5c4' : '#3a6655'};padding:9px;cursor:${ready ? 'pointer' : 'default'};font-family:inherit;font-size:.85em;font-weight:700;letter-spacing:.1em">💾 SAUVEGARDER L'ESCOUADE</button>
+      <button id="sb-fight" style="background:${ready ? '#ff508022' : '#0a1a14'};border:1px solid ${ready ? '#ff5080' : '#0e2a1f'};color:${ready ? '#ff5080' : '#3a6655'};padding:9px;cursor:${ready ? 'pointer' : 'default'};font-family:inherit;font-size:.85em;font-weight:700;letter-spacing:.1em">⚔️ COMBATTRE</button>`;
     panel.appendChild(footer);
 
     // Handlers de suppression
@@ -262,29 +263,61 @@ export async function renderSquadBuilder(root) {
       e.stopPropagation(); squad.terrain = null; renderGrid(); renderPanel();
     });
     panel.querySelector('#sb-active').addEventListener('change', e => { squad.is_active = e.target.checked; });
-    if (ready) panel.querySelector('#sb-save').addEventListener('click', saveSquad);
+    if (ready) {
+      panel.querySelector('#sb-save').addEventListener('click', saveSquad);
+      panel.querySelector('#sb-fight').addEventListener('click', chooseDifficultyThenFight);
+    }
   }
 
-  // ── Sauvegarde via RPC ─────────────────────────────────────────────────────
-  async function saveSquad() {
+  // ── Lancer un combat : sauvegarde (active) puis va à la vue combat ──────────
+  function chooseDifficultyThenFight() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:20000;display:grid;place-items:center;padding:20px';
+    overlay.innerHTML = `<div style="background:#05080d;border:1px solid #00f5c4;border-radius:14px;padding:26px 30px;text-align:center;font-family:'Share Tech Mono',monospace;color:#c8ffe8;width:min(360px,92vw)">
+      <div style="font-family:'VT323',monospace;font-size:1.7em;color:#00f5c4;letter-spacing:.2em;margin-bottom:16px">DIFFICULTÉ</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="sb-diff" data-d="easy"   style="background:#0a1a14;border:1px solid #22c55e;color:#22c55e;padding:11px;cursor:pointer;font-family:inherit;font-size:.86em;border-radius:8px">🟢 FACILE</button>
+        <button class="sb-diff" data-d="normal" style="background:#0a1a14;border:1px solid #42b0ff;color:#42b0ff;padding:11px;cursor:pointer;font-family:inherit;font-size:.86em;border-radius:8px">🔵 NORMAL</button>
+        <button class="sb-diff" data-d="hard"   style="background:#0a1a14;border:1px solid #ff2d4e;color:#ff2d4e;padding:11px;cursor:pointer;font-family:inherit;font-size:.86em;border-radius:8px">🔴 DIFFICILE</button>
+      </div>
+      <button id="sb-diff-cancel" style="margin-top:14px;background:transparent;border:none;color:#3a6655;cursor:pointer;font-family:inherit;font-size:.75em">Annuler</button></div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelectorAll('.sb-diff').forEach(b => b.addEventListener('click', async () => {
+      localStorage.setItem('tcg_squad_difficulty', b.dataset.d);
+      overlay.remove();
+      const saved = await saveSquad(true);  // force active
+      if (!saved) return;                    // combat seulement si la sauvegarde passe
+      const m = await import('./squadBattle.js?v=6');
+      await m.renderSquadBattle(root, { difficulty: b.dataset.d });
+    }));
+    overlay.querySelector('#sb-diff-cancel').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  }
+
+  // ── Sauvegarde via RPC (forceActive=true pour le flux combat) ──────────────
+  async function saveSquad(forceActive) {
+    const active = forceActive === true ? true : squad.is_active;
+    if (forceActive === true) squad.is_active = true;
     const btn = panel.querySelector('#sb-save');
-    btn.disabled = true; btn.textContent = 'SAUVEGARDE…';
+    if (btn) { btn.disabled = true; btn.textContent = 'SAUVEGARDE…'; }
     const payload = {
       id: squad.id,
       name: (topbar.querySelector('#sb-name').value || 'Escouade').trim(),
-      is_active: squad.is_active,
+      is_active: active,
       terrain: squad.terrain?.id ?? null,
       slots: squad.slots.map(s => ({ champion: s.champion?.id ?? null, equipment: s.equipment.map(e => e.id) })),
     };
+    const reset = () => { if (btn) { btn.disabled = false; btn.textContent = '💾 SAUVEGARDER L\'ESCOUADE'; } };
     try {
       const sb = await getClient();
       const { data, error } = await sb.rpc('save_squad', { p_squad: payload });
-      if (error || !data?.ok) { flash(data?.error || error?.message || 'Erreur', '#ff8a8a'); btn.disabled = false; btn.textContent = '💾 SAUVEGARDER L\'ESCOUADE'; return; }
+      if (error || !data?.ok) { flash(data?.error || error?.message || 'Erreur', '#ff8a8a'); reset(); return false; }
       squad.id = data.squad_id;
       flash('Escouade sauvegardée ✅', '#22c55e');
-      btn.textContent = '✓ SAUVEGARDÉE';
-      setTimeout(() => { btn.disabled = false; btn.textContent = '💾 SAUVEGARDER L\'ESCOUADE'; }, 1600);
-    } catch (e) { console.error('[squadBuilder] save', e); flash('Erreur réseau', '#ff8a8a'); btn.disabled = false; btn.textContent = '💾 SAUVEGARDER L\'ESCOUADE'; }
+      if (btn) btn.textContent = '✓ SAUVEGARDÉE';
+      setTimeout(reset, 1600);
+      return true;
+    } catch (e) { console.error('[squadBuilder] save', e); flash('Erreur réseau', '#ff8a8a'); reset(); return false; }
   }
 
   function flash(txt, color = '#42b0ff') {

@@ -1,9 +1,9 @@
 // ui/openingOverlay.js
-import { generatePack } from '../logic/packGenerator.js?v=5';
-import { decrementPlayerPack } from '../data/packsRepo.js?v=5';
-import { addCardsBatch } from '../data/cardsRepo.js?v=5';
-import { getUser } from '../logic/supaRaw.js?v=5';
-import { url } from '../logic/paths.js?v=5';
+import { generatePack } from '../logic/packGenerator.js?v=6';
+import { decrementPlayerPack } from '../data/packsRepo.js?v=6';
+import { addCardsBatch } from '../data/cardsRepo.js?v=6';
+import { getUser } from '../logic/supaRaw.js?v=6';
+import { url } from '../logic/paths.js?v=6';
 
 const SET_FILES = {
   BZH01: '/data/BZH01.json', BZH02: '/data/BZH02.json',

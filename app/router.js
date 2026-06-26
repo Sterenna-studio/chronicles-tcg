@@ -1,13 +1,15 @@
-import { renderCollection }  from './views/collection.js?v=5';
-import { renderDeckBuilder }  from './views/deckBuilder.js?v=5';
-import { renderBattle }       from './views/battle.js?v=5';
-import { renderSquadBuilder } from './views/squadBuilder.js?v=5';
+import { renderCollection }  from './views/collection.js?v=6';
+import { renderDeckBuilder }  from './views/deckBuilder.js?v=6';
+import { renderBattle }       from './views/battle.js?v=6';
+import { renderSquadBuilder } from './views/squadBuilder.js?v=6';
+import { renderSquadBattle }  from './views/squadBattle.js?v=6';
 
 const routes = {
   '#/collection':  renderCollection,
   '#/deck-builder': renderDeckBuilder,
   '#/battle':       renderBattle,
   '#/squad-builder': renderSquadBuilder,
+  '#/squad-battle':  renderSquadBattle,
 };
 
 export function navigate(h) {

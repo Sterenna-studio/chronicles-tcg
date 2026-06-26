@@ -245,13 +245,13 @@
 <div id="topbar"></div>
 
 <script type="module">
-import { getClient } from './logic/supaRaw.js?v=5';
-import { initPlayer, getDisplayName } from './data/supabaseData.js?v=5';
-import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=5';
-import { openOpeningOverlay } from './ui/openingOverlay.js?v=5';
-import { boot, navigate } from './app/router.js?v=5';
-import { getDailyChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=5';
-import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=5';
+import { getClient } from './logic/supaRaw.js?v=6';
+import { initPlayer, getDisplayName } from './data/supabaseData.js?v=6';
+import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=6';
+import { openOpeningOverlay } from './ui/openingOverlay.js?v=6';
+import { boot, navigate } from './app/router.js?v=6';
+import { getDailyChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=6';
+import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=6';
 
 const pad = n => String(n).padStart(2,'0');
 function tickClock(){const now=new Date();document.getElementById('tb-clock').textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());}
@@ -423,7 +423,7 @@ function updateStreakUI(streak, rewarded, amount){
 
 // ── ACHIEVEMENTS MODAL ────────────────────────────────────────
 async function openAchievementsModal(){
-  const { mount } = await import('./pages/achievementsWidget.js?v=5');
+  const { mount } = await import('./pages/achievementsWidget.js?v=6');
   const overlay=document.createElement('div');
   overlay.className='tcg-modal-overlay';
   overlay.innerHTML=`
@@ -442,7 +442,7 @@ async function openAchievementsModal(){
 
 // ── LEADERBOARD MODAL ─────────────────────────────────────────
 async function openLeaderboardModal(sb){
-  const { mount } = await import('./pages/leaderboardWidget.js?v=5');
+  const { mount } = await import('./pages/leaderboardWidget.js?v=6');
   const { data: { session } } = await sb.auth.getSession();
   const user = session?.user ?? null;
   const overlay=document.createElement('div');
@@ -546,7 +546,7 @@ async function init(){
     await renderShop(sb);
     renderDailyChallenges();
 
-    const { claimDailyReward } = await import('./logic/daily.js?v=5');
+    const { claimDailyReward } = await import('./logic/daily.js?v=6');
     const result = await claimDailyReward(sb, user.id);
     updateStreakUI(result.streak, result.rewarded, result.amount);
 

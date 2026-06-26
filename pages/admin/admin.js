@@ -1,4 +1,4 @@
-import { getFxSettings, saveFxSettings, resetFxSettings } from '../../state/settings.js?v=4';
+import { getFxSettings, saveFxSettings, resetFxSettings } from '../../state/settings.js?v=5';
 
 const ids = ['visual_rays_enabled','visual_rays_spin','visual_rays_opacity','visual_burst_enabled','new_badge_enabled','audio_enabled','audio_volume'];
 const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));

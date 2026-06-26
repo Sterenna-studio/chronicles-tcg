@@ -1,7 +1,7 @@
 // app/views/deckBuilder.js
-import { getClient, getUser } from '../../logic/supaRaw.js?v=4';
-import { url } from '../../logic/paths.js?v=4';
-import { playableSets } from '../../logic/sets.js?v=4';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=5';
+import { url } from '../../logic/paths.js?v=5';
+import { playableSets } from '../../logic/sets.js?v=5';
 
 // Sets jouables uniquement (Set 02 visible en collection mais hors combat).
 const SETS = playableSets();
@@ -275,7 +275,7 @@ export async function renderDeckBuilder(root) {
         root.innerHTML = '';
         document.querySelector('.shell')?.style.setProperty('display', 'none');
         document.getElementById('app-root').style.display = 'block';
-        import('./battle.js?v=4').then(m => m.renderBattle(root, { playerDeck, allCards }));
+        import('./battle.js?v=5').then(m => m.renderBattle(root, { playerDeck, allCards }));
       });
     });
     box.querySelector('#diff-cancel').addEventListener('click', () => overlay.remove());

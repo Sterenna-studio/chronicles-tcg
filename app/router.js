@@ -1,11 +1,13 @@
-import { renderCollection }  from './views/collection.js?v=4';
-import { renderDeckBuilder }  from './views/deckBuilder.js?v=4';
-import { renderBattle }       from './views/battle.js?v=4';
+import { renderCollection }  from './views/collection.js?v=5';
+import { renderDeckBuilder }  from './views/deckBuilder.js?v=5';
+import { renderBattle }       from './views/battle.js?v=5';
+import { renderSquadBuilder } from './views/squadBuilder.js?v=5';
 
 const routes = {
   '#/collection':  renderCollection,
   '#/deck-builder': renderDeckBuilder,
   '#/battle':       renderBattle,
+  '#/squad-builder': renderSquadBuilder,
 };
 
 export function navigate(h) {

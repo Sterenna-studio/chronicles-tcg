@@ -1,10 +1,10 @@
 // app/views/battle.js
-import { createBattle, playCard, getBattleResult, startTurn, mulligan, START_HP } from '../../logic/battleEngine.js?v=4';
-import { runEnemyTurn } from '../../logic/aiEngine.js?v=4';
-import { getClient, getUser } from '../../logic/supaRaw.js?v=4';
-import { url } from '../../logic/paths.js?v=4';
-import { playableSets } from '../../logic/sets.js?v=4';
-import { getDailyChallenges, checkAndCompleteChallenges, getChallengeProgress } from '../../logic/challengeEngine.js?v=4';
+import { createBattle, playCard, getBattleResult, startTurn, mulligan, START_HP } from '../../logic/battleEngine.js?v=5';
+import { runEnemyTurn } from '../../logic/aiEngine.js?v=5';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=5';
+import { url } from '../../logic/paths.js?v=5';
+import { playableSets } from '../../logic/sets.js?v=5';
+import { getDailyChallenges, checkAndCompleteChallenges, getChallengeProgress } from '../../logic/challengeEngine.js?v=5';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -124,7 +124,7 @@ export async function renderBattle(root, opts = {}) {
         <button id="go-deck" style="background:transparent;border:1px solid #00f5c4;color:#00f5c4;padding:8px 20px;cursor:pointer;font-family:inherit">Construire un deck</button>
       </div>`;
     root.querySelector('#go-deck').addEventListener('click', () => {
-      import('./deckBuilder.js?v=4').then(m => m.renderDeckBuilder(root));
+      import('./deckBuilder.js?v=5').then(m => m.renderDeckBuilder(root));
     });
     return;
   }
@@ -598,7 +598,7 @@ export async function renderBattle(root, opts = {}) {
     });
     box.querySelector('#end-deck').addEventListener('click', () => {
       overlay.remove();
-      import('./deckBuilder.js?v=4').then(m => m.renderDeckBuilder(root));
+      import('./deckBuilder.js?v=5').then(m => m.renderDeckBuilder(root));
     });
     box.querySelector('#end-hub').addEventListener('click', () => {
       overlay.remove();
@@ -673,7 +673,7 @@ export async function renderBattle(root, opts = {}) {
 function renderDailyChallenges() {
   const el = document.getElementById('daily-challenges-list');
   if (!el) return;
-  import('../../logic/challengeEngine.js?v=4').then(({ getDailyChallenges, getChallengeProgress }) => {
+  import('../../logic/challengeEngine.js?v=5').then(({ getDailyChallenges, getChallengeProgress }) => {
     const challenges = getDailyChallenges();
     const progress   = getChallengeProgress();
     el.innerHTML = '';

@@ -1,14 +1,14 @@
 # Chronicles TCG — Mode Escouade (3 Champions) — Règles v1
 
-> Statut : **VALIDÉ — prêt pour implémentation** (2026-06-26). Toutes les décisions de
-> game design sont tranchées (§12, §13).
-> Spécification de référence pour le futur moteur `logic/squadEngine.js` + le tuto
-> scénarisé `ui/squadTuto.js`. Les valeurs marquées 🎚️ sont des **paramètres
-> d'équilibrage** ajustables.
+> Statut : **IMPLÉMENTÉ** (2026-06-27). Les 9 lots sont livrés (§11). Ce document est
+> la spec de **game design** (le « comment ça se joue ») ; pour l'**implémentation**
+> (fichiers, base de données, flux, extension) voir [MODE_ESCOUADE.md](MODE_ESCOUADE.md).
+> Le moteur est `logic/squadEngine.js`, le tuto `app/views/squadTutorial.js`. Les
+> valeurs marquées 🎚️ sont des **paramètres d'équilibrage** ajustables.
 >
 > Ce mode **coexiste** avec le mode « salve » 1-Champion existant ([RULES.md](RULES.md)),
-> qui reste la référence du moteur actuel `logic/battleEngine.js`. Le mode Escouade
-> est un **nouveau moteur**, il ne remplace rien tant qu'il n'est pas validé.
+> qui reste la référence du moteur `logic/battleEngine.js`. Le mode Escouade est un
+> **nouveau moteur** séparé, il ne remplace rien.
 
 ---
 
@@ -155,23 +155,27 @@ sauf mention « ignore le bouclier ».
 ## 8. Fin de partie & récompenses
 
 - Victoire dès que le pool adverse ≤ 0. Double 0 le même tour → **match nul**.
-- Or (chronicles) crédité **via le ledger** (`chronicles_ledger`, jamais d'écriture
-  directe sur `profiles.chronicles` — cf architecture monnaie). Barème :
-  `base (victoire 30 / nul 15 / défaite 10) + bonus de rapidité` 🎚️, réutilise la
-  logique de `getBattleResult` du mode salve.
+- Barème calculé par `getSquadResult()` : `base (victoire 30 / nul 15 / défaite 10) +
+  bonus de rapidité ((10 − tour) × 3 si victoire)` 🎚️.
+- Crédit **via le ledger** : le combat appelle le RPC `award_squad_reward(montant)`
+  (type ledger `battle_reward`, montant **clampé 0–100** côté serveur car le combat
+  est client). Jamais d'écriture directe sur `profiles.chronicles` (le trigger de
+  sync l'effacerait — cf [MODE_ESCOUADE.md](MODE_ESCOUADE.md) §5).
 
 ---
 
 ## 9. Données / persistance
 
-**Le catalogue de cartes** est dans `data/BZH01.json` (+ `BZH02.json`, mais le jeu est
-restreint au **Set 01** pour l'instant — cf `logic/sets.js`). La table `public.cards`
-**ne contient aujourd'hui que les 30 Champions**. Pour le mode Escouade il faut donc :
+> ✅ **Réalisé** (migrations appliquées) — détails et noms de migrations dans
+> [MODE_ESCOUADE.md](MODE_ESCOUADE.md) §3.
 
-1. **Seeder toutes les cartes non-Champion du Set 01** (Object, Companion, Event,
-   Special, Terrain, Team) dans `public.cards` depuis `data/BZH01.json` — sinon aucune
-   carte équipable n'est disponible.
-2. **Nouvelle table `tcg_squads`** (escouade sauvegardée) :
+**Le catalogue de cartes** est dans `data/BZH01.json` (+ `BZH02.json`, mais le jeu est
+restreint au **Set 01** — cf `logic/sets.js`). Deux besoins, tous deux réalisés :
+
+1. **Seed des cartes non-Champion du Set 01** (Object, Companion, Event, Special,
+   Terrain) dans `public.cards` depuis `data/BZH01.json` — fait (50 cartes). Les
+   30 Champions y étaient déjà (avec `skill` + `slots=3`).
+2. **Table `tcg_squads`** (escouade sauvegardée), créée telle que :
 
 ```
 tcg_squads (
@@ -200,11 +204,11 @@ tcg_squads (
 
 ## 10. Le tuto scénarisé (combat guidé)
 
-Remplace/complète l'accueil `lemegetonTuto.js` (qui ne fait que créditer 1000 ✦).
-Nouveau fichier `ui/squadTuto.js` : un **vrai premier combat dirigé**, IA passive,
-escouade pré-montée imposée, bulles d'aide étape par étape.
+Complète l'accueil `ui/lemegetonTuto.js` (qui ne fait que créditer 1000 ✦pour
+`tuto_01`). Fichier `app/views/squadTutorial.js` : un **vrai premier combat dirigé**,
+IA passive, escouade pré-montée imposée, bulles d'aide étape par étape.
 
-Déroulé proposé (5 beats) :
+Déroulé (5 beats, tel qu'implémenté) :
 
 1. **« Voici ton escouade »** — surligne les 3 champions + leurs slots d'équipement.
 2. **« Attaque de base »** — force le joueur à faire attaquer le champion 1
@@ -214,28 +218,31 @@ Déroulé proposé (5 beats) :
 4. **« Attaque spéciale »** — débloque et fait lancer la skill d'un champion
    (cooldown visible).
 5. **« Achève l'adversaire »** — le joueur réduit le pool ennemi à 0 et gagne. Récompense
-   créditée via le ledger (quête `tuto_combat` 🎚️).
+   via la quête **`tuto_escouade`** (500 ✦, `claim_quest`).
 
-Le tuto est marqué fait via `tcg_quest_completions` (comme `tuto_01`) pour ne pas se
-relancer.
+Le tuto est marqué fait via `tcg_quest_completions` (claim_quest idempotent) — la
+récompense n'est versée qu'une fois, même si on rejoue le tuto. Accessible via le
+bouton « 📖 Tuto » de l'Atelier.
 
 ---
 
-## 11. Plan d'implémentation (séquencé)
+## 11. Plan d'implémentation — **tous les lots livrés ✅**
 
-| # | Lot | Fichiers | Dépend de |
+| # | Lot | Fichiers (réels) | Statut |
 |---|---|---|---|
-| 1 | **Seed des cartes non-Champion du Set 01** dans `cards` (Object/Companion/Event/Special/Terrain/Team) | migration `…_seed_set01_support_cards.sql` | — |
-| 2 | **Table `tcg_squads`** + RPC `save_squad`/`load_squad` | migration `…_create_tcg_squads.sql` | — |
-| 3 | **Moteur** `logic/squadEngine.js` (état, attaque de base, skill, bouclier, pool) | réutilise `skillEngine.js` | 1 |
-| 4 | **Tests** `tests/squadEngine.test.mjs` | — | 3 |
-| 5 | **IA** d'escouade (réutilise/adapte `aiEngine.js`) | — | 3 |
-| 6 | **UI Atelier d'escouade** (compo 3 champions + drag équipement) | nouvelle vue | 2 |
-| 7 | **UI Combat Escouade** (vue combat) | nouvelle vue | 3,5 |
-| 8 | **Tuto scénarisé** `ui/squadTuto.js` | — | 7 |
-| 9 | **Quêtes** liées au mode (jouer/gagner un combat Escouade) | seed `tcg_quests` | 7 |
+| 1 | Seed des cartes non-Champion du Set 01 dans `cards` | `…140000_seed_set01_support_cards.sql` | ✅ |
+| 2 | Table `tcg_squads` + RPC `save_squad`/`load_squad` | `…150000_create_tcg_squads.sql` | ✅ |
+| 3 | Moteur `logic/squadEngine.js` (réutilise `skillEngine.js`) | [squadEngine.js](../logic/squadEngine.js) | ✅ |
+| 4 | Tests `tests/squadEngine.test.mjs` (17 tests) | [squadEngine.test.mjs](../tests/squadEngine.test.mjs) | ✅ |
+| 5 | IA d'escouade (**dans `squadEngine.js`** : `autoPlaySquadTurn`/`pickAction`) | [squadEngine.js](../logic/squadEngine.js) | ✅ |
+| 6 | UI Atelier d'escouade | [app/views/squadBuilder.js](../app/views/squadBuilder.js) | ✅ |
+| 7 | UI Combat Escouade + récompense ledger | [app/views/squadBattle.js](../app/views/squadBattle.js) | ✅ |
+| 8 | Tuto scénarisé | [app/views/squadTutorial.js](../app/views/squadTutorial.js) | ✅ |
+| 9 | Quêtes du mode (`squad_first_win`, `squad_win_hard`) | `…000003_seed_squad_quests.sql` | ✅ |
 
-L'ordre 1→4 est purement back/logique (testable sans UI). 6→8 est le front.
+> Note : l'IA n'a finalement **pas** réutilisé `aiEngine.js` (propre au mode salve) —
+> elle est intégrée au moteur d'escouade. Liste complète des fichiers et migrations
+> dans [MODE_ESCOUADE.md](MODE_ESCOUADE.md) §2-§3.
 
 ---
 
@@ -262,5 +269,5 @@ L'ordre 1→4 est purement back/logique (testable sans UI). 6→8 est le front.
 6. **Slot Terrain** → **slot d'équipe dédié** (1 par escouade), hors des 3×3 slots
    champion (§2, §5).
 
-➡️ Toutes les décisions sont tranchées. Le spec est prêt pour l'implémentation
-(lot 1 : seed des cartes de soutien Set 01 → lot 3 : `logic/squadEngine.js`).
+➡️ Toutes les décisions sont tranchées et **implémentées** (§11). Toute évolution
+future de l'équilibrage se fait via les constantes 🎚️ de `logic/squadEngine.js`.

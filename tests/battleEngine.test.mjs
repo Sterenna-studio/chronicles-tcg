@@ -1,13 +1,22 @@
 // tests/battleEngine.test.mjs — tests du moteur (fonctions pures)
 // Lancement : node tests/battleEngine.test.mjs
-// (charge logic/battleEngine.js via data: URL pour l'évaluer en ESM)
+//
+// battleEngine importe (et ré-exporte) skillEngine. On évalue chacun via une
+// data: URL ESM en réécrivant l'import relatif vers la data: URL de skillEngine
+// (modules séparés, pas de concaténation fragile). Même pattern que
+// tests/squadEngine.test.mjs.
 
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
-const src = fs.readFileSync(new URL('../logic/battleEngine.js', import.meta.url), 'utf8')
-  .replace(/from '\.\/[^']+'/g, ''); // (pas d'imports relatifs de toute façon)
-const E = await import('data:text/javascript,' + encodeURIComponent(src));
+const read = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
+// encodeURIComponent ne touche pas aux apostrophes : on les encode pour ne pas
+// casser le littéral d'import `from '<url>'` quand l'URL est injectée dans la source.
+const toDataUrl = (src) => 'data:text/javascript,' + encodeURIComponent(src).replace(/'/g, '%27');
+const skillUrl = toDataUrl(read('../logic/skillEngine.js'));
+const battleSrc = read('../logic/battleEngine.js')
+  .replace(/from '\.\/skillEngine\.js[^']*'/g, `from '${skillUrl}'`);
+const E = await import(toDataUrl(battleSrc));
 
 let pass = 0;
 const test = (name, fn) => { fn(); console.log('✅', name); pass++; };

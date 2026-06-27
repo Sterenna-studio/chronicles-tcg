@@ -5,10 +5,10 @@
 import {
   createSquadBattle, startSquadTurn, championAct, getSquadResult, endSquadPlayerTurn,
   championAttackPower, teamShield, canChampionAct, SQUAD_HP,
-} from '../../logic/squadEngine.js?v=7';
-import { getClient } from '../../logic/supaRaw.js?v=7';
-import { url } from '../../logic/paths.js?v=7';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=7';
+} from '../../logic/squadEngine.js?v=8';
+import { getClient } from '../../logic/supaRaw.js?v=8';
+import { url } from '../../logic/paths.js?v=8';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=8';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -74,6 +74,20 @@ async function awardGold(amount, meta) {
   } catch (e) { console.warn('[squadBattle] award', e); return null; }
 }
 
+// Réclame les quêtes du mode à la victoire (claim_quest est idempotent).
+async function claimSquadQuests(diff) {
+  const ids = ['squad_first_win', ...(diff === 'hard' ? ['squad_win_hard'] : [])];
+  const done = [];
+  try {
+    const sb = await getClient();
+    for (const id of ids) {
+      const { data } = await sb.rpc('claim_quest', { p_quest_id: id });
+      if (data?.ok) done.push({ title: data.quest_title, earned: data.chronicles_earned });
+    }
+  } catch (e) { console.warn('[squadBattle] quests', e); }
+  return done;
+}
+
 // ── Vue ───────────────────────────────────────────────────────────────────────
 export async function renderSquadBattle(root, opts = {}) {
   const difficulty = opts.difficulty || localStorage.getItem('tcg_squad_difficulty') || 'normal';
@@ -89,7 +103,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button id="go-atelier" style="background:transparent;border:1px solid #00f5c4;color:#00f5c4;padding:8px 22px;cursor:pointer;font-family:inherit">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=7').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=8').then(m => m.renderSquadBuilder(root)));
     return;
   }
 
@@ -237,7 +251,15 @@ export async function renderSquadBattle(root, opts = {}) {
 
   async function finish() {
     const res = getSquadResult(state);
-    let balanceTxt = '';
+    let balanceTxt = '', questHtml = '';
+    if (res.winner === 'player') {
+      const claimed = await claimSquadQuests(difficulty);   // d'abord les quêtes (ledger)
+      if (claimed.length) {
+        questHtml = `<div style="margin:-8px 0 16px;padding:10px;border:1px solid #ffbe4644;border-radius:8px;background:#1a140022">
+          <div style="font-size:.64em;color:#ffbe46;letter-spacing:.1em;margin-bottom:4px">QUÊTES VALIDÉES</div>
+          ${claimed.map(q => `<div style="font-size:.74em;color:#c8ffe8">🎯 ${q.title} <span style="color:#22c55e">+${q.earned} ✦</span></div>`).join('')}</div>`;
+      }
+    }
     if (res.winner === 'player' || res.winner === 'draw') {
       const bal = await awardGold(res.goldReward, { difficulty, turns: res.turns, winner: res.winner });
       if (bal != null) balanceTxt = ` · Solde : ✦ ${bal}`;
@@ -249,6 +271,7 @@ export async function renderSquadBattle(root, opts = {}) {
     overlay.innerHTML = `<div style="background:#05080d;border:1px solid ${color};border-radius:14px;padding:28px 32px;text-align:center;font-family:'Share Tech Mono',monospace;color:#c8ffe8;width:min(380px,92vw)">
       <div style="font-family:'VT323',monospace;font-size:2.2em;color:${color};letter-spacing:.2em;margin-bottom:10px">${title}</div>
       <div style="font-size:.82em;color:#8ab4a0;margin-bottom:18px">${res.winner === 'player' ? `+${res.goldReward} ✦ en ${res.turns} tours${balanceTxt}` : res.winner === 'draw' ? `+${res.goldReward} ✦${balanceTxt}` : 'Retente ta chance, Agent.'}</div>
+      ${questHtml}
       <div style="display:flex;flex-direction:column;gap:8px">
         <button id="sq-again" style="background:#00f5c422;border:1px solid #00f5c4;color:#00f5c4;padding:9px;cursor:pointer;font-family:inherit;font-size:.84em;border-radius:8px">⚔️ Rejouer</button>
         <button id="sq-home" style="background:transparent;border:1px solid #3a6655;color:#3a6655;padding:8px;cursor:pointer;font-family:inherit;font-size:.8em;border-radius:8px">← Retour au hub</button>

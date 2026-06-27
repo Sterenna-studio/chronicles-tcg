@@ -2,9 +2,9 @@
 // Monte une escouade de 3 Champions, équipe chacun (max 3 cartes non-Champion),
 // choisit 1 Terrain d'équipe, puis sauvegarde via le RPC save_squad.
 // Voir docs/RULES_JRPG.md §2 (loadout) et §9 (persistance).
-import { getClient, getUser } from '../../logic/supaRaw.js?v=7';
-import { url } from '../../logic/paths.js?v=7';
-import { playableSets } from '../../logic/sets.js?v=7';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=8';
+import { url } from '../../logic/paths.js?v=8';
+import { playableSets } from '../../logic/sets.js?v=8';
 
 const MAX_EQUIP = 3;
 const EQUIP_TYPES = ['Object', 'Companion', 'Special', 'Event', 'Team'];
@@ -92,6 +92,7 @@ export async function renderSquadBuilder(root) {
     <button id="sb-back" style="background:transparent;border:1px solid #3a6655;color:#3a6655;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:.78em">← Retour</button>
     <span style="color:#00f5c4;font-family:'VT323',monospace;font-size:1.4em;letter-spacing:.15em">ATELIER D'ESCOUADE</span>
     <button id="sb-tuto" style="background:#bb55d322;border:1px solid #bb55d3;color:#bb55d3;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:.74em">📖 Tuto</button>
+    <button id="sb-quests" style="background:#ffbe4622;border:1px solid #ffbe46;color:#ffbe46;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:.74em">🎯 Quêtes</button>
     <input id="sb-name" value="${squad.name.replace(/"/g,'&quot;')}" maxlength="32" style="background:#050d14;border:1px solid #0e2a1f;color:#c8ffe8;padding:4px 10px;font-family:inherit;font-size:.78em;width:160px">
     <div style="flex:1"></div>
     <input id="sb-search" placeholder="Chercher…" style="background:#050d14;border:1px solid #0e2a1f;color:#c8ffe8;padding:4px 10px;font-family:inherit;font-size:.78em;width:150px">
@@ -288,7 +289,7 @@ export async function renderSquadBuilder(root) {
       overlay.remove();
       const saved = await saveSquad(true);  // force active
       if (!saved) return;                    // combat seulement si la sauvegarde passe
-      const m = await import('./squadBattle.js?v=7');
+      const m = await import('./squadBattle.js?v=8');
       await m.renderSquadBattle(root, { difficulty: b.dataset.d });
     }));
     overlay.querySelector('#sb-diff-cancel').addEventListener('click', () => overlay.remove());
@@ -334,7 +335,39 @@ export async function renderSquadBuilder(root) {
     document.getElementById('app-root').style.display = 'none';
     document.querySelector('.shell').style.display = 'grid';
   });
-  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=7').then(m => m.renderSquadTutorial(root)));
+  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=8').then(m => m.renderSquadTutorial(root)));
+  topbar.querySelector('#sb-quests').addEventListener('click', openQuestsModal);
+
+  async function openQuestsModal() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:20000;display:grid;place-items:center;padding:20px';
+    overlay.innerHTML = `<div style="background:#05080d;border:1px solid #ffbe46;border-radius:14px;padding:22px 24px;font-family:'Share Tech Mono',monospace;color:#c8ffe8;width:min(440px,94vw);max-height:80vh;overflow:auto">
+      <div style="font-family:'VT323',monospace;font-size:1.5em;color:#ffbe46;letter-spacing:.18em;margin-bottom:14px">🎯 QUÊTES D'ESCOUADE</div>
+      <div id="q-list" style="display:flex;flex-direction:column;gap:8px"><div style="color:#3a6655;font-size:.8em">Chargement…</div></div>
+      <button id="q-close" style="margin-top:16px;width:100%;background:transparent;border:1px solid #3a6655;color:#3a6655;padding:8px;cursor:pointer;font-family:inherit;font-size:.8em;border-radius:8px">Fermer</button></div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#q-close').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    try {
+      const sb = await getClient();
+      const user = await getUser();
+      const [{ data: quests }, comps] = await Promise.all([
+        sb.from('tcg_quests').select('*').or('id.eq.tuto_escouade,id.like.squad*').order('sort_order'),
+        user ? sb.from('tcg_quest_completions').select('quest_id').eq('user_id', user.id) : Promise.resolve({ data: [] }),
+      ]);
+      const done = new Set((comps?.data || []).map(c => c.quest_id));
+      const list = overlay.querySelector('#q-list');
+      if (!quests?.length) { list.innerHTML = '<div style="color:#3a6655;font-size:.8em">Aucune quête.</div>'; return; }
+      list.innerHTML = quests.map(q => {
+        const ok = done.has(q.id);
+        return `<div style="border:1px solid ${ok ? '#22c55e44' : '#0e2a1f'};border-radius:8px;padding:10px;background:${ok ? '#0a160e' : '#04060a'}">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+            <span style="font-size:.82em;color:${ok ? '#22c55e' : '#c8ffe8'}">${ok ? '✓ ' : ''}${q.title}</span>
+            <span style="font-size:.74em;color:#ffbe46;white-space:nowrap">+${q.reward_chronicles} ✦</span></div>
+          <div style="font-size:.68em;color:#7a96a8;margin-top:4px">${q.description || ''}</div></div>`;
+      }).join('');
+    } catch (e) { overlay.querySelector('#q-list').innerHTML = '<div style="color:#ff8a8a;font-size:.8em">Erreur de chargement.</div>'; }
+  }
   topbar.querySelector('#sb-search').addEventListener('input', e => { searchTxt = e.target.value; renderGrid(); });
   topbar.querySelector('#sb-type').addEventListener('change', e => { filterType = e.target.value; renderGrid(); });
   topbar.querySelector('#sb-name').addEventListener('input', e => { squad.name = e.target.value; });

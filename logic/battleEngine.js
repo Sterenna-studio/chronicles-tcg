@@ -11,7 +11,7 @@
 //   getBattleResult(state)
 //   endPlayerTurn(state, difficulty)      -> wrapper pratique
 
-import { tickSkillCooldowns, setActiveChampion, useSkill, canUseSkill } from './skillEngine.js?v=6';
+import { tickSkillCooldowns, setActiveChampion, useSkill, canUseSkill } from './skillEngine.js?v=7';
 
 export const START_HP     = 30;
 export const ENERGY_MAX   = 7;
@@ -234,7 +234,7 @@ export function useChampionSkill(state, sideKey) {
   return result;
 }
 
-export { canUseSkill, getSkillCooldownLeft } from './skillEngine.js?v=6';
+export { canUseSkill, getSkillCooldownLeft } from './skillEngine.js?v=7';
 
 // ─── Effets par type ──────────────────────────────────────────────────────────
 

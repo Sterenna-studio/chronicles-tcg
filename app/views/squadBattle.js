@@ -5,10 +5,10 @@
 import {
   createSquadBattle, startSquadTurn, championAct, getSquadResult, endSquadPlayerTurn,
   championAttackPower, teamShield, canChampionAct, SQUAD_HP,
-} from '../../logic/squadEngine.js?v=6';
-import { getClient } from '../../logic/supaRaw.js?v=6';
-import { url } from '../../logic/paths.js?v=6';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=6';
+} from '../../logic/squadEngine.js?v=7';
+import { getClient } from '../../logic/supaRaw.js?v=7';
+import { url } from '../../logic/paths.js?v=7';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=7';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -89,7 +89,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button id="go-atelier" style="background:transparent;border:1px solid #00f5c4;color:#00f5c4;padding:8px 22px;cursor:pointer;font-family:inherit">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=6').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=7').then(m => m.renderSquadBuilder(root)));
     return;
   }
 

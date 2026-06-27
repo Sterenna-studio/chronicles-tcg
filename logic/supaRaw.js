@@ -1,5 +1,5 @@
 // logic/supaRaw.js — static Supabase helper
-import { supabase } from '../shared/supabaseClient.js?v=6';
+import { supabase } from '../shared/supabaseClient.js?v=7';
 
 export async function getClient(){
   return supabase;

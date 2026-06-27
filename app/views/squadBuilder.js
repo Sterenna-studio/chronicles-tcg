@@ -2,9 +2,9 @@
 // Monte une escouade de 3 Champions, équipe chacun (max 3 cartes non-Champion),
 // choisit 1 Terrain d'équipe, puis sauvegarde via le RPC save_squad.
 // Voir docs/RULES_JRPG.md §2 (loadout) et §9 (persistance).
-import { getClient, getUser } from '../../logic/supaRaw.js?v=6';
-import { url } from '../../logic/paths.js?v=6';
-import { playableSets } from '../../logic/sets.js?v=6';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=7';
+import { url } from '../../logic/paths.js?v=7';
+import { playableSets } from '../../logic/sets.js?v=7';
 
 const MAX_EQUIP = 3;
 const EQUIP_TYPES = ['Object', 'Companion', 'Special', 'Event', 'Team'];
@@ -91,6 +91,7 @@ export async function renderSquadBuilder(root) {
   topbar.innerHTML = `
     <button id="sb-back" style="background:transparent;border:1px solid #3a6655;color:#3a6655;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:.78em">← Retour</button>
     <span style="color:#00f5c4;font-family:'VT323',monospace;font-size:1.4em;letter-spacing:.15em">ATELIER D'ESCOUADE</span>
+    <button id="sb-tuto" style="background:#bb55d322;border:1px solid #bb55d3;color:#bb55d3;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:.74em">📖 Tuto</button>
     <input id="sb-name" value="${squad.name.replace(/"/g,'&quot;')}" maxlength="32" style="background:#050d14;border:1px solid #0e2a1f;color:#c8ffe8;padding:4px 10px;font-family:inherit;font-size:.78em;width:160px">
     <div style="flex:1"></div>
     <input id="sb-search" placeholder="Chercher…" style="background:#050d14;border:1px solid #0e2a1f;color:#c8ffe8;padding:4px 10px;font-family:inherit;font-size:.78em;width:150px">
@@ -287,7 +288,7 @@ export async function renderSquadBuilder(root) {
       overlay.remove();
       const saved = await saveSquad(true);  // force active
       if (!saved) return;                    // combat seulement si la sauvegarde passe
-      const m = await import('./squadBattle.js?v=6');
+      const m = await import('./squadBattle.js?v=7');
       await m.renderSquadBattle(root, { difficulty: b.dataset.d });
     }));
     overlay.querySelector('#sb-diff-cancel').addEventListener('click', () => overlay.remove());
@@ -333,6 +334,7 @@ export async function renderSquadBuilder(root) {
     document.getElementById('app-root').style.display = 'none';
     document.querySelector('.shell').style.display = 'grid';
   });
+  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=7').then(m => m.renderSquadTutorial(root)));
   topbar.querySelector('#sb-search').addEventListener('input', e => { searchTxt = e.target.value; renderGrid(); });
   topbar.querySelector('#sb-type').addEventListener('change', e => { filterType = e.target.value; renderGrid(); });
   topbar.querySelector('#sb-name').addEventListener('input', e => { squad.name = e.target.value; });

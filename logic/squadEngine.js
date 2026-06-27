@@ -21,7 +21,7 @@
 //   endSquadPlayerTurn(state, difficulty)
 //   Helpers UI : championAttackPower, teamShield, canChampionAct
 
-import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=8';
+import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=9';
 
 export const SQUAD_HP        = 30;
 export const ENERGY_MAX      = 7;

@@ -41,7 +41,8 @@ il ne le remplace pas.
 | [app/views/squadBattle.js](../app/views/squadBattle.js) | **Combat** : charge l'escouade active (`load_squad`), génère un ennemi, déroule le combat, overlay victoire, récompense + quêtes. |
 | [app/views/squadTutorial.js](../app/views/squadTutorial.js) | **Tuto scénarisé** : escouade fixe, ennemi faible passif, bulles d'aide étape par étape, quête `tuto_escouade`. |
 | [app/router.js](../app/router.js) | Routes `#/squad-builder`, `#/squad-battle`, `#/squad-tuto`. |
-| [index.html](../index.html) | Carte module **ESCOUADE** du hub + handler `openView('#/squad-builder')`. |
+| [ui/onboardingFunnel.js](../ui/onboardingFunnel.js) | **Parcours d'initiation** : bandeau hub qui guide le nouveau joueur (kit → booster → ouverture → tuto Escouade). Cf §9. |
+| [index.html](../index.html) | Carte module **ESCOUADE** du hub + handler `openView('#/squad-builder')` ; hôte `#onboarding-funnel` + écouteur `hub:refresh`. |
 
 ### Données / docs
 | Fichier | Rôle |
@@ -199,9 +200,40 @@ incohérent.
 ## 8. État & points ouverts
 
 - ✅ Les 9 lots sont livrés, commités et poussés sur `main`. Migrations alignées.
-- 🟡 `tests/battleEngine.test.mjs` (mode salve, **indépendant** de l'escouade) est
-  cassé depuis l'ajout du skill engine v3 : son harness ne gère pas l'import
-  relatif de `skillEngine`. Le harness de `tests/squadEngine.test.mjs` montre le
-  pattern correct à reprendre.
+- ✅ `tests/battleEngine.test.mjs` (mode salve) **réparé** : son harness charge
+  désormais `skillEngine` via une data: URL séparée (même pattern que
+  `squadEngine.test.mjs`). **9 tests** OK.
+- ✅ **Parcours d'initiation** (onboarding guidé) livré — cf §9.
 - 💡 Pistes futures : animations de combat, plus de contenu de quêtes, équilibrage
   fin, mode « PV par champion » (le skillEngine a déjà des effets de ciblage prêts).
+
+---
+
+## 9. Parcours d'initiation (onboarding guidé)
+
+Après l'accueil **LEMEGETON** (`ui/lemegetonTuto.js`, quête `tuto_01` = kit de
+1 000 ✦), le nouveau joueur était laissé seul sur le hub. Le bandeau
+**`ui/onboardingFunnel.js`** comble ce trou : il s'affiche en haut du panneau
+central (`#onboarding-funnel`) et enchaîne 4 étapes vers le mode Escouade.
+
+| # | Étape | Fait quand… | CTA (action) |
+|---|---|---|---|
+| 1 | ✦ Kit de départ | `tuto_01` réclamée | Rouvre LEMEGETON |
+| 2 | 🛒 Premier booster | possède un pack **ou** des cartes | Met en évidence la boutique ◈ |
+| 3 | 📦 Ouvre le booster | possède ≥ 1 carte | Met en évidence les boosters |
+| 4 | 🛡 Tuto Escouade | `tuto_escouade` réclamée | `openView('#/squad-tuto')` |
+
+**Détection** : 100 % dérivée de la BDD, **aucune nouvelle colonne** —
+`tcg_quest_completions` (kit + tuto), `tcg_player_cards` (`user_id`),
+`tcg_player_packs` (`player_id`). Le bandeau **disparaît définitivement** dès que
+`tuto_escouade` est faite (état terminal). Un lien « plus tard ✕ » le masque pour
+la session (sessionStorage).
+
+**Cas notable** : un joueur **existant** qui a des cartes mais n'a jamais fait le
+tuto voit les étapes 1–3 cochées et l'étape 4 active → le bandeau **resurface le
+mode Escouade** aux anciens joueurs.
+
+**Rafraîchissement** : `index.html` réévalue le bandeau à chaque `refreshHub()`
+(après achat/ouverture) et au retour des vues plein écran via l'événement
+`hub:refresh` (émis par `squadTutorial.backToHub()`), pour que l'étape 4 se coche
+dès la sortie du tuto.

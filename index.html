@@ -213,6 +213,7 @@
   </aside>
 
   <main class="center-panel">
+    <div id="onboarding-funnel"></div>
     <div class="modules-title">MODULES · <span id="mod-count">2</span> SYSTEMES ONLINE</div>
     <div class="modules-grid">
       <div class="module-card" id="card-collection"><span class="module-status">ONLINE</span><div class="module-icon">◦</div><div class="module-name">COLLECTION</div><div class="module-desc">Album · BZH01 · BZH02</div></div>
@@ -245,13 +246,17 @@
 <div id="topbar"></div>
 
 <script type="module">
-import { getClient } from './logic/supaRaw.js?v=8';
-import { initPlayer, getDisplayName } from './data/supabaseData.js?v=8';
-import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=8';
-import { openOpeningOverlay } from './ui/openingOverlay.js?v=8';
-import { boot, navigate } from './app/router.js?v=8';
-import { getDailyChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=8';
-import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=8';
+import { getClient } from './logic/supaRaw.js?v=9';
+import { initPlayer, getDisplayName } from './data/supabaseData.js?v=9';
+import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=9';
+import { openOpeningOverlay } from './ui/openingOverlay.js?v=9';
+import { boot, navigate } from './app/router.js?v=9';
+import { getDailyChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=9';
+import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=9';
+import { renderOnboardingFunnel } from './ui/onboardingFunnel.js?v=9';
+
+// Réassigné dans init() avec sb/user/openView capturés ; appelé à chaque refreshHub.
+let refreshFunnel = async () => {};
 
 const pad = n => String(n).padStart(2,'0');
 function tickClock(){const now=new Date();document.getElementById('tb-clock').textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());}
@@ -366,6 +371,7 @@ async function refreshHub(sb){
         });
       }
     }
+    await refreshFunnel();
   }catch(e){console.warn('[hub]',e);}
 }
 
@@ -423,7 +429,7 @@ function updateStreakUI(streak, rewarded, amount){
 
 // ── ACHIEVEMENTS MODAL ────────────────────────────────────────
 async function openAchievementsModal(){
-  const { mount } = await import('./pages/achievementsWidget.js?v=8');
+  const { mount } = await import('./pages/achievementsWidget.js?v=9');
   const overlay=document.createElement('div');
   overlay.className='tcg-modal-overlay';
   overlay.innerHTML=`
@@ -442,7 +448,7 @@ async function openAchievementsModal(){
 
 // ── LEADERBOARD MODAL ─────────────────────────────────────────
 async function openLeaderboardModal(sb){
-  const { mount } = await import('./pages/leaderboardWidget.js?v=8');
+  const { mount } = await import('./pages/leaderboardWidget.js?v=9');
   const { data: { session } } = await sb.auth.getSession();
   const user = session?.user ?? null;
   const overlay=document.createElement('div');
@@ -546,7 +552,7 @@ async function init(){
     await renderShop(sb);
     renderDailyChallenges();
 
-    const { claimDailyReward } = await import('./logic/daily.js?v=8');
+    const { claimDailyReward } = await import('./logic/daily.js?v=9');
     const result = await claimDailyReward(sb, user.id);
     updateStreakUI(result.streak, result.rewarded, result.amount);
 
@@ -556,6 +562,10 @@ async function init(){
       navigate(hash);
     };
 
+    // Les vues plein écran reviennent au hub via backToHub() ; elles émettent
+    // 'hub:refresh' pour resynchroniser solde/boosters/parcours d'initiation.
+    window.addEventListener('hub:refresh', async () => { await refreshHub(sb); await renderShop(sb); });
+
     ['card-collection','btn-collection'].forEach(id =>
       document.getElementById(id)?.addEventListener('click',()=>openView('#/collection')));
     ['card-arena','btn-arena'].forEach(id =>
@@ -563,6 +573,17 @@ async function init(){
     document.getElementById('card-squad')?.addEventListener('click',()=>openView('#/squad-builder'));
     document.getElementById('card-achievements')?.addEventListener('click',openAchievementsModal);
     document.getElementById('card-leaderboard')?.addEventListener('click',()=>openLeaderboardModal(sb));
+
+    // Parcours d'initiation (onboarding guidé) — capture sb/user/openView.
+    refreshFunnel = async () => {
+      const host = document.getElementById('onboarding-funnel');
+      if (!host) return;
+      await renderOnboardingFunnel({
+        sb, user, host, openView,
+        onChanged: async () => { await refreshHub(sb); await renderShop(sb); },
+      });
+    };
+    await refreshFunnel();
 
     const modCount=document.getElementById('mod-count');
     if(modCount) modCount.textContent='5';

@@ -2,9 +2,9 @@
 // Monte une escouade de 3 Champions, équipe chacun (max 3 cartes non-Champion),
 // choisit 1 Terrain d'équipe, puis sauvegarde via le RPC save_squad.
 // Voir docs/RULES_JRPG.md §2 (loadout) et §9 (persistance).
-import { getClient, getUser } from '../../logic/supaRaw.js?v=9';
-import { url } from '../../logic/paths.js?v=9';
-import { playableSets } from '../../logic/sets.js?v=9';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=10';
+import { url } from '../../logic/paths.js?v=10';
+import { playableSets } from '../../logic/sets.js?v=10';
 
 const MAX_EQUIP = 3;
 const EQUIP_TYPES = ['Object', 'Companion', 'Special', 'Event', 'Team'];
@@ -289,7 +289,7 @@ export async function renderSquadBuilder(root) {
       overlay.remove();
       const saved = await saveSquad(true);  // force active
       if (!saved) return;                    // combat seulement si la sauvegarde passe
-      const m = await import('./squadBattle.js?v=9');
+      const m = await import('./squadBattle.js?v=10');
       await m.renderSquadBattle(root, { difficulty: b.dataset.d });
     }));
     overlay.querySelector('#sb-diff-cancel').addEventListener('click', () => overlay.remove());
@@ -335,7 +335,7 @@ export async function renderSquadBuilder(root) {
     document.getElementById('app-root').style.display = 'none';
     document.querySelector('.shell').style.display = 'grid';
   });
-  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=9').then(m => m.renderSquadTutorial(root)));
+  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=10').then(m => m.renderSquadTutorial(root)));
   topbar.querySelector('#sb-quests').addEventListener('click', openQuestsModal);
 
   async function openQuestsModal() {

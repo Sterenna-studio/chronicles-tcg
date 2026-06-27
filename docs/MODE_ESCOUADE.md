@@ -71,6 +71,8 @@ il ne le remplace pas.
 | `save_squad(p_squad jsonb)` | Valide **côté serveur** (3 champions distincts possédés, équipement non-Champion possédé, max 3/slot, Terrain bien typé, set jouable, max 1 légendaire/mythique) puis upsert + bascule l'active. |
 | `load_squad(p_squad_id uuid?)` | Renvoie l'escouade (active par défaut) avec **tous les ids résolus en cartes complètes** (skills incluses) pour l'UI. |
 | `award_squad_reward(p_amount int, p_meta jsonb?)` | Crédite l'or de combat **via le ledger**. Montant **clampé 0–100** (anti-triche : combat client). |
+| `award_daily_squad_win()` | Bonus quotidien **fixe (75 ✦)** pour la 1re victoire Escouade du jour (UTC). « 1×/jour » vérifié côté serveur sur le ledger (`meta->>'kind'='squad_win'`). Aucun montant client. |
+| `claim_daily_login()` | Bonus de connexion journalier (paliers 50→300, streak sur `tcg_players`) **crédité via le ledger** (`daily_bonus`). Remplace l'ancienne écriture directe sur `profiles.chronicles` (bug : effacée à la prochaine op ledger). |
 | `_resolve_cards(text[])` | Helper interne (ids → jsonb[] ordonné). Non exposé. |
 | `claim_quest(p_quest_id text)` | **Réutilisé** pour les quêtes du mode (idempotent). |
 
@@ -83,6 +85,7 @@ il ne le remplace pas.
 | `20260627000001_squad_battle_reward.sql` | Lot 7 — type `battle_reward` + `award_squad_reward`. |
 | `20260627000002_seed_tuto_escouade_quest.sql` | Lot 8 — quête du tuto. |
 | `20260627000003_seed_squad_quests.sql` | Lot 9 — quêtes du mode. |
+| `20260627010000_daily_retention_loop.sql` | Boucle quotidienne — `claim_daily_login` (fix ledger) + `award_daily_squad_win`. |
 
 > ⚠️ Les migrations ont été **appliquées directement** sur Supabase pendant le dev,
 > puis trackées via `supabase migration repair --status applied`. Base et repo sont
@@ -204,6 +207,8 @@ incohérent.
   désormais `skillEngine` via une data: URL séparée (même pattern que
   `squadEngine.test.mjs`). **9 tests** OK.
 - ✅ **Parcours d'initiation** (onboarding guidé) livré — cf §9.
+- ✅ **Boucle de rétention quotidienne** : bonus de connexion réparé (ledger) +
+  bonus « 1re victoire Escouade du jour » (75 ✦). Tout via le ledger.
 - 💡 Pistes futures : animations de combat, plus de contenu de quêtes, équilibrage
   fin, mode « PV par champion » (le skillEngine a déjà des effets de ciblage prêts).
 

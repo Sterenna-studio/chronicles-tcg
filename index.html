@@ -246,14 +246,14 @@
 <div id="topbar"></div>
 
 <script type="module">
-import { getClient } from './logic/supaRaw.js?v=9';
-import { initPlayer, getDisplayName } from './data/supabaseData.js?v=9';
-import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=9';
-import { openOpeningOverlay } from './ui/openingOverlay.js?v=9';
-import { boot, navigate } from './app/router.js?v=9';
-import { getDailyChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=9';
-import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=9';
-import { renderOnboardingFunnel } from './ui/onboardingFunnel.js?v=9';
+import { getClient } from './logic/supaRaw.js?v=10';
+import { initPlayer, getDisplayName } from './data/supabaseData.js?v=10';
+import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=10';
+import { openOpeningOverlay } from './ui/openingOverlay.js?v=10';
+import { boot, navigate } from './app/router.js?v=10';
+import { getDailyChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=10';
+import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=10';
+import { renderOnboardingFunnel } from './ui/onboardingFunnel.js?v=10';
 
 // Réassigné dans init() avec sb/user/openView capturés ; appelé à chaque refreshHub.
 let refreshFunnel = async () => {};
@@ -429,7 +429,7 @@ function updateStreakUI(streak, rewarded, amount){
 
 // ── ACHIEVEMENTS MODAL ────────────────────────────────────────
 async function openAchievementsModal(){
-  const { mount } = await import('./pages/achievementsWidget.js?v=9');
+  const { mount } = await import('./pages/achievementsWidget.js?v=10');
   const overlay=document.createElement('div');
   overlay.className='tcg-modal-overlay';
   overlay.innerHTML=`
@@ -448,7 +448,7 @@ async function openAchievementsModal(){
 
 // ── LEADERBOARD MODAL ─────────────────────────────────────────
 async function openLeaderboardModal(sb){
-  const { mount } = await import('./pages/leaderboardWidget.js?v=9');
+  const { mount } = await import('./pages/leaderboardWidget.js?v=10');
   const { data: { session } } = await sb.auth.getSession();
   const user = session?.user ?? null;
   const overlay=document.createElement('div');
@@ -552,9 +552,11 @@ async function init(){
     await renderShop(sb);
     renderDailyChallenges();
 
-    const { claimDailyReward } = await import('./logic/daily.js?v=9');
+    const { claimDailyReward } = await import('./logic/daily.js?v=10');
     const result = await claimDailyReward(sb, user.id);
     updateStreakUI(result.streak, result.rewarded, result.amount);
+    // Le bonus est crédité via le ledger après le 1er refresh → resync l'affichage.
+    if (result.rewarded) await refreshHub(sb);
 
     const openView = (hash) => {
       document.querySelector('.shell').style.display = 'none';

@@ -3,7 +3,7 @@
 // Paliers basés sur le streak : j1=+50, j2=+75, j3=+100, j4=+125, j5=+150, j6=+175, j7=+300 puis reset.
 // Reset si le joueur a manqué plus d'un jour calendaire UTC.
 // Source de vérité : streak/last_daily_at sur tcg_players, or sur profiles.chronicles.
-import { getClient, getUser } from './supaRaw.js?v=9';
+import { getClient, getUser } from './supaRaw.js?v=10';
 
 export const STREAK_REWARDS = [50, 75, 100, 125, 150, 175, 300];
 
@@ -99,54 +99,26 @@ function showDailyToast(msg) {
  * @returns {Promise<{rewarded: boolean, amount: number, streak: number}>}
  */
 export async function claimDailyReward(supabase, userId) {
-  const today = todayUTC();
+  // Crédit VIA LE LEDGER (RPC claim_daily_login) : le trigger sync recalcule
+  // profiles.chronicles = SUM(ledger), donc un crédit direct sur profiles serait
+  // effacé à la prochaine opération ledger. Le streak reste géré côté serveur
+  // sur tcg_players. (userId est conservé pour compat d'appel — l'RPC utilise auth.uid().)
+  const { data, error } = await supabase.rpc('claim_daily_login');
 
-  const { data: pl, error } = await supabase
-    .from('tcg_players')
-    .select('daily_streak, last_daily_at')
-    .eq('id', userId)
-    .single();
-
-  if (error || !pl) {
-    console.warn('[daily] lecture joueur échouée', error);
+  if (error || !data?.ok) {
+    console.warn('[daily] claim_daily_login échec', error || data?.error);
     return { rewarded: false, amount: 0, streak: 0 };
   }
 
-  const lastAt = pl.last_daily_at ? new Date(pl.last_daily_at) : null;
-
-  // Déjà claimé aujourd'hui ?
-  if (lastAt && lastAt >= today) {
-    return { rewarded: false, amount: 0, streak: pl.daily_streak, gold: null };
+  if (!data.rewarded) {
+    return { rewarded: false, amount: 0, streak: data.streak ?? 0, gold: data.balance ?? null };
   }
 
-  const newStreak = nextStreak(lastAt, pl.daily_streak, today);
-  const reward    = rewardForStreak(newStreak);
-  const isSeventh = newStreak % 7 === 0;
+  const isSeventh = data.streak % 7 === 0;
+  const dayLabel  = isSeventh ? `Jour ${data.streak} 🎉 BONUS` : `Jour ${data.streak}`;
+  showDailyToast(`✦ +${data.amount} Chronicles · ${dayLabel}`);
 
-  // Crédite sur profiles.chronicles (source de vérité)
-  // upsert évite le 400 PostgREST si la row n'existe pas encore
-  const { data: prof } = await supabase.from('profiles').select('chronicles').eq('id', userId).maybeSingle();
-  const newGold = (prof?.chronicles || 0) + reward;
-
-  const [{ error: profErr }, { error: updateErr }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .upsert({ id: userId, chronicles: newGold }, { onConflict: 'id' }),
-    supabase
-      .from('tcg_players')
-      .update({ daily_streak: newStreak, last_daily_at: new Date().toISOString() })
-      .eq('id', userId),
-  ]);
-
-  if (profErr || updateErr) {
-    console.warn('[daily] mise à jour échouée — profErr:', profErr, '— updateErr:', updateErr);
-    return { rewarded: false, amount: 0, streak: pl.daily_streak, gold: null };
-  }
-
-  const dayLabel = isSeventh ? `Jour ${newStreak} 🎉 BONUS` : `Jour ${newStreak}`;
-  showDailyToast(`✦ +${reward} Chronicles · ${dayLabel}`);
-
-  return { rewarded: true, amount: reward, streak: newStreak, gold: newGold };
+  return { rewarded: true, amount: data.amount, streak: data.streak, gold: data.balance };
 }
 
 /**

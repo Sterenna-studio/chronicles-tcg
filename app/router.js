@@ -1,9 +1,9 @@
-import { renderCollection }  from './views/collection.js?v=9';
-import { renderDeckBuilder }  from './views/deckBuilder.js?v=9';
-import { renderBattle }       from './views/battle.js?v=9';
-import { renderSquadBuilder } from './views/squadBuilder.js?v=9';
-import { renderSquadBattle }  from './views/squadBattle.js?v=9';
-import { renderSquadTutorial } from './views/squadTutorial.js?v=9';
+import { renderCollection }  from './views/collection.js?v=10';
+import { renderDeckBuilder }  from './views/deckBuilder.js?v=10';
+import { renderBattle }       from './views/battle.js?v=10';
+import { renderSquadBuilder } from './views/squadBuilder.js?v=10';
+import { renderSquadBattle }  from './views/squadBattle.js?v=10';
+import { renderSquadTutorial } from './views/squadTutorial.js?v=10';
 
 const routes = {
   '#/collection':  renderCollection,

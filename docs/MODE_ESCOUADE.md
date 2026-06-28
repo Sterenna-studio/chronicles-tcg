@@ -218,6 +218,17 @@ incohérent.
   **injouable** (boucliers ~30 ≥ attaques + énergie insuffisante pour agir).
   Corrigé par `MAX_TEAM_SHIELD` + `actionCost` (cf §4). Prouvé : sim auto passait
   de ∞ (30/30 à 12 tours) à ~3 tours gagnables.
+- ✅ **Ancien mode 1-champion retiré du jeu.** Le bouton/carte « COMBAT » du hub et
+  les routes `#/deck-builder` / `#/battle` sont supprimés ; les fichiers restent
+  **dormants** sur disque (`app/views/{battle,deckBuilder}.js`,
+  `logic/{battleEngine,aiEngine}.js` + `tests/battleEngine.test.mjs`). Le hub est
+  désormais 100 % Escouade.
+- ✅ **Défis du jour migrés vers l'Escouade.** `logic/challengeEngine.js` a un
+  `SQUAD_CHALLENGE_POOL` (11 défis : victoire rapide, gros coup, Event, etc.) +
+  `getDailySquadChallenges()` / `checkAndCompleteSquadChallenges()`. Le contexte
+  (dégâts, skills/actifs/events, PV final) est construit dans `squadBattle.js`,
+  qui crédite chaque défi **via le ledger** (`award_squad_reward`, clampé ≤100).
+  La progression reste en localStorage par jour (limite connue, comme l'ancien).
 - 💡 Pistes futures : animations de combat, plus de contenu de quêtes, équilibrage
   fin, mode « PV par champion » (le skillEngine a déjà des effets de ciblage prêts).
 

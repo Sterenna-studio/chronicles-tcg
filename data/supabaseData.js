@@ -60,5 +60,5 @@ export async function initPlayer(sb, user) {
 }
 
 // Re-exports depuis les repos Supabase
-export { loadPackTypes, loadPlayerPacks, decrementPlayerPack, buyPack } from './packsRepo.js?v=11';
-export { loadPlayerCollection, addCardsBatch } from './cardsRepo.js?v=11';
+export { loadPackTypes, loadPlayerPacks, decrementPlayerPack, buyPack } from './packsRepo.js?v=12';
+export { loadPlayerCollection, addCardsBatch } from './cardsRepo.js?v=12';

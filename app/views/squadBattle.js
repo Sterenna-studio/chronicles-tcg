@@ -5,10 +5,11 @@
 import {
   createSquadBattle, startSquadTurn, championAct, getSquadResult, endSquadPlayerTurn,
   championAttackPower, teamShield, canChampionAct, actionCost, SQUAD_HP,
-} from '../../logic/squadEngine.js?v=11';
-import { getClient } from '../../logic/supaRaw.js?v=11';
-import { url } from '../../logic/paths.js?v=11';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=11';
+} from '../../logic/squadEngine.js?v=12';
+import { getClient } from '../../logic/supaRaw.js?v=12';
+import { url } from '../../logic/paths.js?v=12';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=12';
+import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=12';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -112,7 +113,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button id="go-atelier" style="background:transparent;border:1px solid #00f5c4;color:#00f5c4;padding:8px 22px;cursor:pointer;font-family:inherit">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=11').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=12').then(m => m.renderSquadBuilder(root)));
     return;
   }
 
@@ -120,6 +121,8 @@ export async function renderSquadBattle(root, opts = {}) {
   let state = createSquadBattle(playerSquad, enemySquad);
   let selected = null;   // index du champion joueur sélectionné
   let busy = false;
+  // Stats du combat (joueur) pour les défis du jour — cf challengeEngine.js
+  const stats = { damageDealt: 0, highestHit: 0, skillsUsed: 0, activesUsed: 0, eventsUsed: 0 };
 
   // ── Construction UI ────────────────────────────────────────────────────────
   root.innerHTML = '';
@@ -237,9 +240,17 @@ export async function renderSquadBattle(root, opts = {}) {
 
   function doAct(i, action) {
     if (busy) return;
+    const equip = action.type === 'active' ? state.player.champions[i].equipment[action.equipIndex] : null;
+    const eHpBefore = state.enemy.hp;
     const res = championAct(state, 'player', i, action);
     if (!res.ok) { flashLog(res.reason); return; }
     state = res.state;
+    // Comptabilise pour les défis du jour
+    const dmg = Math.max(0, eHpBefore - state.enemy.hp);
+    stats.damageDealt += dmg;
+    if (dmg > stats.highestHit) stats.highestHit = dmg;
+    if (action.type === 'skill') stats.skillsUsed++;
+    if (action.type === 'active') { stats.activesUsed++; if (equip?.type === 'Event') stats.eventsUsed++; }
     selected = null;
     renderZones();
     if (getSquadResult(state)) return finish();
@@ -262,7 +273,7 @@ export async function renderSquadBattle(root, opts = {}) {
 
   async function finish() {
     const res = getSquadResult(state);
-    let balanceTxt = '', questHtml = '', dailyHtml = '';
+    let balanceTxt = '', questHtml = '', dailyHtml = '', challengeHtml = '';
     if (res.winner === 'player') {
       const claimed = await claimSquadQuests(difficulty);   // d'abord les quêtes (ledger)
       if (claimed.length) {
@@ -275,6 +286,17 @@ export async function renderSquadBattle(root, opts = {}) {
         dailyHtml = `<div style="margin:-8px 0 16px;padding:10px;border:1px solid #00f5c444;border-radius:8px;background:#04140f">
           <div style="font-size:.74em;color:#c8ffe8">📅 Bonus quotidien — 1re victoire du jour <span style="color:#22c55e">+${dailyBonus} ✦</span></div></div>`;
       }
+    }
+    // Défis du jour (Escouade) — peuvent se valider même en défaite ; crédit via ledger.
+    const ctx = { difficulty, finalHp: state.player.hp, ...stats };
+    const doneChallenges = checkAndCompleteSquadChallenges(res, ctx);
+    for (const c of doneChallenges) {
+      await awardGold(c.goldEarned, { kind: 'challenge', challenge_id: c.challenge.id });
+    }
+    if (doneChallenges.length) {
+      challengeHtml = `<div style="margin:-8px 0 16px;padding:10px;border:1px solid #42b0ff44;border-radius:8px;background:#04101a">
+        <div style="font-size:.64em;color:#42b0ff;letter-spacing:.1em;margin-bottom:4px">DÉFIS DU JOUR</div>
+        ${doneChallenges.map(c => `<div style="font-size:.74em;color:#c8ffe8">${c.challenge.icon} ${c.challenge.label} <span style="color:#22c55e">+${c.goldEarned} ✦</span></div>`).join('')}</div>`;
     }
     if (res.winner === 'player' || res.winner === 'draw') {
       const bal = await awardGold(res.goldReward, { difficulty, turns: res.turns, winner: res.winner });
@@ -289,6 +311,7 @@ export async function renderSquadBattle(root, opts = {}) {
       <div style="font-size:.82em;color:#8ab4a0;margin-bottom:18px">${res.winner === 'player' ? `+${res.goldReward} ✦ en ${res.turns} tours${balanceTxt}` : res.winner === 'draw' ? `+${res.goldReward} ✦${balanceTxt}` : 'Retente ta chance, Agent.'}</div>
       ${questHtml}
       ${dailyHtml}
+      ${challengeHtml}
       <div style="display:flex;flex-direction:column;gap:8px">
         <button id="sq-again" style="background:#00f5c422;border:1px solid #00f5c4;color:#00f5c4;padding:9px;cursor:pointer;font-family:inherit;font-size:.84em;border-radius:8px">⚔️ Rejouer</button>
         <button id="sq-home" style="background:transparent;border:1px solid #3a6655;color:#3a6655;padding:8px;cursor:pointer;font-family:inherit;font-size:.8em;border-radius:8px">← Retour au hub</button>

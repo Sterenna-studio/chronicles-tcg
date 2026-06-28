@@ -1,5 +1,5 @@
 // data/packsRepo.js — v7
-import { getClient, getUser } from '../logic/supaRaw.js?v=11';
+import { getClient, getUser } from '../logic/supaRaw.js?v=12';
 
 const PACK_IMAGE_MAP = {
   'BZH01-default': 'set01.jpg',

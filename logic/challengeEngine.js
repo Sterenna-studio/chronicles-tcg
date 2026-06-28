@@ -228,3 +228,61 @@ export function checkAndCompleteChallenges(result, ctx) {
 
   return completed;
 }
+
+// ── Défis Escouade (mode 3 champions) ───────────────────────────────────────────
+// L'ancien pool ci-dessus visait le combat 1-champion (cartes jouées depuis la main).
+// Le mode Escouade a d'autres leviers, d'où ce pool dédié.
+// check(result, ctx) :
+//   result : { winner, turns }                         (de getSquadResult)
+//   ctx    : { difficulty, finalHp, damageDealt, highestHit,
+//              skillsUsed, activesUsed, eventsUsed }    (construit dans squadBattle.js)
+export const SQUAD_CHALLENGE_POOL = [
+  { id:'sq_win',            label:'Première Escouade', desc:"Gagne un combat d'escouade",            icon:'🏆', gold:30, check:(r)   => r.winner === 'player' },
+  { id:'sq_win_fast',       label:'Assaut Éclair',     desc:'Gagne en 5 tours ou moins',             icon:'⚡', gold:55, check:(r)   => r.winner === 'player' && r.turns <= 5 },
+  { id:'sq_win_hard',       label:'Épreuve du Chef',   desc:'Gagne en difficulté Difficile',         icon:'💀', gold:80, check:(r,c) => r.winner === 'player' && c.difficulty === 'hard' },
+  { id:'sq_win_normalplus', label:'Vrai Stratège',     desc:'Gagne en Normal ou Difficile',          icon:'⚔️', gold:45, check:(r,c) => r.winner === 'player' && ['normal','hard'].includes(c.difficulty) },
+  { id:'sq_flawless',       label:'Mur Imprenable',    desc:'Gagne avec 20 PV ou plus',              icon:'🛡️', gold:60, check:(r,c) => r.winner === 'player' && c.finalHp >= 20 },
+  { id:'sq_skills2',        label:'Déchaînement',      desc:'Lance 2 attaques spéciales en un combat',icon:'✨', gold:40, check:(_,c) => c.skillsUsed >= 2 },
+  { id:'sq_active',         label:'Arsenal',           desc:'Déclenche un actif équipé',             icon:'🔧', gold:35, check:(_,c) => c.activesUsed >= 1 },
+  { id:'sq_event',          label:'Frappe Perçante',   desc:'Déclenche un Event (ignore le bouclier)',icon:'⚡', gold:45, check:(_,c) => c.eventsUsed >= 1 },
+  { id:'sq_bighit',         label:'Coup Dévastateur',  desc:'Inflige 8+ dégâts en une action',       icon:'🔥', gold:50, check:(_,c) => c.highestHit >= 8 },
+  { id:'sq_deal25',         label:'Pilonnage',         desc:'Inflige 25 dégâts ou plus en un combat',icon:'💥', gold:45, check:(_,c) => c.damageDealt >= 25 },
+  { id:'sq_long',           label:"Guerre d'Usure",    desc:'Gagne un combat de 8 tours ou plus',    icon:'⏳', gold:40, check:(r)   => r.winner === 'player' && r.turns >= 8 },
+];
+
+// Sélection déterministe de 3 défis du jour depuis un pool (même seed que ci-dessus).
+function pickDaily(pool) {
+  const a = [...pool];
+  let s = dateHash(todayStr());
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    [a[i], a[s % (i + 1)]] = [a[s % (i + 1)], a[i]];
+  }
+  return a.slice(0, 3);
+}
+
+/** Les 3 défis Escouade du jour. */
+export function getDailySquadChallenges() {
+  return pickDaily(SQUAD_CHALLENGE_POOL);
+}
+
+/**
+ * Valide les défis Escouade du jour à la fin d'un combat.
+ * @returns {Array<{ challenge, goldEarned }>} (le crédit en chronicles est fait
+ * par l'appelant via le ledger — voir squadBattle.js).
+ */
+export function checkAndCompleteSquadChallenges(result, ctx) {
+  const daily = getDailySquadChallenges();
+  const progress = getChallengeProgress();
+  const completed = [];
+  for (const ch of daily) {
+    if (progress[ch.id]?.completed) continue;
+    try {
+      if (ch.check(result, ctx)) {
+        const gold = markChallengeCompleted(ch.id, ch.gold);
+        if (gold > 0) completed.push({ challenge: ch, goldEarned: gold });
+      }
+    } catch (e) { console.warn('[squad-challenges]', ch.id, e); }
+  }
+  return completed;
+}

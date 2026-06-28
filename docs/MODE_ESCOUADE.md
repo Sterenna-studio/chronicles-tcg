@@ -38,7 +38,7 @@ il ne le remplace pas.
 | Fichier | Rôle |
 |---|---|
 | [app/views/squadBuilder.js](../app/views/squadBuilder.js) | **Atelier d'escouade** : grille collection, 3 slots champion + équipement, slot Terrain, sauvegarde (`save_squad`), boutons Tuto / Quêtes / Combattre. |
-| [app/views/squadBattle.js](../app/views/squadBattle.js) | **Combat** : charge l'escouade active (`load_squad`), génère un ennemi, déroule le combat, overlay victoire, récompense + quêtes. |
+| [app/views/squadBattle.js](../app/views/squadBattle.js) | **Page de combat dédiée** : phase **DÉPLOIEMENT** (glisser-déposer / tap-pour-placer les 3 champions sur les positions + le terrain, placement **visuel**) → **COMBAT** (UI redessinée, CSS `.sqb-*` injecté). Charge l'escouade active (`load_squad`), génère un ennemi, overlay victoire, récompenses + quêtes + défis (ledger). |
 | [app/views/squadTutorial.js](../app/views/squadTutorial.js) | **Tuto scénarisé** : escouade fixe, ennemi faible passif, bulles d'aide étape par étape, quête `tuto_escouade`. |
 | [app/router.js](../app/router.js) | Routes `#/squad-builder`, `#/squad-battle`, `#/squad-tuto`. |
 | [ui/onboardingFunnel.js](../ui/onboardingFunnel.js) | **Parcours d'initiation** : bandeau hub qui guide le nouveau joueur (kit → booster → ouverture → tuto Escouade). Cf §9. |
@@ -229,6 +229,14 @@ incohérent.
   (dégâts, skills/actifs/events, PV final) est construit dans `squadBattle.js`,
   qui crédite chaque défi **via le ledger** (`award_squad_reward`, clampé ≤100).
   La progression reste en localStorage par jour (limite connue, comme l'ancien).
+- ✅ **Page de combat dédiée + déploiement** (Phase A) : `squadBattle.js` ouvre sur
+  une phase de déploiement (glisser-déposer / tap les 3 champions sur 3 positions +
+  le terrain — **visuel**, l'ordre placé = ordre des `champions[0..2]`), puis le
+  combat avec une UI redessinée. « Rejouer » garde la disposition (`skipDeploy`).
+- 🟡 **Phase B à faire — équipement « en main »** : pioche 3 cartes objet/tour,
+  attribuer/réattribuer aux champions, échanger. Remplacera l'équipement figé du
+  loadout. Règles à arrêter : source du deck, coût d'équipement, défausse vs main,
+  max 3/champion. (Moteur + UI + IA + Atelier impactés.)
 - 💡 Pistes futures : animations de combat, plus de contenu de quêtes, équilibrage
   fin, mode « PV par champion » (le skillEngine a déjà des effets de ciblage prêts).
 

@@ -88,15 +88,15 @@ test('1 action / champion / tour : 2e action refusée', () => {
 
 test('énergie insuffisante : action refusée', () => {
   let s = E.createSquadBattle(squad([
-    slot(champ({ id: 'C1', energy: 3 })), slot(champ({ id: 'C2' })), slot(champ({ id: 'C3' })),
+    slot(champ({ id: 'C1', energy: 6 })), slot(champ({ id: 'C2' })), slot(champ({ id: 'C3' })),
   ]), baseSquad());
-  s.player.energy = 1; // < 3
+  s.player.energy = 1; // coût de base ceil(6/3)=2 > 1
   const r = E.championAct(s, 'player', 0, { type: 'basic' });
   assert.equal(r.ok, false);
   assert.match(r.reason, /insuffisante/i);
 });
 
-test('skill : coûte énergie+1, pose le cooldown', () => {
+test('skill : coûte ceil(énergie/3)+1, pose le cooldown', () => {
   const atk = squad([
     slot(champ({ id: 'C1', power: 6, energy: 2, skill: { name: 'Frappe', effect: 'true_damage', cooldown: 2, desc: '' } })),
     slot(champ({ id: 'C2' })), slot(champ({ id: 'C3' })),
@@ -106,7 +106,7 @@ test('skill : coûte énergie+1, pose le cooldown', () => {
   const r = E.championAct(s, 'player', 0, { type: 'skill' });
   assert.equal(r.ok, true);
   assert.equal(r.state.enemy.hp, 30 - 6);          // true_damage = power, ignore bouclier
-  assert.equal(r.state.player.energy, 5 - 3);      // coût energy(2)+1
+  assert.equal(r.state.player.energy, 5 - 2);      // coût ceil(2/3)+1 = 2
   assert.equal(r.state.player.skillCooldowns['C1'], 2);
 });
 

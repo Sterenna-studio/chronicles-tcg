@@ -73,13 +73,14 @@ Le joueur actif enchaîne :
 2. **Phase d'actions** : tant qu'il reste de l'énergie, le joueur fait **agir ses
    champions**. Chaque Champion **agit une seule fois par tour** 🎚️ et choisit
    **une** des actions suivantes :
-   - **Attaque de base** : coûte l'`energy` du Champion. Inflige
-     `power_champion + bonus_équipement passif` (cf §5).
-   - **Attaque spéciale (skill)** : coûte l'`energy` du Champion **+1** 🎚️, et n'est
+   - **Attaque de base** : coûte `actionCost = max(1, ceil(energy_carte / 3))` 🎚️
+     (l'`energy` brute des cartes, pensée pour le mode 1-champion, est rééchelonnée
+     pour rester jouable à 3 champions). Inflige `power_champion + bonus_équipement passif` (cf §5).
+   - **Attaque spéciale (skill)** : coûte `actionCost(champion) **+1**` 🎚️, et n'est
      dispo que si le cooldown est à 0. Applique l'effet de `card.skill.effect`
      (moteur `skillEngine.js`, déjà écrit), puis pose le cooldown.
    - **Déclencher un actif équipé** (Special / Event / Team posé sur ce Champion,
-     cf §5) : coûte l'`energy` de la carte équipée. **Consomme l'action du tour**
+     cf §5) : coûte `actionCost` de la carte équipée. **Consomme l'action du tour**
      de ce Champion (il n'attaque pas en plus). Event/Team sont **à usage unique**
      dans le combat.
    - Un Champion **étourdi** ne peut pas agir ce tour. (Pas de KO individuel :
@@ -113,7 +114,9 @@ en combat, consomme l'action du Champion, cf §4).
 **Attaque de base d'un Champion** = `power_champion + Σ(P des passifs Object/Companion équipés sur lui)` (+1 si Terrain).
 
 **Bouclier d'équipe** = somme des `S` de tous les passifs équipés (Object/Companion)
-sur les 3 Champions — protège le **pool** partagé, pas un champion précis (cf §6).
+sur les 3 Champions, **plafonnée à `MAX_TEAM_SHIELD` (8 🎚️)** — protège le **pool**
+partagé, pas un champion précis (cf §6). Le plafond évite qu'un cumul de 6-9 passifs
+ne dépasse toute attaque et fige le combat.
 
 Exemple : Champion `power 7`, équipé de *Rose Blade* (Object P3/S4) et d'un
 Companion (P2/S3) → attaque de base = **7 + 3 + 2 = 12**, et le camp gagne **+7** de
@@ -132,7 +135,7 @@ Deux sources de réduction, identiques en esprit au mode salve :
 - **Garde** (`shieldTemp`) : bouclier temporaire gagné via skills/Specials. Persiste
   pendant le tour adverse, remis à 0 au début de ton tour suivant.
 - **Bouclier permanent** : somme des `shield` de **tout l'équipement en jeu** des
-  3 champions du camp.
+  3 champions du camp, **plafonnée à `MAX_TEAM_SHIELD` (8 🎚️)**.
 
 **Dégâts reçus par le pool** = `max(0, dégâts_bruts − (garde + bouclier_permanent))`,
 sauf mention « ignore le bouclier ».

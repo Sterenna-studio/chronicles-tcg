@@ -4,11 +4,11 @@
 // (ledger). Voir docs/RULES_JRPG.md.
 import {
   createSquadBattle, startSquadTurn, championAct, getSquadResult, endSquadPlayerTurn,
-  championAttackPower, teamShield, canChampionAct, SQUAD_HP,
-} from '../../logic/squadEngine.js?v=10';
-import { getClient } from '../../logic/supaRaw.js?v=10';
-import { url } from '../../logic/paths.js?v=10';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=10';
+  championAttackPower, teamShield, canChampionAct, actionCost, SQUAD_HP,
+} from '../../logic/squadEngine.js?v=11';
+import { getClient } from '../../logic/supaRaw.js?v=11';
+import { url } from '../../logic/paths.js?v=11';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=11';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -112,7 +112,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button id="go-atelier" style="background:transparent;border:1px solid #00f5c4;color:#00f5c4;padding:8px 22px;cursor:pointer;font-family:inherit">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=10').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=11').then(m => m.renderSquadBuilder(root)));
     return;
   }
 
@@ -214,17 +214,19 @@ export async function renderSquadBattle(root, opts = {}) {
       if (!canChampionAct(state, 'player', selected)) {
         actionBar.innerHTML = `<span style="font-size:.74em;color:#3a6655">${ch.name} a déjà agi.</span>`;
       } else {
-        actionBar.appendChild(actionBtn(`⚔️ Attaque (${ch.energy}⚡)`, E >= ch.energy, () => doAct(selected, { type: 'basic' })));
+        const basicCost = actionCost(ch, 'basic');
+        actionBar.appendChild(actionBtn(`⚔️ Attaque (${basicCost}⚡)`, E >= basicCost, () => doAct(selected, { type: 'basic' })));
         if (ch.skill) {
           const cd = state.player.skillCooldowns?.[ch.id] || 0;
-          const cost = ch.energy + 1;
+          const cost = actionCost(ch, 'skill');
           actionBar.appendChild(actionBtn(`✨ ${ch.skill.name} (${cost}⚡${cd ? ' ⏳' + cd : ''})`, cd === 0 && E >= cost, () => doAct(selected, { type: 'skill' }), '#bb55d3'));
         }
         ch.equipment.forEach((e, idx) => {
           if (!['Special','Event','Team'].includes(e.type)) return;
           const used = ch.usedActives[idx];
           const oneshot = ['Event','Team'].includes(e.type);
-          actionBar.appendChild(actionBtn(`${TI[e.type]} ${e.name} (${e.energy}⚡${oneshot ? ' 1×' : ''})`, !(oneshot && used) && E >= (e.energy || 0), () => doAct(selected, { type: 'active', equipIndex: idx }), '#ffbe46'));
+          const eCost = actionCost(e, 'active');
+          actionBar.appendChild(actionBtn(`${TI[e.type]} ${e.name} (${eCost}⚡${oneshot ? ' 1×' : ''})`, !(oneshot && used) && E >= eCost, () => doAct(selected, { type: 'active', equipIndex: idx }), '#ffbe46'));
         });
       }
     }

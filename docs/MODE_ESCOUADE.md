@@ -120,13 +120,17 @@ endSquadPlayerTurn(state, difficulty) -> state   // tour ennemi (IA) puis début
 
 ### Règles encodées (constantes en tête du fichier)
 - `SQUAD_HP=30`, `ENERGY_MAX=7`, `SKILL_EXTRA_COST=1`, `TERRAIN_DMG=1`,
-  `TERRAIN_GUARD=1`, `MAX_EQUIP=3`.
+  `TERRAIN_GUARD=1`, `MAX_EQUIP=3`, `MAX_TEAM_SHIELD=8` 🎚️, `COST_DIVISOR=3` 🎚️.
 - **Attaque de base** = `power_champion + Σ(power des passifs Object/Companion) + (Terrain ? 1 : 0)`.
-- **Bouclier d'équipe** = somme des `shield` des passifs équipés (stockés dans
-  `state[side].field`, pour que `teamShield()` ET skillEngine partagent le même
-  calcul). Le bouclier **réduit chaque coup** (plat, ne se consomme pas) — sauf
-  Event qui l'ignore.
-- **Spéciale** : coûte `energy_champion + 1`, applique l'effet via skillEngine,
+- **Coût d'une action** = `actionCost(carte, type)` = `max(1, ceil(energy_carte / COST_DIVISOR))`
+  (+`SKILL_EXTRA_COST` pour une spéciale). ⚠️ **Rééchelonné** : les cartes portent
+  une `energy` pensée pour le mode 1-champion (3-7) ; brute, elle rendait le pool
+  `min(tour,7)` injouable avec 3 champions. L'UI **et** l'IA appellent `actionCost`.
+- **Bouclier d'équipe** = `min(MAX_TEAM_SHIELD, Σ shield des passifs équipés)` +
+  garde temporaire. **Plafonné** (sinon 6-9 passifs × 4-6 = mur de ~30 ≥ toute
+  attaque → combat injouable). Réduit chaque coup à plat, ne se consomme pas — sauf
+  Event qui l'ignore. `teamShield()` ET skillEngine partagent ce calcul.
+- **Spéciale** : coûte `actionCost(champion,'skill')`, applique l'effet via skillEngine,
   pose le cooldown.
 - **Actifs équipés** : Special (récurrent : `P` dmg + `S` garde), Event (1×/combat :
   `P` dmg ignore bouclier), Team (1×/combat : `P` dmg). Déclencher = l'action du tour.
@@ -209,6 +213,11 @@ incohérent.
 - ✅ **Parcours d'initiation** (onboarding guidé) livré — cf §9.
 - ✅ **Boucle de rétention quotidienne** : bonus de connexion réparé (ledger) +
   bonus « 1re victoire Escouade du jour » (75 ✦). Tout via le ledger.
+- ✅ **Combat réel rééquilibré** (le tuto le masquait via `refill()`). Les valeurs
+  de cartes du mode 1-champion, cumulées sur 3 champions, rendaient le combat
+  **injouable** (boucliers ~30 ≥ attaques + énergie insuffisante pour agir).
+  Corrigé par `MAX_TEAM_SHIELD` + `actionCost` (cf §4). Prouvé : sim auto passait
+  de ∞ (30/30 à 12 tours) à ~3 tours gagnables.
 - 💡 Pistes futures : animations de combat, plus de contenu de quêtes, équilibrage
   fin, mode « PV par champion » (le skillEngine a déjà des effets de ciblage prêts).
 

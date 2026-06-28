@@ -21,7 +21,7 @@
 //   endSquadPlayerTurn(state, difficulty)
 //   Helpers UI : championAttackPower, teamShield, canChampionAct
 
-import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=10';
+import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=11';
 
 export const SQUAD_HP        = 30;
 export const ENERGY_MAX      = 7;
@@ -30,6 +30,11 @@ export const TERRAIN_DMG     = 1;    // +1 dégât aux attaques si Terrain (§5)
 export const TERRAIN_GUARD   = 1;    // +1 garde/tour si Terrain (§5)
 export const MAX_EQUIP       = 3;
 export const SQUAD_SIZE      = 3;
+// 🎚️ Rééquilibrage Escouade : les cartes portent des valeurs pensées pour le mode
+// 1-champion (energy 3-7 = coût de pose, shield 4-6). En escouade on CUMULE 3
+// champions × plusieurs équipements, donc on réinterprète ces valeurs :
+export const MAX_TEAM_SHIELD = 8;   // plafond du bouclier permanent d'équipe (anti-mur)
+export const COST_DIVISOR    = 3;   // coût d'action = max(1, ceil(energy_carte / diviseur))
 
 const PASSIVE_TYPES = ['Object', 'Companion'];
 const ONESHOT_TYPES = ['Event', 'Team'];
@@ -41,10 +46,21 @@ const clone = (s) => JSON.parse(JSON.stringify(s));
 // ─── Bouclier & dégâts (mêmes règles que skillEngine pour cohérence) ───────────
 
 function fieldShield(side) {
-  return (side.field || []).reduce((a, c) => a + (c.shield || 0), 0);
+  const sum = (side.field || []).reduce((a, c) => a + (c.shield || 0), 0);
+  return Math.min(MAX_TEAM_SHIELD, sum);   // 🎚️ plafonné (anti-mur)
 }
 export function teamShield(side) {
   return (side.shieldTemp || 0) + fieldShield(side);
+}
+
+/**
+ * Coût en énergie d'une action en Escouade, rééchelonné depuis l'`energy` de la
+ * carte (`max(1, ceil(energy / COST_DIVISOR))`). Les valeurs brutes 3-7 rendraient
+ * le pool `min(tour, 7)` injouable avec 3 champions. 🎚️
+ */
+export function actionCost(card, type = 'basic') {
+  const base = Math.max(1, Math.ceil((card?.energy || 1) / COST_DIVISOR));
+  return type === 'skill' ? base + SKILL_EXTRA_COST : base;
 }
 function applyDamage(state, defKey, raw, ignoreShield = false) {
   const def = state[defKey];
@@ -204,7 +220,7 @@ export function championAct(state, sideKey, championIndex, action = {}) {
     if (!ch0.skill) return { state, ok: false, reason: `${ch0.name} n'a pas de skill.` };
     const cd = side0.skillCooldowns?.[ch0.id] || 0;
     if (cd > 0) return { state, ok: false, reason: `Skill en recharge (${cd}).` };
-    const cost = (ch0.energy || 0) + SKILL_EXTRA_COST;
+    const cost = actionCost(ch0, 'skill');
     if (side0.energy < cost) return { state, ok: false, reason: `Énergie insuffisante (${side0.energy}/${cost}).` };
 
     let s = setActiveChampion(state, sideKey, {
@@ -229,7 +245,7 @@ export function championAct(state, sideKey, championIndex, action = {}) {
     if (isOneShot && ch0.usedActives[action.equipIndex]) {
       return { state, ok: false, reason: `${equip.name} déjà utilisé ce combat.` };
     }
-    const cost = equip.energy || 0;
+    const cost = actionCost(equip, 'active');
     if (side0.energy < cost) return { state, ok: false, reason: `Énergie insuffisante (${side0.energy}/${cost}).` };
 
     let s = clone(state);
@@ -252,7 +268,7 @@ export function championAct(state, sideKey, championIndex, action = {}) {
   }
 
   // ── Attaque de base (défaut) ─────────────────────────────────────────────
-  const cost = ch0.energy || 0;
+  const cost = actionCost(ch0, 'basic');
   if (side0.energy < cost) return { state, ok: false, reason: `Énergie insuffisante (${side0.energy}/${cost}).` };
 
   let s = clone(state);
@@ -292,14 +308,15 @@ function actionCandidates(state, sideKey, i) {
   const S = teamShield(state[other(sideKey)]);
   const out = [];
 
-  if (side.energy >= (ch.energy || 0)) {
+  const basicCost = actionCost(ch, 'basic');
+  if (side.energy >= basicCost) {
     const raw = championAttackPower(side, i);
-    out.push({ action: { type: 'basic' }, cost: ch.energy || 0, est: Math.max(0, raw - S), kind: 'basic' });
+    out.push({ action: { type: 'basic' }, cost: basicCost, est: Math.max(0, raw - S), kind: 'basic' });
   }
 
   if (ch.skill) {
     const cd = side.skillCooldowns?.[ch.id] || 0;
-    const cost = (ch.energy || 0) + SKILL_EXTRA_COST;
+    const cost = actionCost(ch, 'skill');
     if (cd === 0 && side.energy >= cost) {
       // estimation grossière : la plupart des skills offensives ~ power du champion
       out.push({ action: { type: 'skill' }, cost, est: ch.power || 0, kind: 'skill' });
@@ -308,11 +325,12 @@ function actionCandidates(state, sideKey, i) {
 
   ch.equipment.forEach((e, idx) => {
     const tb = side.terrain ? TERRAIN_DMG : 0;
-    if (e.type === 'Special' && side.energy >= (e.energy || 0)) {
-      out.push({ action: { type: 'active', equipIndex: idx }, cost: e.energy || 0, est: Math.max(0, (e.power || 0) + tb - S), kind: 'special' });
-    } else if (ONESHOT_TYPES.includes(e.type) && !ch.usedActives[idx] && side.energy >= (e.energy || 0)) {
+    const eCost = actionCost(e, 'active');
+    if (e.type === 'Special' && side.energy >= eCost) {
+      out.push({ action: { type: 'active', equipIndex: idx }, cost: eCost, est: Math.max(0, (e.power || 0) + tb - S), kind: 'special' });
+    } else if (ONESHOT_TYPES.includes(e.type) && !ch.usedActives[idx] && side.energy >= eCost) {
       const est = e.type === 'Event' ? (e.power || 0) + tb : Math.max(0, (e.power || 0) + tb - S);
-      out.push({ action: { type: 'active', equipIndex: idx }, cost: e.energy || 0, est, kind: 'oneshot' });
+      out.push({ action: { type: 'active', equipIndex: idx }, cost: eCost, est, kind: 'oneshot' });
     }
   });
 

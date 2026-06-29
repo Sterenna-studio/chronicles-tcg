@@ -21,7 +21,7 @@
 //   endSquadPlayerTurn(state, difficulty)
 //   Helpers UI : championAttackPower, teamShield, canChampionAct
 
-import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=15';
+import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=17';
 
 export const SQUAD_HP        = 30;
 export const ENERGY_MAX      = 7;
@@ -441,9 +441,36 @@ function pickAction(cands, difficulty, enemyHp) {
   return bestRep || bestOne || null;
 }
 
+// Phase d'équipement de l'IA (mode deck) : équipe quelques cartes en gardant de
+// l'énergie pour attaquer. easy = ramp lent, hard = plus agressif. 🎚️
+function aiEquip(state, sideKey, difficulty) {
+  let s = state;
+  const maxEquips = difficulty === 'hard' ? 2 : difficulty === 'easy' ? 1 : 1;
+  const reserve = 1;   // énergie gardée pour au moins une attaque
+  // Valeur d'une carte à équiper : passifs (power+shield) priorisés, actifs ~ power.
+  const value = (c) => (PASSIVE_TYPES.includes(c.type) ? (c.power || 0) + (c.shield || 0) : (c.power || 0));
+  for (let done = 0; done < maxEquips; done++) {
+    const side = s[sideKey];
+    if (!side.useDeck || !side.equipHand.length) break;
+    const champIdx = side.champions.findIndex((ch) => ch.equipment.length < (ch.slots || DEFAULT_SLOTS));
+    if (champIdx < 0) break;
+    const cand = side.equipHand
+      .map((c, i) => ({ c, i, cost: actionCost(c) }))
+      .filter((x) => x.cost <= side.energy - reserve)
+      .sort((a, b) => value(b.c) - value(a.c))[0];
+    if (!cand) break;
+    const r = equipCard(s, sideKey, champIdx, cand.i);
+    if (!r.ok) break;
+    s = r.state;
+  }
+  return s;
+}
+
 export function autoPlaySquadTurn(state, sideKey, difficulty = 'normal') {
   let s = clone(state);
   if (s.phase === `${sideKey}_stunned`) return s;
+
+  s = aiEquip(s, sideKey, difficulty);   // l'IA s'équipe (mode deck) avant d'attaquer
 
   let guard = 0;
   let progressed = true;

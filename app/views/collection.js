@@ -1,7 +1,7 @@
 // app/views/collection.js
-import { getClient, getUser } from '../../logic/supaRaw.js?v=15';
-import { url } from '../../logic/paths.js?v=15';
-import { ALL_SETS, isPlayableSet } from '../../logic/sets.js?v=15';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=17';
+import { url } from '../../logic/paths.js?v=17';
+import { ALL_SETS, isPlayableSet } from '../../logic/sets.js?v=17';
 
 // La collection montre TOUS les sets (cartes Set 02 possédées restent visibles).
 const SETS = ALL_SETS;

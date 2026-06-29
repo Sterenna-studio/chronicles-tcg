@@ -3,9 +3,9 @@
 // DECK d'équipement (jusqu'à 20 cartes) qui se pioche/équipe EN COMBAT (Phase B2).
 // Sauvegarde via le RPC save_squad (payload : slots champions + terrain + deck).
 // Voir docs/MODE_ESCOUADE.md §8 et docs/RULES_JRPG.md §9 (persistance).
-import { getClient, getUser } from '../../logic/supaRaw.js?v=15';
-import { url } from '../../logic/paths.js?v=15';
-import { playableSets } from '../../logic/sets.js?v=15';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=17';
+import { url } from '../../logic/paths.js?v=17';
+import { playableSets } from '../../logic/sets.js?v=17';
 
 const DECK_MAX = 20;   // taille max du deck d'équipement (Phase B2)
 const EQUIP_TYPES = ['Object', 'Companion', 'Special', 'Event', 'Team'];
@@ -295,7 +295,7 @@ export async function renderSquadBuilder(root) {
       overlay.remove();
       const saved = await saveSquad(true);  // force active
       if (!saved) return;                    // combat seulement si la sauvegarde passe
-      const m = await import('./squadBattle.js?v=15');
+      const m = await import('./squadBattle.js?v=17');
       await m.renderSquadBattle(root, { difficulty: b.dataset.d });
     }));
     overlay.querySelector('#sb-diff-cancel').addEventListener('click', () => overlay.remove());
@@ -342,7 +342,7 @@ export async function renderSquadBuilder(root) {
     document.getElementById('app-root').style.display = 'none';
     document.querySelector('.shell').style.display = 'grid';
   });
-  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=15').then(m => m.renderSquadTutorial(root)));
+  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=17').then(m => m.renderSquadTutorial(root)));
   topbar.querySelector('#sb-quests').addEventListener('click', openQuestsModal);
 
   async function openQuestsModal() {

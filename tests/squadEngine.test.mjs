@@ -322,4 +322,18 @@ test('slots dynamiques : champion.slots par défaut = 3', () => {
   assert.equal(s.player.champions[0].slots, 3);
 });
 
+test('IA mode deck : l\'ennemi s\'équipe depuis sa main puis attaque', () => {
+  const enemy = {
+    slots: [slot(champ({ id: 'E1', power: 5, energy: 1 })), slot(champ({ id: 'E2' })), slot(champ({ id: 'E3' }))],
+    terrain: null,
+    equipmentDeck: Array.from({ length: 6 }, (_, i) => object({ id: 'EO' + i, power: 3, shield: 3, energy: 3 })),
+  };
+  let s = E.createSquadBattle(baseSquad(), enemy);
+  s.enemy.energy = 7;
+  const after = E.autoPlaySquadTurn(s, 'enemy', 'normal');
+  const equipped = after.enemy.champions.reduce((a, c) => a + c.equipment.length, 0);
+  assert.ok(equipped >= 1, 'l\'ennemi a équipé au moins une carte');
+  assert.ok(after.player.hp < 30, 'et a quand même attaqué');
+});
+
 console.log(`\n${pass} tests OK`);

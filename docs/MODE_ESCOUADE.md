@@ -246,8 +246,13 @@ incohérent.
   `save_squad` valide le deck (≤20, types, possession ; cap rareté sur
   champions+terrain seulement), `load_squad` renvoie `equipmentDeck`. `squadBattle`
   utilise ce deck (fallback `buildEquipmentDeck` pour les vieilles escouades sans deck).
-- 🟡 **À venir** : IA ennemie qui pioche/équipe (symétrie ; l'ennemi est encore
-  pré-équipé), défausse imposée par l'adversaire (idée), slots modifiables par effets.
+- ✅ **IA ennemie symétrique** : l'ennemi a aussi un deck (`generateEnemySquad` →
+  `equipmentDeck`), pioche 3/tour et **s'équipe** via `aiEquip` dans
+  `autoPlaySquadTurn` (easy/normal 1 équip/tour, hard 2 ; garde de l'énergie pour
+  attaquer). Comme il joue en second, la **difficulté = PV de l'ennemi** 🎚️
+  (easy 22 / normal 30 / hard 42) + taille de deck (10/16/20). Sim miroir : hard
+  bascule côté ennemi (≈8/6), easy/normal joueur-favorables, ~4-5 tours, sans blocage.
+- 🟡 **À venir** : défausse imposée par l'adversaire (idée), slots modifiables par effets.
 - 💡 Pistes futures : animations de combat, plus de contenu de quêtes, équilibrage
   fin, mode « PV par champion » (le skillEngine a déjà des effets de ciblage prêts).
 

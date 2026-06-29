@@ -1,5 +1,5 @@
 // Use the shared supabase data layer for seeding rather than the local mocks.
-import { initPlayer, loadPackTypes } from '../data/supabaseData.js?v=15';
+import { initPlayer, loadPackTypes } from '../data/supabaseData.js?v=17';
 
 const out = document.getElementById('out');
 document.getElementById('seed').onclick = async () => {

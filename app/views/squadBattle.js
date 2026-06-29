@@ -12,11 +12,11 @@ import {
   createSquadBattle, championAct, getSquadResult, endSquadPlayerTurn,
   championAttackPower, teamShield, canChampionAct, actionCost, equipCard,
   SQUAD_HP, DECK_SIZE,
-} from '../../logic/squadEngine.js?v=15';
-import { getClient } from '../../logic/supaRaw.js?v=15';
-import { url } from '../../logic/paths.js?v=15';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=15';
-import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=15';
+} from '../../logic/squadEngine.js?v=17';
+import { getClient } from '../../logic/supaRaw.js?v=17';
+import { url } from '../../logic/paths.js?v=17';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=17';
+import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=17';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -140,7 +140,9 @@ async function loadActiveSquad() {
   } catch { return null; }
 }
 
-// ── Génération de l'escouade ennemie ──────────────────────────────────────────
+// ── Génération de l'escouade ennemie (mode deck, symétrique au joueur) ─────────
+// L'ennemi a lui aussi un deck d'équipement : il pioche 3/tour et s'équipe via l'IA
+// (squadEngine.autoPlaySquadTurn). Taille du deck + qualité selon la difficulté.
 function generateEnemySquad(cards, difficulty) {
   const champs = cards.filter(c => c.type === 'Champion');
   const pools = {
@@ -152,21 +154,19 @@ function generateEnemySquad(cards, difficulty) {
   if (pool.length < 3) pool = champs;
   const chosen = [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
 
+  // Deck d'équipement : surtout des passifs, quelques actifs en normal/hard.
   const passives = cards.filter(c => ['Object','Companion'].includes(c.type));
   const actives  = cards.filter(c => ['Special','Event','Team'].includes(c.type));
   const terrains = cards.filter(c => c.type === 'Terrain');
-  const equipPer = { easy: 1, normal: 2, hard: 3 }[difficulty] ?? 2;
-
-  const slots = chosen.map(ch => {
-    const eq = [];
-    for (let k = 0; k < equipPer; k++) {
-      const src = (difficulty === 'hard' && k === equipPer - 1 && actives.length) ? actives : passives;
-      if (src.length) eq.push(rnd(src));
-    }
-    return { champion: ch, equipment: eq };
-  });
+  const deckSize  = { easy: 10, normal: 16, hard: 20 }[difficulty] ?? 16;
+  const activeRatio = { easy: 0, normal: 0.25, hard: 0.4 }[difficulty] ?? 0.25;
+  const deck = [];
+  for (let i = 0; i < deckSize; i++) {
+    const src = (Math.random() < activeRatio && actives.length) ? actives : passives;
+    if (src.length) deck.push(rnd(src));
+  }
   const terrain = (difficulty === 'hard' && terrains.length) ? rnd(terrains) : null;
-  return { slots, terrain };
+  return { slots: chosen.map(ch => ({ champion: ch })), terrain, equipmentDeck: deck };
 }
 
 // ── Récompenses (ledger) ───────────────────────────────────────────────────────
@@ -223,7 +223,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button class="sqb-ghost" id="go-atelier">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=15').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=17').then(m => m.renderSquadBuilder(root)));
     return;
   }
 
@@ -426,16 +426,21 @@ function startCombat(root, playerSquad, cards, difficulty) {
   root.innerHTML = '';
   root.appendChild(wrap);
 
+  // Difficulté = PV de l'ennemi (il joue en second, donc on compense par la survie).
+  // L'ennemi reste symétrique (pioche/équipe), mais encaisse plus en montant. 🎚️
+  const ENEMY_MAX = { easy: 22, normal: 30, hard: 42 }[difficulty] ?? 30;
+  state.enemy.hp = ENEMY_MAX;
+
   const enemyZone = wrap.querySelector('#sq-enemy');
   const playerZone = wrap.querySelector('#sq-player');
   const logEl = wrap.querySelector('#sq-log');
   const handEl = wrap.querySelector('#sq-hand');
   const actionBar = wrap.querySelector('#sq-actions');
 
-  function bar(side, color) {
-    const pct = Math.max(0, Math.min(100, (side.hp / SQUAD_HP) * 100));
+  function bar(side, color, max) {
+    const pct = Math.max(0, Math.min(100, (side.hp / max) * 100));
     return `<div class="sqb-bar">
-      <span class="hp" style="color:${color}">❤ ${side.hp}/${SQUAD_HP}</span>
+      <span class="hp" style="color:${color}">❤ ${side.hp}/${max}</span>
       <div class="sqb-track"><div style="width:${pct}%;background:${color}"></div></div>
       <span class="meta"><span style="color:#ffbe46">⚡${side.energy}</span><span style="color:#7fb3a0">🛡${teamShield(side)}</span></span>
     </div>`;
@@ -466,8 +471,8 @@ function startCombat(root, playerSquad, cards, difficulty) {
     wrap.querySelector('#sq-turn').textContent = `Tour ${state.turn}`;
     enemyZone.innerHTML = `<div class="sqb-side-lbl" style="color:#ff6f8a">⬢ ESCOUADE ADVERSE</div>
       <div class="sqb-row">${[0,1,2].map(i => champHtml(state.enemy, i, 'enemy')).join('')}</div>
-      ${bar(state.enemy, '#ff5080')}`;
-    playerZone.innerHTML = `${bar(state.player, '#00f5c4')}
+      ${bar(state.enemy, '#ff5080', ENEMY_MAX)}`;
+    playerZone.innerHTML = `${bar(state.player, '#00f5c4', SQUAD_HP)}
       <div class="sqb-row">${[0,1,2].map(i => champHtml(state.player, i, 'player')).join('')}</div>
       <div class="sqb-side-lbl" style="color:#00f5c4;justify-content:flex-end">TON ESCOUADE ⬢</div>`;
     logEl.innerHTML = `<div class="vs">— ⚔ —</div>` + state.log.slice(-6).map(l => `<div>${l.replace(/</g,'&lt;')}</div>`).join('');

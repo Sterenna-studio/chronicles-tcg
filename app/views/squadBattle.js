@@ -12,11 +12,11 @@ import {
   createSquadBattle, championAct, getSquadResult, endSquadPlayerTurn,
   championAttackPower, teamShield, canChampionAct, actionCost, equipCard,
   SQUAD_HP, DECK_SIZE,
-} from '../../logic/squadEngine.js?v=14';
-import { getClient } from '../../logic/supaRaw.js?v=14';
-import { url } from '../../logic/paths.js?v=14';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=14';
-import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=14';
+} from '../../logic/squadEngine.js?v=15';
+import { getClient } from '../../logic/supaRaw.js?v=15';
+import { url } from '../../logic/paths.js?v=15';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=15';
+import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=15';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -223,16 +223,18 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button class="sqb-ghost" id="go-atelier">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=14').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=15').then(m => m.renderSquadBuilder(root)));
     return;
   }
 
-  // Deck d'équipement (mode "en main") : construit une fois, puis préservé au rejeu.
-  if (!Array.isArray(playerSquad.equipmentDeck)) {
+  // Deck d'équipement (mode "en main") : le deck choisi à l'Atelier (load_squad →
+  // equipmentDeck) est prioritaire. Sinon (vieille escouade ou deck vide) on en
+  // bâtit un depuis l'équipement de slots + complément aléatoire.
+  if (!Array.isArray(playerSquad.equipmentDeck) || playerSquad.equipmentDeck.length === 0) {
     playerSquad.equipmentDeck = buildEquipmentDeck(playerSquad, cards);
-    // Les champions démarrent nus : l'équipement se joue depuis la main en combat.
-    playerSquad.slots = playerSquad.slots.map(s => ({ ...s, equipment: [] }));
   }
+  // Les champions démarrent nus : l'équipement se joue depuis la main en combat.
+  playerSquad.slots = playerSquad.slots.map(s => ({ ...s, equipment: [] }));
 
   // Rejouer : on saute le déploiement (même disposition).
   const arranged = (opts.skipDeploy && opts.playerSquad)

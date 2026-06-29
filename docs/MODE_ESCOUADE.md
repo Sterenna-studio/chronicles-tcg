@@ -56,9 +56,9 @@ il ne le remplace pas.
 
 ### Tables
 - **`tcg_squads`** (nouvelle) — une escouade sauvegardée : `player_id`, `name`,
-  `is_active`, `slot{1,2,3}_champion_id`, `slot{1,2,3}_equipment text[]`,
-  `terrain_id`. RLS « own only ». Index unique partiel : **1 escouade active /
-  joueur**.
+  `is_active`, `slot{1,2,3}_champion_id`, `slot{1,2,3}_equipment text[]` (legacy,
+  vidé en B2), **`equipment_deck text[]`** (deck ≤20, B2), `terrain_id`. RLS « own
+  only ». Index unique partiel : **1 escouade active / joueur**.
 - **`cards`** — +50 cartes de soutien Set 01 seedées (Companion/Event/Object/
   Special/Terrain). Les champions ont `skill` (jsonb) + `slots=3`.
 - **`chronicles_ledger`** — nouveau type `battle_reward`.
@@ -240,10 +240,14 @@ incohérent.
   « legacy » dans `squadEngine.makeSide` (le tuto + l'ennemi restent pré-équipés).
   API moteur : `drawEquipment`, `equipCard`, `unequipCard`. Deck **temporaire**
   (`buildEquipmentDeck` dans `squadBattle.js`) en attendant B2.
-- 🟡 **Phase B2 à faire** : vrai **constructeur de deck (20)** à l'Atelier +
-  `save_squad`/`load_squad` (colonne `equipment_deck`). Puis : IA ennemie qui
-  pioche/équipe (symétrie), défausse imposée par l'adversaire (idée), slots
-  modifiables par effets.
+- ✅ **Phase B2 — constructeur de deck à l'Atelier** : `squadBuilder.js` bâtit un
+  **deck d'équipement (≤20)** (section « DECK ÉQUIPEMENT X/20 ») au lieu d'équiper
+  par champion. Migration `20260629010000` : colonne `tcg_squads.equipment_deck`,
+  `save_squad` valide le deck (≤20, types, possession ; cap rareté sur
+  champions+terrain seulement), `load_squad` renvoie `equipmentDeck`. `squadBattle`
+  utilise ce deck (fallback `buildEquipmentDeck` pour les vieilles escouades sans deck).
+- 🟡 **À venir** : IA ennemie qui pioche/équipe (symétrie ; l'ennemi est encore
+  pré-équipé), défausse imposée par l'adversaire (idée), slots modifiables par effets.
 - 💡 Pistes futures : animations de combat, plus de contenu de quêtes, équilibrage
   fin, mode « PV par champion » (le skillEngine a déjà des effets de ciblage prêts).
 

@@ -1,12 +1,13 @@
-// app/views/squadBuilder.js — Atelier d'escouade (Mode Escouade, lot 6)
-// Monte une escouade de 3 Champions, équipe chacun (max 3 cartes non-Champion),
-// choisit 1 Terrain d'équipe, puis sauvegarde via le RPC save_squad.
-// Voir docs/RULES_JRPG.md §2 (loadout) et §9 (persistance).
-import { getClient, getUser } from '../../logic/supaRaw.js?v=14';
-import { url } from '../../logic/paths.js?v=14';
-import { playableSets } from '../../logic/sets.js?v=14';
+// app/views/squadBuilder.js — Atelier d'escouade (Mode Escouade).
+// Monte une escouade de 3 Champions + 1 Terrain d'équipe optionnel, et bâtit un
+// DECK d'équipement (jusqu'à 20 cartes) qui se pioche/équipe EN COMBAT (Phase B2).
+// Sauvegarde via le RPC save_squad (payload : slots champions + terrain + deck).
+// Voir docs/MODE_ESCOUADE.md §8 et docs/RULES_JRPG.md §9 (persistance).
+import { getClient, getUser } from '../../logic/supaRaw.js?v=15';
+import { url } from '../../logic/paths.js?v=15';
+import { playableSets } from '../../logic/sets.js?v=15';
 
-const MAX_EQUIP = 3;
+const DECK_MAX = 20;   // taille max du deck d'équipement (Phase B2)
 const EQUIP_TYPES = ['Object', 'Companion', 'Special', 'Event', 'Team'];
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -50,9 +51,14 @@ export async function renderSquadBuilder(root) {
     is_active: existing?.is_active ?? true,
     slots: [0, 1, 2].map(i => ({
       champion: existing?.slots?.[i]?.champion ? byId[existing.slots[i].champion.id] || existing.slots[i].champion : null,
-      equipment: (existing?.slots?.[i]?.equipment || []).map(e => byId[e.id] || e),
     })),
     terrain: existing?.terrain ? (byId[existing.terrain.id] || existing.terrain) : null,
+    // Deck d'équipement (B2). Rétro-compat : si une vieille escouade n'a pas de deck,
+    // on récupère l'équipement figé de ses slots.
+    deck: ((existing?.equipmentDeck && existing.equipmentDeck.length)
+            ? existing.equipmentDeck
+            : (existing?.slots || []).flatMap(s => s.equipment || [])
+          ).map(e => byId[e.id] || e),
   };
 
   let selectedSlot = 0;
@@ -62,20 +68,16 @@ export async function renderSquadBuilder(root) {
   // ── Comptage d'usage (pour respecter la possession / doublons) ─────────────
   function usageCount(id) {
     let n = 0;
-    squad.slots.forEach(s => {
-      if (s.champion?.id === id) n++;
-      s.equipment.forEach(e => { if (e.id === id) n++; });
-    });
+    squad.slots.forEach(s => { if (s.champion?.id === id) n++; });
+    squad.deck.forEach(e => { if (e.id === id) n++; });
     if (squad.terrain?.id === id) n++;
     return n;
   }
   const canTakeAnother = (id) => usageCount(id) < (owned[id] || 0);
+  // Cap rareté : champions + terrain uniquement (comme le serveur ; pas le deck).
   function countRarity(pred) {
     let n = 0;
-    squad.slots.forEach(s => {
-      if (pred(s.champion)) n++;
-      s.equipment.forEach(e => { if (pred(e)) n++; });
-    });
+    squad.slots.forEach(s => { if (pred(s.champion)) n++; });
     if (pred(squad.terrain)) n++;
     return n;
   }
@@ -166,10 +168,8 @@ export async function renderSquadBuilder(root) {
     } else if (card.type === 'Terrain') {
       squad.terrain = card;
     } else if (EQUIP_TYPES.includes(card.type)) {
-      const slot = squad.slots[selectedSlot];
-      if (!slot.champion) return flash('Choisis d\'abord un champion pour ce slot', '#ffbe46');
-      if (slot.equipment.length >= MAX_EQUIP) return flash(`Max ${MAX_EQUIP} équipements par champion`, '#ff8a8a');
-      slot.equipment.push(card);
+      if (squad.deck.length >= DECK_MAX) return flash(`Deck plein (max ${DECK_MAX} cartes)`, '#ff8a8a');
+      squad.deck.push(card);   // l'équipement se pioche/équipe en combat
     }
     renderGrid(); renderPanel();
   }
@@ -192,19 +192,7 @@ export async function renderSquadBuilder(root) {
            <button data-rm-champ="${i}" style="background:transparent;border:none;color:#ff2d4e88;cursor:pointer;font-size:.9em">✕</button></div>`
       : `<div style="font-size:.72em;color:#3a6655">Champion ${i + 1} — <span style="color:#00f5c4">slot vide</span>${active ? ' (clique une carte Champion)' : ''}</div>`;
 
-    const equipRow = ch
-      ? `<div style="display:flex;gap:4px;margin-top:6px">${
-          [0, 1, 2].map(j => {
-            const e = slot.equipment[j];
-            if (!e) return `<div style="flex:1;border:1px dashed #143226;border-radius:4px;height:40px;display:flex;align-items:center;justify-content:center;color:#28503f;font-size:.7em">+</div>`;
-            const erc = RC[e.rarity] || '#9da7b3';
-            return `<div title="${e.name}" style="flex:1;position:relative;border:1px solid ${erc}66;border-radius:4px;height:40px;background:#060c10;display:flex;align-items:center;justify-content:center;font-size:1.1em">
-              ${TI[e.type] || '🔧'}
-              <button data-rm-eq="${i}:${j}" style="position:absolute;top:-6px;right:-6px;background:#0a0a0a;border:1px solid #ff2d4e88;color:#ff2d4e;border-radius:50%;width:16px;height:16px;line-height:1;cursor:pointer;font-size:.6em">✕</button>
-            </div>`;
-          }).join('')}</div>`
-      : '';
-    el.innerHTML = head + equipRow;
+    el.innerHTML = head;   // l'équipement n'est plus figé par champion : il vit dans le deck
     return el;
   }
 
@@ -236,6 +224,25 @@ export async function renderSquadBuilder(root) {
          <button data-rm-terrain="1" style="background:transparent;border:none;color:#ff2d4e88;cursor:pointer;font-size:.9em">✕</button></div>`
       : `<div style="font-size:.72em;color:#3a6655">🌍 Terrain d'équipe — <span style="color:#00f5c4">optionnel</span> (clique une carte Terrain)</div>`;
     list.appendChild(terr);
+
+    // ── Deck d'équipement (pioché en combat) ──────────────────────────────────
+    const deckBox = document.createElement('div');
+    deckBox.style.cssText = 'border:1px solid #0e2a1f;border-radius:8px;padding:8px;margin-top:8px;background:#04060a';
+    const dn = squad.deck.length;
+    const deckChips = dn
+      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${squad.deck.map((e, k) => {
+          const erc = RC[e.rarity] || '#9da7b3';
+          return `<span title="${e.name} — ⚡${e.energy} ⚔${e.power} 🛡${e.shield}" style="position:relative;display:inline-flex;align-items:center;gap:3px;border:1px solid ${erc}66;border-radius:5px;padding:2px 16px 2px 5px;font-size:.6em;color:${erc};background:#060c10">
+            ${TI[e.type] || '🔧'} ${e.name.length > 14 ? e.name.slice(0, 13) + '…' : e.name}
+            <button data-rm-deck="${k}" style="position:absolute;top:1px;right:1px;background:transparent;border:none;color:#ff2d4e99;cursor:pointer;font-size:1em;line-height:1">✕</button></span>`;
+        }).join('')}</div>`
+      : `<div style="font-size:.66em;color:#3a6655;margin-top:4px">Clique des cartes d'équipement (🔧🐾✨⚡👥) pour bâtir ton deck.</div>`;
+    deckBox.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:.72em;color:#00f5c4;letter-spacing:.08em">🎴 DECK ÉQUIPEMENT</span>
+        <span style="font-size:.66em;color:${dn >= DECK_MAX ? '#ff8a8a' : (dn >= 10 ? '#22c55e' : '#ffbe46')}">${dn}/${DECK_MAX}</span>
+      </div>${deckChips}` + (dn && dn < 10 ? `<div style="font-size:.6em;color:#5a7a6a;margin-top:5px">Conseil : vise ~20 cartes pour piocher tout le combat.</div>` : '');
+    list.appendChild(deckBox);
+
     panel.appendChild(list);
 
     const footer = document.createElement('div');
@@ -252,13 +259,12 @@ export async function renderSquadBuilder(root) {
     // Handlers de suppression
     panel.querySelectorAll('[data-rm-champ]').forEach(b => b.addEventListener('click', e => {
       e.stopPropagation();
-      const i = +b.dataset.rmChamp; squad.slots[i].champion = null; squad.slots[i].equipment = [];
+      const i = +b.dataset.rmChamp; squad.slots[i].champion = null;
       renderGrid(); renderPanel();
     }));
-    panel.querySelectorAll('[data-rm-eq]').forEach(b => b.addEventListener('click', e => {
+    panel.querySelectorAll('[data-rm-deck]').forEach(b => b.addEventListener('click', e => {
       e.stopPropagation();
-      const [i, j] = b.dataset.rmEq.split(':').map(Number);
-      squad.slots[i].equipment.splice(j, 1);
+      squad.deck.splice(+b.dataset.rmDeck, 1);
       renderGrid(); renderPanel();
     }));
     panel.querySelector('[data-rm-terrain]')?.addEventListener('click', e => {
@@ -289,7 +295,7 @@ export async function renderSquadBuilder(root) {
       overlay.remove();
       const saved = await saveSquad(true);  // force active
       if (!saved) return;                    // combat seulement si la sauvegarde passe
-      const m = await import('./squadBattle.js?v=14');
+      const m = await import('./squadBattle.js?v=15');
       await m.renderSquadBattle(root, { difficulty: b.dataset.d });
     }));
     overlay.querySelector('#sb-diff-cancel').addEventListener('click', () => overlay.remove());
@@ -307,7 +313,8 @@ export async function renderSquadBuilder(root) {
       name: (topbar.querySelector('#sb-name').value || 'Escouade').trim(),
       is_active: active,
       terrain: squad.terrain?.id ?? null,
-      slots: squad.slots.map(s => ({ champion: s.champion?.id ?? null, equipment: s.equipment.map(e => e.id) })),
+      slots: squad.slots.map(s => ({ champion: s.champion?.id ?? null, equipment: [] })),
+      deck: squad.deck.map(e => e.id),
     };
     const reset = () => { if (btn) { btn.disabled = false; btn.textContent = '💾 SAUVEGARDER L\'ESCOUADE'; } };
     try {
@@ -335,7 +342,7 @@ export async function renderSquadBuilder(root) {
     document.getElementById('app-root').style.display = 'none';
     document.querySelector('.shell').style.display = 'grid';
   });
-  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=14').then(m => m.renderSquadTutorial(root)));
+  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=15').then(m => m.renderSquadTutorial(root)));
   topbar.querySelector('#sb-quests').addEventListener('click', openQuestsModal);
 
   async function openQuestsModal() {

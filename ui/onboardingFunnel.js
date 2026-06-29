@@ -12,7 +12,7 @@
  * dès que le tutoriel Escouade est terminé. Voir docs/MODE_ESCOUADE.md.
  */
 
-import { showLemegetonTuto } from './lemegetonTuto.js?v=19';
+import { showLemegetonTuto } from './lemegetonTuto.js?v=20';
 
 const KIT_QUEST  = 'tuto_01';
 const TUTO_QUEST = 'tuto_escouade';

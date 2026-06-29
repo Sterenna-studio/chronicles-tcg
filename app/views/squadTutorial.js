@@ -5,10 +5,10 @@
 import {
   createSquadBattle, championAct, getSquadResult,
   championAttackPower, teamShield, canChampionAct, SQUAD_HP,
-} from '../../logic/squadEngine.js?v=19';
-import { getClient } from '../../logic/supaRaw.js?v=19';
-import { url } from '../../logic/paths.js?v=19';
-import { playableSets } from '../../logic/sets.js?v=19';
+} from '../../logic/squadEngine.js?v=20';
+import { getClient } from '../../logic/supaRaw.js?v=20';
+import { url } from '../../logic/paths.js?v=20';
+import { playableSets } from '../../logic/sets.js?v=20';
 
 const QUEST_ID = 'tuto_escouade';
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
@@ -206,16 +206,14 @@ export async function renderSquadTutorial(root) {
         <button id="t-home" style="background:transparent;border:1px solid #3a6655;color:#3a6655;padding:8px;cursor:pointer;font-family:inherit;font-size:.8em;border-radius:8px">← Retour au hub</button>
       </div></div>`;
     document.body.appendChild(overlay);
-    overlay.querySelector('#t-atelier').addEventListener('click', () => { overlay.remove(); import('./squadBuilder.js?v=19').then(m => m.renderSquadBuilder(root)); });
+    overlay.querySelector('#t-atelier').addEventListener('click', () => { overlay.remove(); import('./squadBuilder.js?v=20').then(m => m.renderSquadBuilder(root)); });
     overlay.querySelector('#t-home').addEventListener('click', () => { overlay.remove(); backToHub(); });
   }
 
   function backToHub() {
-    root.innerHTML = '';
-    document.getElementById('app-root').style.display = 'none';
-    document.querySelector('.shell').style.display = 'grid';
     // Resynchronise le hub (parcours d'initiation, solde) après le tutoriel.
     window.dispatchEvent(new Event('hub:refresh'));
+    location.hash = '#/hub';   // onRoute réaffiche le hub + nettoie app-root
   }
   topbar.querySelector('#t-quit').addEventListener('click', backToHub);
 

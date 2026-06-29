@@ -12,12 +12,12 @@ import {
   createSquadBattle, championAct, getSquadResult, endSquadPlayerTurn,
   championAttackPower, teamShield, canChampionAct, actionCost, equipCard,
   SQUAD_HP, DECK_SIZE,
-} from '../../logic/squadEngine.js?v=19';
-import { getClient } from '../../logic/supaRaw.js?v=19';
-import { url } from '../../logic/paths.js?v=19';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=19';
-import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=19';
-import { createRecorder } from '../../logic/combatRecorder.js?v=19';
+} from '../../logic/squadEngine.js?v=20';
+import { getClient } from '../../logic/supaRaw.js?v=20';
+import { url } from '../../logic/paths.js?v=20';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=20';
+import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=20';
+import { createRecorder } from '../../logic/combatRecorder.js?v=20';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -198,11 +198,9 @@ async function claimSquadQuests(diff) {
   return done;
 }
 
-function backToHub(root) {
-  root.innerHTML = '';
-  document.getElementById('app-root').style.display = 'none';
-  document.querySelector('.shell').style.display = 'grid';
+function backToHub() {
   window.dispatchEvent(new Event('hub:refresh'));   // resync solde + parcours + défis
+  location.hash = '#/hub';                           // onRoute réaffiche le hub + nettoie app-root
 }
 
 // ── Entrée ──────────────────────────────────────────────────────────────────────
@@ -224,7 +222,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button class="sqb-ghost" id="go-atelier">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=19').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=20').then(m => m.renderSquadBuilder(root)));
     return;
   }
 
@@ -391,7 +389,7 @@ function runDeployment(root, squad, difficulty) {
       if (placedIds().length < 3) return;
       resolve({ slots: positions.filter(Boolean), terrain: terrainSlot, equipmentDeck: squad.equipmentDeck });
     });
-    wrap.querySelector('#d-quit').addEventListener('click', () => { backToHub(root); resolve(null); });
+    wrap.querySelector('#d-quit').addEventListener('click', () => { resolve(null); backToHub(); });
 
     render();
   });
@@ -651,9 +649,9 @@ function startCombat(root, playerSquad, cards, difficulty) {
       </div></div>`;
     document.body.appendChild(overlay);
     overlay.querySelector('#sq-again').addEventListener('click', () => { overlay.remove(); renderSquadBattle(root, { playerSquad, difficulty, skipDeploy: true }); });
-    overlay.querySelector('#sq-home').addEventListener('click', () => { overlay.remove(); backToHub(root); });
+    overlay.querySelector('#sq-home').addEventListener('click', () => { overlay.remove(); backToHub(); });
   }
 
-  wrap.querySelector('#sq-flee').addEventListener('click', () => backToHub(root));
+  wrap.querySelector('#sq-flee').addEventListener('click', () => backToHub());
   render();
 }

@@ -15,6 +15,21 @@
     html,body{height:100%;background:var(--bg);color:var(--fg);font-family:var(--font);overflow:hidden}
     body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.18) 2px,rgba(0,0,0,.18) 4px);pointer-events:none;z-index:9999}
 
+    /* ── SPLASH D'ENTRÉE ─────────────────────────────────────── */
+    #tcg-splash{position:fixed;inset:0;z-index:10000;background:radial-gradient(120% 90% at 50% 32%,#06121a 0%,#020408 72%);display:flex;align-items:center;justify-content:center;transition:opacity .6s ease}
+    #tcg-splash.hide{opacity:0;pointer-events:none}
+    #tcg-splash::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.22) 2px,rgba(0,0,0,.22) 4px);pointer-events:none}
+    .splash-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;animation:splash-in .5s ease}
+    @keyframes splash-in{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+    .splash-diamond{width:24px;height:24px;background:var(--cyan);transform:rotate(45deg);box-shadow:0 0 22px var(--cyan),0 0 60px rgba(0,245,196,.5);animation:pulse-diamond 1.6s ease-in-out infinite}
+    .splash-logo{font-family:'VT323',monospace;font-size:3.8em;letter-spacing:.32em;color:var(--cyan);text-shadow:0 0 16px rgba(0,245,196,.7),0 0 48px rgba(0,245,196,.3);animation:splash-glitch 3.2s steps(1) infinite}
+    .splash-sub{font-size:.78em;letter-spacing:.34em;color:var(--muted)}
+    .splash-bar{width:240px;max-width:70vw;height:4px;background:#0a1a14;border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-top:8px}
+    .splash-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--amber));box-shadow:0 0 10px var(--cyan);animation:splash-load 1.7s ease-out forwards}
+    .splash-status{font-size:.72em;letter-spacing:.18em;color:var(--cyan);opacity:.85}
+    @keyframes splash-load{from{width:0}to{width:100%}}
+    @keyframes splash-glitch{0%,90%,100%{transform:translate(0);opacity:1}92%{transform:translate(-2px,1px);opacity:.8}96%{transform:translate(2px,-1px)}}
+
     /* LAYOUT */
     .shell{display:grid;grid-template-rows:46px 1fr 28px;grid-template-columns:200px 1fr 340px;height:100vh}
 
@@ -145,6 +160,15 @@
   </style>
 </head>
 <body>
+<div id="tcg-splash">
+  <div class="splash-inner">
+    <div class="splash-diamond"></div>
+    <div class="splash-logo">CHRONICLES</div>
+    <div class="splash-sub">BRIDGE · GWEN HA STÊAR</div>
+    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+    <div class="splash-status">INITIALISATION DU BRIDGE…</div>
+  </div>
+</div>
 <div class="shell">
 
   <header class="topbar">
@@ -244,14 +268,14 @@
 <div id="topbar"></div>
 
 <script type="module">
-import { getClient } from './logic/supaRaw.js?v=19';
-import { initPlayer, getDisplayName } from './data/supabaseData.js?v=19';
-import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=19';
-import { openOpeningOverlay } from './ui/openingOverlay.js?v=19';
-import { boot, navigate } from './app/router.js?v=19';
-import { getDailySquadChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=19';
-import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=19';
-import { renderOnboardingFunnel } from './ui/onboardingFunnel.js?v=19';
+import { getClient } from './logic/supaRaw.js?v=20';
+import { initPlayer, getDisplayName } from './data/supabaseData.js?v=20';
+import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=20';
+import { openOpeningOverlay } from './ui/openingOverlay.js?v=20';
+import { boot, navigate } from './app/router.js?v=20';
+import { getDailySquadChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=20';
+import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=20';
+import { renderOnboardingFunnel } from './ui/onboardingFunnel.js?v=20';
 
 // Réassigné dans init() avec sb/user/openView capturés ; appelé à chaque refreshHub.
 let refreshFunnel = async () => {};
@@ -425,7 +449,7 @@ function updateStreakUI(streak, rewarded, amount){
 
 // ── ACHIEVEMENTS MODAL ────────────────────────────────────────
 async function openAchievementsModal(){
-  const { mount } = await import('./pages/achievementsWidget.js?v=19');
+  const { mount } = await import('./pages/achievementsWidget.js?v=20');
   const overlay=document.createElement('div');
   overlay.className='tcg-modal-overlay';
   overlay.innerHTML=`
@@ -444,7 +468,7 @@ async function openAchievementsModal(){
 
 // ── LEADERBOARD MODAL ─────────────────────────────────────────
 async function openLeaderboardModal(sb){
-  const { mount } = await import('./pages/leaderboardWidget.js?v=19');
+  const { mount } = await import('./pages/leaderboardWidget.js?v=20');
   const { data: { session } } = await sb.auth.getSession();
   const user = session?.user ?? null;
   const overlay=document.createElement('div');
@@ -519,7 +543,8 @@ async function init(){
 
     if(!user){
       console.warn('[hub] non connecté');
-      if (!isLocal) window.location.href = LOGIN();
+      if (!isLocal) { window.location.href = LOGIN(); return; }
+      hideSplash();   // dev local : pas d'auth, on révèle quand même le shell
       return;
     }
 
@@ -548,17 +573,14 @@ async function init(){
     await renderShop(sb);
     renderDailyChallenges();
 
-    const { claimDailyReward } = await import('./logic/daily.js?v=19');
+    const { claimDailyReward } = await import('./logic/daily.js?v=20');
     const result = await claimDailyReward(sb, user.id);
     updateStreakUI(result.streak, result.rewarded, result.amount);
     // Le bonus est crédité via le ledger après le 1er refresh → resync l'affichage.
     if (result.rewarded) await refreshHub(sb);
 
-    const openView = (hash) => {
-      document.querySelector('.shell').style.display = 'none';
-      document.getElementById('app-root').style.display = 'block';
-      navigate(hash);
-    };
+    // onRoute() (router) pilote l'affichage hub↔vue : ouvrir une vue = changer le hash.
+    const openView = (hash) => navigate(hash);
 
     // Les vues plein écran reviennent au hub via backToHub() ; elles émettent
     // 'hub:refresh' pour resynchroniser solde/boosters/parcours d'initiation/défis.
@@ -586,7 +608,17 @@ async function init(){
 
     initMobileNav();
     boot();
-  }catch(e){ console.error('[hub] init',e); }
+    hideSplash();
+  }catch(e){ console.error('[hub] init',e); hideSplash(); }
+}
+
+// ── Écran de chargement d'entrée ───────────────────────────────
+const _splashStart = Date.now();
+function hideSplash(){
+  const el = document.getElementById('tcg-splash');
+  if(!el) return;
+  const wait = Math.max(0, 950 - (Date.now() - _splashStart));  // durée mini pour l'effet
+  setTimeout(()=>{ el.classList.add('hide'); setTimeout(()=>el.remove(), 650); }, wait);
 }
 
 init();

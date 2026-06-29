@@ -1,7 +1,7 @@
 // pages/leaderboardWidget.js — v1.0.0
 // Leaderboard from tcg_leaderboard view (top 50, sorted by cards_count desc, gold desc)
 // mount(container) — injectable anywhere
-import { getClient } from '../logic/supaRaw.js?v=19';
+import { getClient } from '../logic/supaRaw.js?v=20';
 
 const MEDALS = ['\u{1F947}', '\u{1F948}', '\u{1F949}'];
 

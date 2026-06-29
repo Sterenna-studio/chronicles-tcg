@@ -1,7 +1,7 @@
-import { renderCollection }  from './views/collection.js?v=13';
-import { renderSquadBuilder } from './views/squadBuilder.js?v=13';
-import { renderSquadBattle }  from './views/squadBattle.js?v=13';
-import { renderSquadTutorial } from './views/squadTutorial.js?v=13';
+import { renderCollection }  from './views/collection.js?v=14';
+import { renderSquadBuilder } from './views/squadBuilder.js?v=14';
+import { renderSquadBattle }  from './views/squadBattle.js?v=14';
+import { renderSquadTutorial } from './views/squadTutorial.js?v=14';
 
 // L'ancien mode 1-champion (deck-builder + battle) est retiré du jeu : ses routes
 // `#/deck-builder` et `#/battle` ne sont plus exposées. Les vues restent sur disque

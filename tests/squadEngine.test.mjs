@@ -259,4 +259,67 @@ test('IA hard : achève quand c\'est létal', () => {
   assert.equal(after.phase, 'end');
 });
 
+// ── Équipement « en main » (mode deck) ──────────────────────────────────────────
+const deckSquad = (deck) => ({
+  slots: [slot(champ({ id: 'C1', power: 5, energy: 1 })), slot(champ({ id: 'C2' })), slot(champ({ id: 'C3' }))],
+  terrain: null,
+  equipmentDeck: deck,
+});
+
+test('mode deck : champions nus + main d\'ouverture de 3', () => {
+  const deck = Array.from({ length: 8 }, (_, i) => object({ id: 'O' + i, power: 2, shield: 3, energy: 3 }));
+  const s = E.createSquadBattle(deckSquad(deck), baseSquad());
+  assert.equal(s.player.useDeck, true);
+  assert.equal(s.player.champions[0].equipment.length, 0, 'champions nus au départ');
+  assert.equal(s.player.equipHand.length, 3, 'main d\'ouverture de 3');
+  assert.equal(s.player.equipDeck.length, 5, 'reste 5 au deck');
+  assert.equal(E.teamShield(s.player), 0, 'aucun bouclier sans équipement');
+});
+
+test('equipCard : coûte l\'énergie de la carte + recalcule attaque/bouclier', () => {
+  const deck = [object({ id: 'O1', power: 3, shield: 4, energy: 3 })]; // coût ceil(3/3)=1
+  let s = E.createSquadBattle(deckSquad(deck), baseSquad());
+  s.player.energy = 5;
+  const r = E.equipCard(s, 'player', 0, 0);
+  assert.equal(r.ok, true);
+  assert.equal(r.state.player.energy, 5 - 1, 'coût 1 énergie');
+  assert.equal(r.state.player.champions[0].equipment.length, 1);
+  assert.equal(r.state.player.champions[0].passivePower, 3, '+3 attaque passive');
+  assert.equal(E.teamShield(r.state.player), 4, '+4 bouclier d\'équipe');
+  assert.equal(r.state.player.equipHand.length, 0, 'carte retirée de la main');
+});
+
+test('equipCard : énergie insuffisante refusée', () => {
+  const deck = [object({ id: 'O1', power: 3, shield: 4, energy: 9 })]; // coût ceil(9/3)=3
+  let s = E.createSquadBattle(deckSquad(deck), baseSquad());
+  s.player.energy = 2;
+  const r = E.equipCard(s, 'player', 0, 0);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /insuffisante/i);
+});
+
+test('equipCard : emplacements pleins → remplacement (ancien à la défausse)', () => {
+  const deck = Array.from({ length: 4 }, (_, i) => object({ id: 'O' + i, power: 1, shield: 1, energy: 1 }));
+  let s = E.createSquadBattle(deckSquad(deck), baseSquad());
+  s.player.energy = 9;
+  // équipe 3 cartes (slots par défaut = 3) — la main a 3, le deck a 1
+  s = E.equipCard(s, 'player', 0, 0).state;
+  s = E.equipCard(s, 'player', 0, 0).state;
+  s = E.equipCard(s, 'player', 0, 0).state;
+  assert.equal(s.player.champions[0].equipment.length, 3, '3 emplacements remplis');
+  s = E.drawEquipment(s, 'player', 1);              // pioche la 4e
+  const refus = E.equipCard(s, 'player', 0, s.player.equipHand.length - 1);
+  assert.equal(refus.ok, false);
+  assert.equal(refus.needsReplace, true);
+  const r = E.equipCard(s, 'player', 0, s.player.equipHand.length - 1, 0); // remplace l'emplacement 0
+  assert.equal(r.ok, true);
+  assert.equal(r.state.player.champions[0].equipment.length, 3, 'toujours 3');
+  assert.equal(r.state.player.equipDiscard.length, 1, 'ancienne carte défaussée');
+});
+
+test('slots dynamiques : champion.slots par défaut = 3', () => {
+  const s = E.createSquadBattle(deckSquad([]), baseSquad());
+  assert.equal(s.player.champions[0].slots, 3);
+});
+
 console.log(`\n${pass} tests OK`);

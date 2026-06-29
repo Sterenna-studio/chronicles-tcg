@@ -21,7 +21,7 @@
 //   endSquadPlayerTurn(state, difficulty)
 //   Helpers UI : championAttackPower, teamShield, canChampionAct
 
-import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=13';
+import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=14';
 
 export const SQUAD_HP        = 30;
 export const ENERGY_MAX      = 7;
@@ -30,6 +30,9 @@ export const TERRAIN_DMG     = 1;    // +1 dégât aux attaques si Terrain (§5)
 export const TERRAIN_GUARD   = 1;    // +1 garde/tour si Terrain (§5)
 export const MAX_EQUIP       = 3;
 export const SQUAD_SIZE      = 3;
+export const DEFAULT_SLOTS   = 3;    // emplacements d'équipement / champion (dynamique : cf champion.slots)
+export const DRAW_PER_TURN   = 3;    // cartes d'équipement piochées par tour (mode deck)
+export const DECK_SIZE       = 20;   // taille du deck d'équipement (validée à l'Atelier)
 // 🎚️ Rééquilibrage Escouade : les cartes portent des valeurs pensées pour le mode
 // 1-champion (energy 3-7 = coût de pose, shield 4-6). En escouade on CUMULE 3
 // champions × plusieurs équipements, donc on réinterprète ces valeurs :
@@ -42,6 +45,13 @@ const ONESHOT_TYPES = ['Event', 'Team'];
 const other = (k) => (k === 'player' ? 'enemy' : 'player');
 const label = (k) => (k === 'player' ? 'Joueur' : 'Ennemi');
 const clone = (s) => JSON.parse(JSON.stringify(s));
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // ─── Bouclier & dégâts (mêmes règles que skillEngine pour cohérence) ───────────
 
@@ -78,41 +88,54 @@ function applyDamage(state, defKey, raw, ignoreShield = false) {
 
 // ─── Construction ──────────────────────────────────────────────────────────────
 
-function makeSide(squad) {
-  const slots = squad.slots || [];
-  const champions = slots.map((slot) => {
-    const c = slot.champion || {};
-    const equipment = (slot.equipment || []).map((e) => ({ ...e }));
-    const passivePower = equipment
+// Recalcule la puissance passive de chaque champion + le bouclier permanent
+// d'équipe (`field`), à appeler après toute modification d'équipement.
+function recomputeSide(side) {
+  side.champions.forEach((ch) => {
+    ch.passivePower = (ch.equipment || [])
       .filter((e) => PASSIVE_TYPES.includes(e.type))
       .reduce((a, e) => a + (e.power || 0), 0);
+  });
+  side.field = [];
+  side.champions.forEach((ch) => (ch.equipment || []).forEach((e) => {
+    if (PASSIVE_TYPES.includes(e.type) && (e.shield || 0) > 0) {
+      side.field.push({ name: e.name, shield: e.shield, kind: e.type.toLowerCase(), championId: ch.id });
+    }
+  }));
+}
+
+function makeSide(squad) {
+  const slots = squad.slots || [];
+  // Mode "deck" : l'escouade fournit `equipmentDeck` → les champions démarrent SANS
+  // équipement, on pioche/équipe en combat. Sinon mode "legacy" : l'équipement est
+  // figé sur chaque champion (tutoriel, ennemi pré-équipé, anciennes escouades).
+  const useDeck = Array.isArray(squad.equipmentDeck);
+
+  const champions = slots.map((slot) => {
+    const c = slot.champion || {};
+    const equipment = useDeck ? [] : (slot.equipment || []).map((e) => ({ ...e }));
     return {
       id: c.id, name: c.name, power: c.power || 0, shield: c.shield || 0,
       energy: c.energy || 1, rarity: c.rarity, skill: c.skill || null,
-      equipment, passivePower,
+      equipment,
+      slots: c.slots || DEFAULT_SLOTS,   // emplacements (dynamique : un effet peut le faire varier)
+      passivePower: 0,                   // (re)calculé par recomputeSide
       actedThisTurn: false,
-      usedActives: {},          // equipId -> true (Event/Team consommés)
+      usedActives: {},                   // equipIndex -> true (Event/Team consommés)
     };
   });
 
-  // Bouclier permanent d'équipe = shield des Object/Companion équipés (-> field,
-  // pour que teamShield() et skillEngine partagent le même calcul).
-  const field = [];
-  champions.forEach((ch) => {
-    ch.equipment.forEach((e) => {
-      if (PASSIVE_TYPES.includes(e.type) && (e.shield || 0) > 0) {
-        field.push({ name: e.name, shield: e.shield, kind: e.type.toLowerCase(), championId: ch.id });
-      }
-    });
-  });
-
-  return {
+  const side = {
     hp: SQUAD_HP,
     energy: 1,
     champions,
     terrain: squad.terrain || null,
     shieldTemp: 0,
-    field,                        // bouclier permanent
+    field: [],                          // bouclier permanent (rempli par recomputeSide)
+    useDeck,
+    equipDeck:    useDeck ? shuffle((squad.equipmentDeck || []).map((e) => ({ ...e }))) : [],
+    equipHand:    [],                   // main d'équipement (mode deck)
+    equipDiscard: [],
     deck: [], discard: [], buffs: [],   // compat skillEngine (effets bord)
     skillCooldowns: {},
     stunnedTurns: 0,
@@ -125,10 +148,70 @@ function makeSide(squad) {
     _nextCardNegated: false,
     _doubleTurnNext: false,
   };
+  recomputeSide(side);
+  return side;
+}
+
+// ─── Équipement « en main » (mode deck) ─────────────────────────────────────────
+
+/** Pioche n cartes d'équipement du deck vers la main (mode deck uniquement). */
+export function drawEquipment(state, sideKey, n = DRAW_PER_TURN) {
+  const s = clone(state);
+  const side = s[sideKey];
+  if (!side.useDeck) return s;
+  for (let i = 0; i < n && side.equipDeck.length; i++) side.equipHand.push(side.equipDeck.shift());
+  return s;
+}
+
+/**
+ * Équipe une carte de la main (handIndex) sur un champion. Coûte de l'énergie
+ * (= actionCost de la carte). Si le champion est plein, `replaceEquipIndex` indique
+ * la carte à remplacer (l'ancienne part à la défausse).
+ */
+export function equipCard(state, sideKey, championIndex, handIndex, replaceEquipIndex = null) {
+  const side0 = state[sideKey];
+  const card = side0.equipHand?.[handIndex];
+  const ch0 = side0.champions[championIndex];
+  if (!card) return { state, ok: false, reason: 'Carte introuvable.' };
+  if (!ch0)  return { state, ok: false, reason: 'Champion introuvable.' };
+  const cost = actionCost(card);
+  if (side0.energy < cost) return { state, ok: false, reason: `Énergie insuffisante (${side0.energy}/${cost}).` };
+  const cap = ch0.slots || DEFAULT_SLOTS;
+  const full = ch0.equipment.length >= cap;
+  if (full && replaceEquipIndex == null) {
+    return { state, ok: false, reason: 'Emplacements pleins.', needsReplace: true };
+  }
+
+  const s = clone(state);
+  const side = s[sideKey];
+  const ch = side.champions[championIndex];
+  const [played] = side.equipHand.splice(handIndex, 1);
+  if (full) {
+    const [old] = ch.equipment.splice(replaceEquipIndex, 1);
+    if (old) { side.equipDiscard.push(old); delete ch.usedActives[replaceEquipIndex]; }
+  }
+  ch.equipment.push(played);
+  side.energy -= cost;
+  recomputeSide(side);
+  s.log.push(`  🔧 ${ch.name} équipe ${played.name} (${cost}⚡)`);
+  return { state: s, ok: true };
+}
+
+/** Retire un équipement d'un champion (part à la défausse). Libère un emplacement. */
+export function unequipCard(state, sideKey, championIndex, equipIndex) {
+  const s = clone(state);
+  const ch = s[sideKey].champions[championIndex];
+  const [old] = ch.equipment.splice(equipIndex, 1);
+  if (!old) return { state, ok: false, reason: 'Équipement introuvable.' };
+  s[sideKey].equipDiscard.push(old);
+  delete ch.usedActives[equipIndex];
+  recomputeSide(s[sideKey]);
+  s.log.push(`  🗑️ ${ch.name} retire ${old.name}`);
+  return { state: s, ok: true };
 }
 
 export function createSquadBattle(playerSquad, enemySquad) {
-  const s = {
+  let s = {
     turn: 1,
     energyMax: ENERGY_MAX,
     player: makeSide(playerSquad),
@@ -137,6 +220,9 @@ export function createSquadBattle(playerSquad, enemySquad) {
     phase: 'player_turn',
   };
   s.log.push('⚔️  Combat d\'escouade démarré — Tour 1');
+  // Main d'ouverture (mode deck)
+  if (s.player.useDeck) s = drawEquipment(s, 'player');
+  if (s.enemy.useDeck)  s = drawEquipment(s, 'enemy');
   return s;
 }
 
@@ -174,6 +260,7 @@ export function startSquadTurn(sideKey, state) {
 
   s[sideKey].energy = Math.min(s.turn, s.energyMax);
   s.phase = sideKey === 'player' ? 'player_turn' : 'enemy_turn';
+  if (s[sideKey].useDeck) s = drawEquipment(s, sideKey);   // pioche d'équipement du tour
   s = tickSkillCooldowns(s, sideKey);
   returnHijackedObjects(s, sideKey);
 

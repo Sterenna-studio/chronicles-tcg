@@ -3,16 +3,20 @@
 // placement visuel) → COMBAT (moteur logic/squadEngine.js). Récompenses via le
 // ledger (quêtes, bonus quotidien, défis du jour, or de combat). Voir docs/RULES_JRPG.md.
 //
-// Phase A (cette version) : UI + déploiement. L'équipement reste celui de l'Atelier.
-// Phase B (à venir) : équipement « en main » (pioche 3/tour, attribuer/échanger).
+// Phase A : UI + déploiement (drag&drop des champions + terrain).
+// Phase B1 (cette version) : équipement « en main » — deck de 20, pioche 3/tour,
+//   équiper un champion coûte l'énergie de la carte (pool partagé avec l'attaque),
+//   échange → défausse, emplacements dynamiques (champion.slots, défaut 3).
+//   ⚠️ Deck TEMPORAIRE (buildEquipmentDeck) ; B2 = vrai constructeur à l'Atelier.
 import {
   createSquadBattle, championAct, getSquadResult, endSquadPlayerTurn,
-  championAttackPower, teamShield, canChampionAct, actionCost, SQUAD_HP,
-} from '../../logic/squadEngine.js?v=13';
-import { getClient } from '../../logic/supaRaw.js?v=13';
-import { url } from '../../logic/paths.js?v=13';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=13';
-import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=13';
+  championAttackPower, teamShield, canChampionAct, actionCost, equipCard,
+  SQUAD_HP, DECK_SIZE,
+} from '../../logic/squadEngine.js?v=14';
+import { getClient } from '../../logic/supaRaw.js?v=14';
+import { url } from '../../logic/paths.js?v=14';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=14';
+import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=14';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -24,6 +28,17 @@ const rnd = (a) => a[Math.floor(Math.random() * a.length)];
 const slotAtk = (s) => (s.champion.power || 0) +
   (s.equipment || []).filter(e => ['Object','Companion'].includes(e.type)).reduce((a, e) => a + (e.power || 0), 0);
 const slotShield = (s) => (s.equipment || []).filter(e => ['Object','Companion'].includes(e.type)).reduce((a, e) => a + (e.shield || 0), 0);
+
+// Deck d'équipement TEMPORAIRE (B1) : l'équipement déjà choisi dans l'escouade +
+// complément aléatoire jusqu'à 20 cartes jouables. ⚠️ Remplacé en B2 par un vrai
+// constructeur de deck à l'Atelier (le joueur choisit ses 20 cartes).
+function buildEquipmentDeck(squad, cards) {
+  const pool = cards.filter(c => ['Object','Companion','Special','Event','Team'].includes(c.type));
+  const deck = [];
+  (squad.slots || []).forEach(s => (s.equipment || []).forEach(e => deck.push(e)));
+  while (deck.length < DECK_SIZE && pool.length) deck.push(rnd(pool));
+  return deck.slice(0, DECK_SIZE);
+}
 
 // ── Styles (injectés une fois) ─────────────────────────────────────────────────
 const CSS = `
@@ -85,6 +100,21 @@ const CSS = `
   .sqb-cta{background:linear-gradient(90deg,#003d2e,#005a42);border:1px solid #00f5c4;color:#00f5c4;font-family:inherit;font-size:.9em;letter-spacing:.1em;padding:11px 26px;border-radius:9px;cursor:pointer;text-shadow:0 0 8px rgba(0,245,196,.4);box-shadow:0 0 20px rgba(0,245,196,.14)}
   .sqb-cta:disabled{opacity:.4;cursor:default;box-shadow:none}
   .sqb-ghost{background:transparent;border:1px solid #3a6655;color:#8ab4a0;font-family:inherit;font-size:.78em;padding:9px 16px;border-radius:8px;cursor:pointer}
+  /* ── Main d'équipement (combat) ── */
+  .sqb-hand-combat{border-top:1px solid #0e2a1f;background:#03100bcc;padding:6px 12px;flex-shrink:0}
+  .sqb-hand-lbl{font-size:.6em;letter-spacing:.1em;color:#5a7a6a;margin-bottom:4px}
+  .sqb-hand-lbl b{color:#00f5c4}
+  .sqb-hand-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:3px}
+  .sqb-hcard{flex:0 0 auto;width:72px;border:1px solid #0e2a1f;border-radius:8px;padding:4px;background:#05080d;cursor:grab;transition:transform .12s,border-color .15s,box-shadow .15s;user-select:none}
+  .sqb-hcard:hover{transform:translateY(-3px)}
+  .sqb-hcard.picked{border-color:#00f5c4;box-shadow:0 0 14px rgba(0,245,196,.35);transform:translateY(-3px)}
+  .sqb-hcard.dim{opacity:.45}
+  .sqb-hcard img{width:100%;aspect-ratio:2/3;object-fit:contain;background:#060c10;border-radius:5px;pointer-events:none}
+  .sqb-hcard .nm{font-size:.52em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;color:#c8ffe8}
+  .sqb-hcard .st{font-size:.52em;color:#7fb3a0}
+  .sqb-champ.equipable{border-color:#00f5c4 !important;box-shadow:0 0 12px rgba(0,245,196,.25)}
+  .sqb-replace{display:inline-block;font-size:.62em;color:#ff8a8a;border:1px solid #ff2d4e55;border-radius:5px;padding:1px 5px;margin:1px 2px 0 0;cursor:pointer}
+  .sqb-replace:hover{background:#ff2d4e22}
   @media(max-width:560px){ .sqb-card{width:84px} .sqb-slot,.sqb-terrain-slot{width:96px} }
 `;
 function injectCss() {
@@ -193,8 +223,15 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button class="sqb-ghost" id="go-atelier">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=13').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=14').then(m => m.renderSquadBuilder(root)));
     return;
+  }
+
+  // Deck d'équipement (mode "en main") : construit une fois, puis préservé au rejeu.
+  if (!Array.isArray(playerSquad.equipmentDeck)) {
+    playerSquad.equipmentDeck = buildEquipmentDeck(playerSquad, cards);
+    // Les champions démarrent nus : l'équipement se joue depuis la main en combat.
+    playerSquad.slots = playerSquad.slots.map(s => ({ ...s, equipment: [] }));
   }
 
   // Rejouer : on saute le déploiement (même disposition).
@@ -225,7 +262,7 @@ function runDeployment(root, squad, difficulty) {
         <span class="sqb-pill" id="d-count">0/3 placés</span>
       </div>
       <div class="sqb-deploy">
-        <div class="sqb-deploy-hint">Place tes <b>3 champions</b> sur les positions${terrainCard ? ' et ton <b>terrain</b>' : ''}.<br>Glisse une carte, ou <b>clique</b> une carte puis une position (mobile).</div>
+        <div class="sqb-deploy-hint">Place tes <b>3 champions</b> sur les positions${terrainCard ? ' et ton <b>terrain</b>' : ''}.<br>Glisse une carte, ou <b>clique</b> une carte puis une position (mobile). <span style="color:#5a7a6a">L'équipement se pioche et s'attribue en combat.</span></div>
         <div class="sqb-positions" id="d-positions"></div>
         ${terrainCard ? `<div style="display:flex;justify-content:center"><div class="sqb-terrain-slot" id="d-terrain"></div></div>` : ''}
         <div class="sqb-hand" id="d-hand"></div>
@@ -349,7 +386,7 @@ function runDeployment(root, squad, difficulty) {
     });
     wrap.querySelector('#d-start').addEventListener('click', () => {
       if (placedIds().length < 3) return;
-      resolve({ slots: positions.filter(Boolean), terrain: terrainSlot });
+      resolve({ slots: positions.filter(Boolean), terrain: terrainSlot, equipmentDeck: squad.equipmentDeck });
     });
     wrap.querySelector('#d-quit').addEventListener('click', () => { backToHub(root); resolve(null); });
 
@@ -363,6 +400,8 @@ function startCombat(root, playerSquad, cards, difficulty) {
   let state = createSquadBattle(playerSquad, enemySquad);
   let selected = null;
   let busy = false;
+  let pickedHand = null;     // index de la carte d'équipement sélectionnée (main)
+  let replaceChamp = null;   // index du champion en attente d'un choix de remplacement
   const stats = { damageDealt: 0, highestHit: 0, skillsUsed: 0, activesUsed: 0, eventsUsed: 0 };
 
   const wrap = document.createElement('div');
@@ -380,6 +419,7 @@ function startCombat(root, playerSquad, cards, difficulty) {
       <div class="sqb-log" id="sq-log"></div>
       <div class="sqb-side sqb-side-player" id="sq-player"></div>
     </div>
+    <div class="sqb-hand-combat" id="sq-hand"></div>
     <div class="sqb-actions" id="sq-actions"></div>`;
   root.innerHTML = '';
   root.appendChild(wrap);
@@ -387,6 +427,7 @@ function startCombat(root, playerSquad, cards, difficulty) {
   const enemyZone = wrap.querySelector('#sq-enemy');
   const playerZone = wrap.querySelector('#sq-player');
   const logEl = wrap.querySelector('#sq-log');
+  const handEl = wrap.querySelector('#sq-hand');
   const actionBar = wrap.querySelector('#sq-actions');
 
   function bar(side, color) {
@@ -402,16 +443,20 @@ function startCombat(root, playerSquad, cards, difficulty) {
     const rc = RC[ch.rarity] || '#9da7b3';
     const cd = side.skillCooldowns?.[ch.id] || 0;
     const isSel = sideKey === 'player' && selected === i;
+    const equipable = sideKey === 'player' && pickedHand != null && state.phase === 'player_turn';
     const cls = 'sqb-champ' + (sideKey === 'player' ? ' clk' : '') + (isSel ? ' sel' : '')
-      + (ch.actedThisTurn && sideKey === 'player' ? ' acted' : '');
-    const eq = ch.equipment.map(e => TI[e.type] || '🔧').join(' ');
+      + (ch.actedThisTurn && sideKey === 'player' ? ' acted' : '') + (equipable ? ' equipable' : '');
     const badge = cd > 0 ? '⏳' + cd : (ch.skill ? '✨' : '');
+    // En attente d'un remplacement : l'équipement devient des cibles cliquables.
+    const eqLine = (sideKey === 'player' && replaceChamp === i)
+      ? ch.equipment.map((e, ei) => `<span class="sqb-replace" data-replace="${i}:${ei}">${TI[e.type] || '🔧'}✕</span>`).join('')
+      : ch.equipment.map(e => TI[e.type] || '🔧').join(' ') + (sideKey === 'player' ? ` <span style="color:#3a6655">${ch.equipment.length}/${ch.slots}</span>` : '');
     return `<div class="${cls}" data-champ="${sideKey}:${i}" style="border-color:${isSel ? '#00f5c4' : rc + '55'}">
       <span class="badge">${badge}</span>
       <img src="${cardImg(ch.id)}" onerror="this.style.display='none'">
       <div class="nm" style="color:${rc}">${ch.name}</div>
       <div class="st"><span>⚔${championAttackPower(side, i)}</span><span>${ch.energy}⚡</span></div>
-      <div class="eq">${eq}</div>
+      <div class="eq">${eqLine}</div>
     </div>`;
   }
 
@@ -425,13 +470,53 @@ function startCombat(root, playerSquad, cards, difficulty) {
       <div class="sqb-side-lbl" style="color:#00f5c4;justify-content:flex-end">TON ESCOUADE ⬢</div>`;
     logEl.innerHTML = `<div class="vs">— ⚔ —</div>` + state.log.slice(-6).map(l => `<div>${l.replace(/</g,'&lt;')}</div>`).join('');
     logEl.scrollTop = logEl.scrollHeight;
-    playerZone.querySelectorAll('[data-champ^="player"]').forEach(el => el.addEventListener('click', () => {
-      if (busy || state.phase !== 'player_turn') return;
+    playerZone.querySelectorAll('[data-champ^="player"]').forEach(el => {
       const i = +el.dataset.champ.split(':')[1];
-      selected = (selected === i) ? null : i;
-      render();
-    }));
+      el.addEventListener('click', (ev) => {
+        if (busy || state.phase !== 'player_turn') return;
+        const chip = ev.target.closest('.sqb-replace');
+        if (chip) { const [ci, ei] = chip.dataset.replace.split(':').map(Number); tryEquip(ci, ei); return; }
+        if (pickedHand != null) { tryEquip(i); return; }   // équiper la carte choisie
+        selected = (selected === i) ? null : i; replaceChamp = null; render();
+      });
+      el.addEventListener('dragover', (e) => { if (pickedHand != null) e.preventDefault(); });
+      el.addEventListener('drop', (e) => { e.preventDefault(); if (pickedHand != null) tryEquip(i); });
+    });
+    renderHand();
     renderActions();
+  }
+
+  function tryEquip(championIndex, replaceIdx = null) {
+    if (pickedHand == null) return;
+    const r = equipCard(state, 'player', championIndex, pickedHand, replaceIdx);
+    if (!r.ok) {
+      if (r.needsReplace) { replaceChamp = championIndex; render(); flashLog('Emplacements pleins — choisis une carte à remplacer.'); return; }
+      flashLog(r.reason); return;
+    }
+    state = r.state; pickedHand = null; replaceChamp = null;
+    render();
+  }
+
+  function renderHand() {
+    if (!state.player.useDeck) { handEl.style.display = 'none'; return; }
+    const hand = state.player.equipHand;
+    const picking = pickedHand != null;
+    handEl.innerHTML = `<div class="sqb-hand-lbl">MAIN ÉQUIPEMENT · <b>${hand.length}</b> · deck ${state.player.equipDeck.length} · défausse ${state.player.equipDiscard.length}${picking ? ' — clique un champion pour équiper' : ''}</div><div class="sqb-hand-row" id="sq-hand-row"></div>`;
+    const row = handEl.querySelector('#sq-hand-row');
+    if (!hand.length) { row.innerHTML = `<span class="sqb-hint">Main vide — tu pioches 3 cartes au début de ton tour.</span>`; return; }
+    hand.forEach((card, idx) => {
+      const cost = actionCost(card);
+      const affordable = state.player.energy >= cost && state.phase === 'player_turn';
+      const d = document.createElement('div');
+      d.className = 'sqb-hcard' + (pickedHand === idx ? ' picked' : '') + (affordable ? '' : ' dim');
+      d.draggable = true;
+      d.innerHTML = `<img src="${cardImg(card.id)}" onerror="this.style.display='none'">
+        <div class="nm">${card.name}</div>
+        <div class="st">${TI[card.type] || '🔧'} ${cost}⚡ · ⚔${card.power || 0} 🛡${card.shield || 0}</div>`;
+      d.addEventListener('click', () => { pickedHand = (pickedHand === idx) ? null : idx; replaceChamp = null; render(); });
+      d.addEventListener('dragstart', () => { pickedHand = idx; replaceChamp = null; });
+      row.appendChild(d);
+    });
   }
 
   function btn(label, enabled, onClick, color = '#00f5c4') {
@@ -484,13 +569,13 @@ function startCombat(root, playerSquad, cards, difficulty) {
     if (dmg > stats.highestHit) stats.highestHit = dmg;
     if (action.type === 'skill') stats.skillsUsed++;
     if (action.type === 'active') { stats.activesUsed++; if (equip?.type === 'Event') stats.eventsUsed++; }
-    selected = null;
+    selected = null; pickedHand = null; replaceChamp = null;
     render();
     if (getSquadResult(state)) return finish();
   }
   function endTurn() {
     if (busy) return;
-    busy = true; selected = null;
+    busy = true; selected = null; pickedHand = null; replaceChamp = null;
     state = endSquadPlayerTurn(state, difficulty);
     busy = false;
     render();

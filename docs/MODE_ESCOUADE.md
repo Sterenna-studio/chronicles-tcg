@@ -233,10 +233,17 @@ incohérent.
   une phase de déploiement (glisser-déposer / tap les 3 champions sur 3 positions +
   le terrain — **visuel**, l'ordre placé = ordre des `champions[0..2]`), puis le
   combat avec une UI redessinée. « Rejouer » garde la disposition (`skipDeploy`).
-- 🟡 **Phase B à faire — équipement « en main »** : pioche 3 cartes objet/tour,
-  attribuer/réattribuer aux champions, échanger. Remplacera l'équipement figé du
-  loadout. Règles à arrêter : source du deck, coût d'équipement, défausse vs main,
-  max 3/champion. (Moteur + UI + IA + Atelier impactés.)
+- ✅ **Phase B1 — équipement « en main »** (moteur + UI combat) : deck de **20**
+  cartes, pioche **3/tour**, équiper un champion **coûte l'énergie de la carte**
+  (`actionCost`, pool partagé avec l'attaque → anti-stomp), **échange → défausse**,
+  emplacements **dynamiques** (`champion.slots`, défaut 3). Mode « deck » vs
+  « legacy » dans `squadEngine.makeSide` (le tuto + l'ennemi restent pré-équipés).
+  API moteur : `drawEquipment`, `equipCard`, `unequipCard`. Deck **temporaire**
+  (`buildEquipmentDeck` dans `squadBattle.js`) en attendant B2.
+- 🟡 **Phase B2 à faire** : vrai **constructeur de deck (20)** à l'Atelier +
+  `save_squad`/`load_squad` (colonne `equipment_deck`). Puis : IA ennemie qui
+  pioche/équipe (symétrie), défausse imposée par l'adversaire (idée), slots
+  modifiables par effets.
 - 💡 Pistes futures : animations de combat, plus de contenu de quêtes, équilibrage
   fin, mode « PV par champion » (le skillEngine a déjà des effets de ciblage prêts).
 

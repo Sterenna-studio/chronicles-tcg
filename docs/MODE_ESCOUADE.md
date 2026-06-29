@@ -32,6 +32,7 @@ il ne le remplace pas.
 | [logic/squadEngine.js](../logic/squadEngine.js) | **Moteur** du mode. Fonctions pures (chaque appel renvoie un nouvel état cloné). État de combat, attaque de base, skills, actifs, bouclier, pool PV, IA, résultat. |
 | [logic/skillEngine.js](../logic/skillEngine.js) | **Réutilisé** : ~30 effets de skills Champion (`effect` → logique). Le moteur d'escouade pose le champion actif puis appelle `useSkill`. |
 | [logic/sets.js](../logic/sets.js) | Source unique de vérité des sets jouables (`PLAYABLE_SET_IDS = ['BZH01']`). |
+| [logic/combatRecorder.js](../logic/combatRecorder.js) | **Enregistreur de combats** : capture setup (escouades+decks en ids) + actions du joueur (deploy/equip/act/endturn) + résultat → localStorage (40 derniers). Export JSON, copie, e-mail (`contact@sterenna.fr`). Pour replay/analyse. |
 | [tests/squadEngine.test.mjs](../tests/squadEngine.test.mjs) | **17 tests** du moteur (data: URL ESM, charge skillEngine via une URL séparée). |
 
 ### Vues (UI)
@@ -252,7 +253,14 @@ incohérent.
   attaquer). Comme il joue en second, la **difficulté = PV de l'ennemi** 🎚️
   (easy 22 / normal 30 / hard 42) + taille de deck (10/16/20). Sim miroir : hard
   bascule côté ennemi (≈8/6), easy/normal joueur-favorables, ~4-5 tours, sans blocage.
-- 🟡 **À venir** : défausse imposée par l'adversaire (idée), slots modifiables par effets.
+- ✅ **Enregistreur de combats** (`logic/combatRecorder.js`) : chaque combat
+  Escouade est journalisé (setup en ids + séquence d'actions du joueur + résultat)
+  en localStorage (40 derniers). Bouton **📜 Historique** à l'Atelier → **Exporter**
+  (JSON), **Copier**, **Envoyer** (mailto `contact@sterenna.fr` + téléchargement du
+  fichier à joindre), **Vider**. Format pensé pour rejouer/simuler.
+- 🟡 **À venir** : collecte serveur auto (table `tcg_combat_logs`) pour centraliser
+  sans e-mail ; replayer qui rejoue un record dans le moteur ; défausse imposée par
+  l'adversaire ; slots modifiables par effets.
 - 💡 Pistes futures : animations de combat, plus de contenu de quêtes, équilibrage
   fin, mode « PV par champion » (le skillEngine a déjà des effets de ciblage prêts).
 

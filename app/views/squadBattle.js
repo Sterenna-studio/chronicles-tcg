@@ -12,11 +12,12 @@ import {
   createSquadBattle, championAct, getSquadResult, endSquadPlayerTurn,
   championAttackPower, teamShield, canChampionAct, actionCost, equipCard,
   SQUAD_HP, DECK_SIZE,
-} from '../../logic/squadEngine.js?v=17';
-import { getClient } from '../../logic/supaRaw.js?v=17';
-import { url } from '../../logic/paths.js?v=17';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=17';
-import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=17';
+} from '../../logic/squadEngine.js?v=18';
+import { getClient } from '../../logic/supaRaw.js?v=18';
+import { url } from '../../logic/paths.js?v=18';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=18';
+import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=18';
+import { createRecorder } from '../../logic/combatRecorder.js?v=18';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -223,7 +224,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button class="sqb-ghost" id="go-atelier">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=17').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=18').then(m => m.renderSquadBuilder(root)));
     return;
   }
 
@@ -406,6 +407,15 @@ function startCombat(root, playerSquad, cards, difficulty) {
   let replaceChamp = null;   // index du champion en attente d'un choix de remplacement
   const stats = { damageDealt: 0, highestHit: 0, skillsUsed: 0, activesUsed: 0, eventsUsed: 0 };
 
+  // Enregistreur de combat (replay/analytics) — cf logic/combatRecorder.js
+  const sqIds = (sq) => ({
+    champions: (sq.slots || []).map(s => s.champion?.id).filter(Boolean),
+    terrain: sq.terrain?.id || null,
+    deck: (sq.equipmentDeck || []).map(c => c.id),
+  });
+  const rec = createRecorder({ app: 'escouade', difficulty, player: sqIds(playerSquad), enemy: sqIds(enemySquad) });
+  rec.event('deploy', { order: sqIds(playerSquad).champions, terrain: playerSquad.terrain?.id || null });
+
   const wrap = document.createElement('div');
   wrap.className = 'sqb-wrap';
   wrap.innerHTML = `
@@ -495,12 +505,14 @@ function startCombat(root, playerSquad, cards, difficulty) {
 
   function tryEquip(championIndex, replaceIdx = null) {
     if (pickedHand == null) return;
+    const card = state.player.equipHand[pickedHand];
     const r = equipCard(state, 'player', championIndex, pickedHand, replaceIdx);
     if (!r.ok) {
       if (r.needsReplace) { replaceChamp = championIndex; render(); flashLog('Emplacements pleins — choisis une carte à remplacer.'); return; }
       flashLog(r.reason); return;
     }
     state = r.state; pickedHand = null; replaceChamp = null;
+    rec.event('equip', { turn: state.turn, champ: championIndex, card: card?.id, replace: replaceIdx });
     render();
   }
 
@@ -576,6 +588,7 @@ function startCombat(root, playerSquad, cards, difficulty) {
     if (dmg > stats.highestHit) stats.highestHit = dmg;
     if (action.type === 'skill') stats.skillsUsed++;
     if (action.type === 'active') { stats.activesUsed++; if (equip?.type === 'Event') stats.eventsUsed++; }
+    rec.event('act', { turn: state.turn, champ: i, action: action.type, equip: action.equipIndex, dmg });
     selected = null; pickedHand = null; replaceChamp = null;
     render();
     if (getSquadResult(state)) return finish();
@@ -583,6 +596,7 @@ function startCombat(root, playerSquad, cards, difficulty) {
   function endTurn() {
     if (busy) return;
     busy = true; selected = null; pickedHand = null; replaceChamp = null;
+    rec.event('endturn', { turn: state.turn });
     state = endSquadPlayerTurn(state, difficulty);
     busy = false;
     render();
@@ -596,6 +610,7 @@ function startCombat(root, playerSquad, cards, difficulty) {
 
   async function finish() {
     const res = getSquadResult(state);
+    rec.finish({ winner: res.winner, turns: res.turns, playerHp: state.player.hp, enemyHp: state.enemy.hp, ...stats });
     let balanceTxt = '', questHtml = '', dailyHtml = '', challengeHtml = '';
     if (res.winner === 'player') {
       const claimed = await claimSquadQuests(difficulty);

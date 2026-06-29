@@ -3,9 +3,10 @@
 // DECK d'équipement (jusqu'à 20 cartes) qui se pioche/équipe EN COMBAT (Phase B2).
 // Sauvegarde via le RPC save_squad (payload : slots champions + terrain + deck).
 // Voir docs/MODE_ESCOUADE.md §8 et docs/RULES_JRPG.md §9 (persistance).
-import { getClient, getUser } from '../../logic/supaRaw.js?v=17';
-import { url } from '../../logic/paths.js?v=17';
-import { playableSets } from '../../logic/sets.js?v=17';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=18';
+import { url } from '../../logic/paths.js?v=18';
+import { playableSets } from '../../logic/sets.js?v=18';
+import { loadHistory, exportHistory, copyHistory, emailHistory, clearHistory, RECORDER_EMAIL } from '../../logic/combatRecorder.js?v=18';
 
 const DECK_MAX = 20;   // taille max du deck d'équipement (Phase B2)
 const EQUIP_TYPES = ['Object', 'Companion', 'Special', 'Event', 'Team'];
@@ -95,6 +96,7 @@ export async function renderSquadBuilder(root) {
     <span style="color:#00f5c4;font-family:'VT323',monospace;font-size:1.4em;letter-spacing:.15em">ATELIER D'ESCOUADE</span>
     <button id="sb-tuto" style="background:#bb55d322;border:1px solid #bb55d3;color:#bb55d3;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:.74em">📖 Tuto</button>
     <button id="sb-quests" style="background:#ffbe4622;border:1px solid #ffbe46;color:#ffbe46;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:.74em">🎯 Quêtes</button>
+    <button id="sb-history" style="background:#42b0ff22;border:1px solid #42b0ff;color:#42b0ff;padding:3px 10px;cursor:pointer;font-family:inherit;font-size:.74em">📜 Historique</button>
     <input id="sb-name" value="${squad.name.replace(/"/g,'&quot;')}" maxlength="32" style="background:#050d14;border:1px solid #0e2a1f;color:#c8ffe8;padding:4px 10px;font-family:inherit;font-size:.78em;width:160px">
     <div style="flex:1"></div>
     <input id="sb-search" placeholder="Chercher…" style="background:#050d14;border:1px solid #0e2a1f;color:#c8ffe8;padding:4px 10px;font-family:inherit;font-size:.78em;width:150px">
@@ -295,7 +297,7 @@ export async function renderSquadBuilder(root) {
       overlay.remove();
       const saved = await saveSquad(true);  // force active
       if (!saved) return;                    // combat seulement si la sauvegarde passe
-      const m = await import('./squadBattle.js?v=17');
+      const m = await import('./squadBattle.js?v=18');
       await m.renderSquadBattle(root, { difficulty: b.dataset.d });
     }));
     overlay.querySelector('#sb-diff-cancel').addEventListener('click', () => overlay.remove());
@@ -342,8 +344,54 @@ export async function renderSquadBuilder(root) {
     document.getElementById('app-root').style.display = 'none';
     document.querySelector('.shell').style.display = 'grid';
   });
-  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=17').then(m => m.renderSquadTutorial(root)));
+  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=18').then(m => m.renderSquadTutorial(root)));
   topbar.querySelector('#sb-quests').addEventListener('click', openQuestsModal);
+  topbar.querySelector('#sb-history').addEventListener('click', openHistoryModal);
+
+  // ── Historique des combats (enregistré localement) ─────────────────────────
+  function openHistoryModal() {
+    const hist = loadHistory();
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:20000;display:grid;place-items:center;padding:20px';
+    const rows = hist.length
+      ? hist.map(r => {
+          const w = r.result?.winner;
+          const col = w === 'player' ? '#22c55e' : w === 'draw' ? '#ffbe46' : '#ff2d4e';
+          const acts = (r.events || []).filter(e => e.type === 'act').length;
+          const eqs  = (r.events || []).filter(e => e.type === 'equip').length;
+          return `<div style="border:1px solid #0e2a1f;border-radius:8px;padding:8px 10px;background:#04060a;display:flex;justify-content:space-between;gap:10px;align-items:center">
+            <div style="min-width:0">
+              <div style="font-size:.72em;color:#c8ffe8">${r.ts.slice(0,16).replace('T',' ')} · <span style="color:#8ab4a0">${r.difficulty}</span></div>
+              <div style="font-size:.62em;color:#5a7a6a">${acts} actions · ${eqs} équip · ${r.events?.length||0} évts</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:.74em;color:${col}">${w === 'player' ? 'Victoire' : w === 'draw' ? 'Nul' : 'Défaite'}</div>
+              <div style="font-size:.62em;color:#5a7a6a">${r.result?.turns ?? '?'} tours · ${r.result?.damageDealt ?? 0} dmg</div>
+            </div></div>`;
+        }).join('')
+      : `<div style="color:#3a6655;font-size:.8em;text-align:center;padding:14px">Aucun combat enregistré. Joue une partie d'escouade !</div>`;
+    overlay.innerHTML = `<div style="background:#05080d;border:1px solid #42b0ff;border-radius:14px;padding:20px 22px;font-family:'Share Tech Mono',monospace;color:#c8ffe8;width:min(480px,94vw);max-height:84vh;display:flex;flex-direction:column">
+      <div style="font-family:'VT323',monospace;font-size:1.5em;color:#42b0ff;letter-spacing:.18em;margin-bottom:4px">📜 HISTORIQUE DES COMBATS</div>
+      <div style="font-size:.64em;color:#5a7a6a;margin-bottom:12px">${hist.length} combat(s) enregistré(s) localement · pour analyse / simulation</div>
+      <div style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:12px">${rows}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button id="h-export" style="background:#00f5c422;border:1px solid #00f5c4;color:#00f5c4;padding:8px;cursor:pointer;font-family:inherit;font-size:.76em;border-radius:8px">⬇ Exporter (JSON)</button>
+        <button id="h-copy" style="background:transparent;border:1px solid #3a6655;color:#8ab4a0;padding:8px;cursor:pointer;font-family:inherit;font-size:.76em;border-radius:8px">📋 Copier</button>
+        <button id="h-mail" style="background:#42b0ff22;border:1px solid #42b0ff;color:#42b0ff;padding:8px;cursor:pointer;font-family:inherit;font-size:.76em;border-radius:8px;grid-column:1/-1">✉ Envoyer à ${RECORDER_EMAIL}</button>
+        <button id="h-clear" style="background:transparent;border:1px solid #ff2d4e55;color:#ff6f8a;padding:8px;cursor:pointer;font-family:inherit;font-size:.72em;border-radius:8px">🗑 Vider</button>
+        <button id="h-close" style="background:transparent;border:1px solid #3a6655;color:#3a6655;padding:8px;cursor:pointer;font-family:inherit;font-size:.72em;border-radius:8px">Fermer</button>
+      </div>
+      <div id="h-msg" style="font-size:.66em;text-align:center;min-height:16px;margin-top:8px"></div></div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    const msg = (t, c = '#22c55e') => { const e = overlay.querySelector('#h-msg'); if (e) e.innerHTML = `<span style="color:${c}">${t}</span>`; };
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    overlay.querySelector('#h-close').addEventListener('click', close);
+    overlay.querySelector('#h-export').addEventListener('click', () => { exportHistory(); msg('Fichier téléchargé ✅'); });
+    overlay.querySelector('#h-copy').addEventListener('click', async () => msg(await copyHistory() ? 'Copié ✅' : 'Copie impossible', '#ffbe46'));
+    overlay.querySelector('#h-mail').addEventListener('click', () => { emailHistory(); msg('Mail ouvert + fichier téléchargé à joindre'); });
+    overlay.querySelector('#h-clear').addEventListener('click', () => { if (confirm('Vider tout l\'historique des combats ?')) { clearHistory(); close(); } });
+  }
 
   async function openQuestsModal() {
     const overlay = document.createElement('div');

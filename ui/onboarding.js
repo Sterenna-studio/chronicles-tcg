@@ -1,4 +1,4 @@
-import { supabase } from '../shared/supabaseClient.js?v=18';
+import { supabase } from '../shared/supabaseClient.js?v=19';
 
 // ── Guard : rediriger si déjà connecté + onboarding fait ──────────────────
 async function guardOnboarding() {

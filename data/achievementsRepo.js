@@ -1,6 +1,6 @@
 // data/achievementsRepo.js — v1.0.0
 // 18 achievements across 5 categories, client-side eval against player + cards data
-import { getClient, getUser } from '../logic/supaRaw.js?v=18';
+import { getClient, getUser } from '../logic/supaRaw.js?v=19';
 
 // ── Tier palette keys ──────────────────────────────────────────────────────
 export const TIERS = { bronze: 'bronze', silver: 'silver', gold: 'gold', legendary: 'legendary' };

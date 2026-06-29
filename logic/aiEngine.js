@@ -1,7 +1,7 @@
 // logic/aiEngine.js — IA du combat (3 niveaux)
 // S'appuie sur l'API explicite-côté de battleEngine.js (plus de swap player/enemy).
 
-import { playCard, getBattleResult, FIELD_MAX } from './battleEngine.js?v=18';
+import { playCard, getBattleResult, FIELD_MAX } from './battleEngine.js?v=19';
 
 function playableIndices(hand, energy) {
   return hand.map((c, i) => ({ c, i })).filter(({ c }) => c.energy <= energy).map(({ i }) => i);

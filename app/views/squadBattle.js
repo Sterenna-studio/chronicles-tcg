@@ -12,12 +12,12 @@ import {
   createSquadBattle, championAct, getSquadResult, endSquadPlayerTurn,
   championAttackPower, teamShield, canChampionAct, actionCost, equipCard,
   SQUAD_HP, DECK_SIZE,
-} from '../../logic/squadEngine.js?v=18';
-import { getClient } from '../../logic/supaRaw.js?v=18';
-import { url } from '../../logic/paths.js?v=18';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=18';
-import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=18';
-import { createRecorder } from '../../logic/combatRecorder.js?v=18';
+} from '../../logic/squadEngine.js?v=19';
+import { getClient } from '../../logic/supaRaw.js?v=19';
+import { url } from '../../logic/paths.js?v=19';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=19';
+import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=19';
+import { createRecorder } from '../../logic/combatRecorder.js?v=19';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -75,8 +75,8 @@ const CSS = `
   .sqb-side-enemy{border-bottom:1px solid #0e2a1f;background:linear-gradient(180deg,#150509,#0a0508)}
   .sqb-side-player{border-top:1px solid #0e2a1f;background:linear-gradient(0deg,#05140d,#04100b)}
   .sqb-side-lbl{font-size:.64em;letter-spacing:.12em;margin-bottom:5px;display:flex;align-items:center;gap:6px}
-  .sqb-row{display:flex;gap:8px}
-  .sqb-champ{flex:1;min-width:0;border:1px solid #0e2a1f;border-radius:10px;padding:6px;background:#04060acc;position:relative;transition:border-color .15s,box-shadow .15s,transform .1s}
+  .sqb-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .sqb-champ{flex:0 0 120px;width:120px;border:1px solid #0e2a1f;border-radius:10px;padding:6px;background:#04060acc;position:relative;transition:border-color .15s,box-shadow .15s,transform .1s}
   .sqb-champ.clk{cursor:pointer}
   .sqb-champ.clk:hover{transform:translateY(-2px)}
   .sqb-champ.sel{border-color:#00f5c4;box-shadow:0 0 16px rgba(0,245,196,.3);background:#04140f}
@@ -116,7 +116,7 @@ const CSS = `
   .sqb-champ.equipable{border-color:#00f5c4 !important;box-shadow:0 0 12px rgba(0,245,196,.25)}
   .sqb-replace{display:inline-block;font-size:.62em;color:#ff8a8a;border:1px solid #ff2d4e55;border-radius:5px;padding:1px 5px;margin:1px 2px 0 0;cursor:pointer}
   .sqb-replace:hover{background:#ff2d4e22}
-  @media(max-width:560px){ .sqb-card{width:84px} .sqb-slot,.sqb-terrain-slot{width:96px} }
+  @media(max-width:560px){ .sqb-card{width:84px} .sqb-slot,.sqb-terrain-slot{width:96px} .sqb-champ{flex-basis:96px;width:96px} }
 `;
 function injectCss() {
   if (document.getElementById('sqb-css')) return;
@@ -224,7 +224,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button class="sqb-ghost" id="go-atelier">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=18').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=19').then(m => m.renderSquadBuilder(root)));
     return;
   }
 

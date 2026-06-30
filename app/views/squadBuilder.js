@@ -3,10 +3,11 @@
 // DECK d'équipement (jusqu'à 20 cartes) qui se pioche/équipe EN COMBAT (Phase B2).
 // Sauvegarde via le RPC save_squad (payload : slots champions + terrain + deck).
 // Voir docs/MODE_ESCOUADE.md §8 et docs/RULES_JRPG.md §9 (persistance).
-import { getClient, getUser } from '../../logic/supaRaw.js?v=20';
-import { url } from '../../logic/paths.js?v=20';
-import { playableSets } from '../../logic/sets.js?v=20';
-import { loadHistory, exportHistory, copyHistory, emailHistory, clearHistory, RECORDER_EMAIL } from '../../logic/combatRecorder.js?v=20';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=22';
+import { url } from '../../logic/paths.js?v=22';
+import { playableSets } from '../../logic/sets.js?v=22';
+import { loadHistory, exportHistory, copyHistory, emailHistory, clearHistory, RECORDER_EMAIL } from '../../logic/combatRecorder.js?v=22';
+import { attachCardPreview } from '../../ui/cardPreview.js?v=22';
 
 const DECK_MAX = 20;   // taille max du deck d'équipement (Phase B2)
 const EQUIP_TYPES = ['Object', 'Companion', 'Special', 'Event', 'Team'];
@@ -142,7 +143,7 @@ export async function renderSquadBuilder(root) {
       const ownedQty = owned[card.id] || 0;
       const exhausted = used >= ownedQty;
       const div = document.createElement('div');
-      div.title = `${card.name} — ${card.rarity}\n${card.type}${ROLE[card.type] ? ' ('+ROLE[card.type]+')' : ''}\n⚡${card.energy} ⚔${card.power} 🛡${card.shield}`;
+      div.title = `${card.name} — ${card.rarity}\n${card.type}${ROLE[card.type] ? ' ('+ROLE[card.type]+')' : ''}\n⚡${card.energy} ⚔${card.power} 🛡${card.shield}\n(clic droit : voir en grand)`;
       div.style.cssText = `border-radius:8px;border:1px solid ${exhausted ? '#0e2a1f' : rc+'88'};background:#04060a;overflow:hidden;cursor:${exhausted?'default':'pointer'};position:relative;transition:transform .15s,box-shadow .15s;${exhausted ? 'opacity:.4;' : ''}`;
       div.innerHTML = `
         <img src="${cardImg(card.id)}" alt="${card.name}" style="width:100%;aspect-ratio:2/3;object-fit:contain;background:#060c10;display:block" onerror="this.style.display='none'">
@@ -156,6 +157,7 @@ export async function renderSquadBuilder(root) {
         div.addEventListener('mouseleave', () => { div.style.transform = ''; div.style.boxShadow = ''; });
         div.addEventListener('click', () => addCard(card));
       }
+      attachCardPreview(div, card, { qty: ownedQty });
       grid.appendChild(div);
     });
   }
@@ -195,6 +197,7 @@ export async function renderSquadBuilder(root) {
       : `<div style="font-size:.72em;color:#3a6655">Champion ${i + 1} — <span style="color:#00f5c4">slot vide</span>${active ? ' (clique une carte Champion)' : ''}</div>`;
 
     el.innerHTML = head;   // l'équipement n'est plus figé par champion : il vit dans le deck
+    if (ch) attachCardPreview(el, () => squad.slots[i].champion);
     return el;
   }
 
@@ -225,6 +228,7 @@ export async function renderSquadBuilder(root) {
          <div style="font-size:.58em;color:#3a6655">Terrain d'équipe · +1 dégât / +1 garde</div></div>
          <button data-rm-terrain="1" style="background:transparent;border:none;color:#ff2d4e88;cursor:pointer;font-size:.9em">✕</button></div>`
       : `<div style="font-size:.72em;color:#3a6655">🌍 Terrain d'équipe — <span style="color:#00f5c4">optionnel</span> (clique une carte Terrain)</div>`;
+    if (t) attachCardPreview(terr, () => squad.terrain);
     list.appendChild(terr);
 
     // ── Deck d'équipement (pioché en combat) ──────────────────────────────────
@@ -234,7 +238,7 @@ export async function renderSquadBuilder(root) {
     const deckChips = dn
       ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${squad.deck.map((e, k) => {
           const erc = RC[e.rarity] || '#9da7b3';
-          return `<span title="${e.name} — ⚡${e.energy} ⚔${e.power} 🛡${e.shield}" style="position:relative;display:inline-flex;align-items:center;gap:3px;border:1px solid ${erc}66;border-radius:5px;padding:2px 16px 2px 5px;font-size:.6em;color:${erc};background:#060c10">
+          return `<span data-deck-idx="${k}" title="${e.name} — ⚡${e.energy} ⚔${e.power} 🛡${e.shield}&#10;(clic droit : voir en grand)" style="position:relative;display:inline-flex;align-items:center;gap:3px;border:1px solid ${erc}66;border-radius:5px;padding:2px 16px 2px 5px;font-size:.6em;color:${erc};background:#060c10">
             ${TI[e.type] || '🔧'} ${e.name.length > 14 ? e.name.slice(0, 13) + '…' : e.name}
             <button data-rm-deck="${k}" style="position:absolute;top:1px;right:1px;background:transparent;border:none;color:#ff2d4e99;cursor:pointer;font-size:1em;line-height:1">✕</button></span>`;
         }).join('')}</div>`
@@ -272,6 +276,10 @@ export async function renderSquadBuilder(root) {
     panel.querySelector('[data-rm-terrain]')?.addEventListener('click', e => {
       e.stopPropagation(); squad.terrain = null; renderGrid(); renderPanel();
     });
+    panel.querySelectorAll('[data-deck-idx]').forEach(span => {
+      const k = +span.dataset.deckIdx;
+      attachCardPreview(span, () => squad.deck[k]);
+    });
     panel.querySelector('#sb-active').addEventListener('change', e => { squad.is_active = e.target.checked; });
     if (ready) {
       panel.querySelector('#sb-save').addEventListener('click', saveSquad);
@@ -297,7 +305,7 @@ export async function renderSquadBuilder(root) {
       overlay.remove();
       const saved = await saveSquad(true);  // force active
       if (!saved) return;                    // combat seulement si la sauvegarde passe
-      const m = await import('./squadBattle.js?v=20');
+      const m = await import('./squadBattle.js?v=22');
       await m.renderSquadBattle(root, { difficulty: b.dataset.d });
     }));
     overlay.querySelector('#sb-diff-cancel').addEventListener('click', () => overlay.remove());
@@ -340,7 +348,7 @@ export async function renderSquadBuilder(root) {
 
   // ── Événements topbar ──────────────────────────────────────────────────────
   topbar.querySelector('#sb-back').addEventListener('click', () => { location.hash = '#/hub'; });
-  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=20').then(m => m.renderSquadTutorial(root)));
+  topbar.querySelector('#sb-tuto').addEventListener('click', () => import('./squadTutorial.js?v=22').then(m => m.renderSquadTutorial(root)));
   topbar.querySelector('#sb-quests').addEventListener('click', openQuestsModal);
   topbar.querySelector('#sb-history').addEventListener('click', openHistoryModal);
 

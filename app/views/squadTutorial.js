@@ -5,10 +5,11 @@
 import {
   createSquadBattle, championAct, getSquadResult,
   championAttackPower, teamShield, canChampionAct, SQUAD_HP,
-} from '../../logic/squadEngine.js?v=20';
-import { getClient } from '../../logic/supaRaw.js?v=20';
-import { url } from '../../logic/paths.js?v=20';
-import { playableSets } from '../../logic/sets.js?v=20';
+} from '../../logic/squadEngine.js?v=22';
+import { getClient } from '../../logic/supaRaw.js?v=22';
+import { url } from '../../logic/paths.js?v=22';
+import { playableSets } from '../../logic/sets.js?v=22';
+import { attachCardPreview } from '../../ui/cardPreview.js?v=22';
 
 const QUEST_ID = 'tuto_escouade';
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
@@ -141,6 +142,10 @@ export async function renderSquadTutorial(root) {
       selected = selected === i ? null : i;
       renderZones(); renderActions();
     }));
+    [enemyZone, playerZone].forEach(zone => zone.querySelectorAll('[data-champ]').forEach(el => {
+      const [sk, idx] = el.dataset.champ.split(':');
+      attachCardPreview(el, () => state[sk]?.champions[+idx]);
+    }));
     renderActions();
   }
 
@@ -206,7 +211,7 @@ export async function renderSquadTutorial(root) {
         <button id="t-home" style="background:transparent;border:1px solid #3a6655;color:#3a6655;padding:8px;cursor:pointer;font-family:inherit;font-size:.8em;border-radius:8px">← Retour au hub</button>
       </div></div>`;
     document.body.appendChild(overlay);
-    overlay.querySelector('#t-atelier').addEventListener('click', () => { overlay.remove(); import('./squadBuilder.js?v=20').then(m => m.renderSquadBuilder(root)); });
+    overlay.querySelector('#t-atelier').addEventListener('click', () => { overlay.remove(); import('./squadBuilder.js?v=22').then(m => m.renderSquadBuilder(root)); });
     overlay.querySelector('#t-home').addEventListener('click', () => { overlay.remove(); backToHub(); });
   }
 

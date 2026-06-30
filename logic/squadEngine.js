@@ -17,13 +17,14 @@
 //   startSquadTurn(sideKey, state)
 //   championAct(state, sideKey, championIndex, action)   action = {type:'basic'|'skill'|'active', equipIndex?}
 //   getSquadResult(state)
-//   autoPlaySquadTurn(state, sideKey)        // IA basique (lot 5 l'enrichira)
+//   autoPlaySquadTurn(state, sideKey, difficulty, onStep?)   // IA ; onStep = animation
+//   planAutoTurn(state, sideKey, difficulty) -> { frames, final }   // tour IA en frames
 //   endSquadPlayerTurn(state, difficulty)
 //   mulliganEquipment(state, sideKey)        // rebat la main d'ouverture (mode deck)
 //   openEnemyTurn(state, difficulty)         // l'ennemi prend la main et ouvre le combat
 //   Helpers UI : championAttackPower, teamShield, canChampionAct
 
-import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=22';
+import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=23';
 
 export const SQUAD_HP        = 30;
 export const ENERGY_MAX      = 7;
@@ -479,7 +480,7 @@ function pickAction(cands, difficulty, enemyHp) {
 
 // Phase d'équipement de l'IA (mode deck) : équipe quelques cartes en gardant de
 // l'énergie pour attaquer. easy = ramp lent, hard = plus agressif. 🎚️
-function aiEquip(state, sideKey, difficulty) {
+function aiEquip(state, sideKey, difficulty, onStep) {
   let s = state;
   const maxEquips = difficulty === 'hard' ? 2 : difficulty === 'easy' ? 1 : 1;
   const reserve = 1;   // énergie gardée pour au moins une attaque
@@ -498,15 +499,22 @@ function aiEquip(state, sideKey, difficulty) {
     const r = equipCard(s, sideKey, champIdx, cand.i);
     if (!r.ok) break;
     s = r.state;
+    if (onStep) onStep(s, { kind: 'equip', actor: champIdx });
   }
   return s;
 }
 
-export function autoPlaySquadTurn(state, sideKey, difficulty = 'normal') {
+/**
+ * Joue automatiquement le tour d'un camp (IA). `onStep(state, meta)` est appelé
+ * après CHAQUE action atomique (équipement puis actions de champions), ce qui
+ * permet à l'UI d'animer le tour étape par étape (cf planAutoTurn / squadBattle).
+ * meta = { kind:'equip'|'basic'|'skill'|'special'|'oneshot', actor:championIndex, action? }.
+ */
+export function autoPlaySquadTurn(state, sideKey, difficulty = 'normal', onStep = null) {
   let s = clone(state);
   if (s.phase === `${sideKey}_stunned`) return s;
 
-  s = aiEquip(s, sideKey, difficulty);   // l'IA s'équipe (mode deck) avant d'attaquer
+  s = aiEquip(s, sideKey, difficulty, onStep);   // l'IA s'équipe (mode deck) avant d'attaquer
 
   let guard = 0;
   let progressed = true;
@@ -523,10 +531,23 @@ export function autoPlaySquadTurn(state, sideKey, difficulty = 'normal') {
       const pick = pickAction(actionCandidates(s, sideKey, i), difficulty, s[other(sideKey)].hp);
       if (!pick) continue;
       const res = championAct(s, sideKey, i, pick.action);
-      if (res.ok) { s = res.state; progressed = true; if (s.phase === 'end') break; }
+      if (res.ok) { s = res.state; progressed = true; if (onStep) onStep(s, { kind: pick.kind, actor: i, action: pick.action }); if (s.phase === 'end') break; }
     }
   }
   return s;
+}
+
+/**
+ * Découpe le tour d'un camp en « frames » jouables un par un par l'UI (animation).
+ * Renvoie { frames, final } où chaque frame = { kind, actor, action?, state } est
+ * un instantané de l'état APRÈS l'action correspondante. `final` = état final.
+ */
+export function planAutoTurn(state, sideKey, difficulty = 'normal') {
+  const frames = [];
+  const final = autoPlaySquadTurn(state, sideKey, difficulty, (s, meta) => {
+    frames.push({ ...meta, state: clone(s) });
+  });
+  return { frames, final };
 }
 
 // ─── Wrapper : fin de tour joueur → IA ennemie → début tour joueur ───────────────

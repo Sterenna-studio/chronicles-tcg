@@ -1,5 +1,5 @@
 // data/cardsRepo.js — v1
-import { getClient, getUser } from '../logic/supaRaw.js?v=22';
+import { getClient, getUser } from '../logic/supaRaw.js?v=23';
 
 /**
  * Charge la collection du joueur depuis tcg_player_cards.

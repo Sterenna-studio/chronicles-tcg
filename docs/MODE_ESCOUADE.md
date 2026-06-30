@@ -259,6 +259,11 @@ incohérent.
   en localStorage (40 derniers). Bouton **📜 Historique** à l'Atelier → **Exporter**
   (JSON), **Copier**, **Envoyer** (mailto `contact@sterenna.fr` + téléchargement du
   fichier à joindre), **Vider**. Format pensé pour rejouer/simuler.
+- ✅ **Tour de l'IA animé** : l'ennemi ne joue plus instantanément — chaque action
+  (équipement puis attaque/skill/actif) est jouée pas à pas (~1 s), le champion qui
+  agit est **surligné** (glow rouge + ⚔) avant que les dégâts s'appliquent, et la barre
+  d'action affiche « L'adversaire joue son tour… ». Moteur : `autoPlaySquadTurn` accepte
+  un callback `onStep`, et `planAutoTurn` renvoie le tour en **frames** que l'UI anime.
 - ✅ **Séquence d'ouverture lore-cohérente** (sur l'arène, plus d'écran de déploiement
   séparé) : **Le Sceau d'ouverture** (initiative stylée — sceau goétique/glitch qui
   désigne un camp, qui **prend ou laisse la main** ; IA tranche si désignée) →

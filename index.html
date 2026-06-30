@@ -104,9 +104,11 @@
     .shop-item-name{font-weight:700;font-size:.78em}
     .shop-item-sub{font-size:.68em;color:var(--muted)}
     .shop-item-footer{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
-    .buy-btn{background:transparent;border:1px solid var(--cyan);color:var(--cyan);padding:3px 10px;cursor:pointer;font-family:var(--font);font-size:.72em}
+    .buy-group{display:flex;gap:4px}
+    .buy-btn{background:transparent;border:1px solid var(--cyan);color:var(--cyan);padding:3px 9px;cursor:pointer;font-family:var(--font);font-size:.72em;border-radius:4px}
     .buy-btn:disabled{border-color:var(--muted);color:var(--muted);cursor:default}
     .buy-btn:not(:disabled):hover{background:var(--cyan);color:#000}
+    .buy-btn.bulk{font-size:.68em;padding:3px 7px}
     /* TICKER */
     .ticker{grid-column:1/-1;border-top:1px solid var(--border);background:#020508;display:flex;align-items:center;overflow:hidden;font-size:.65em;letter-spacing:.1em;color:var(--muted)}.ticker-label{flex-shrink:0;padding:0 10px;color:var(--cyan);border-right:1px solid var(--border);height:100%;display:flex;align-items:center}.ticker-track{flex:1;overflow:hidden;position:relative;height:100%}.ticker-inner{display:inline-flex;gap:40px;white-space:nowrap;animation:tick 28s linear infinite;height:100%;align-items:center}@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}.ticker-sep{color:var(--border)}.t-on{color:var(--cyan)}.t-warn{color:var(--amber)}.sterenna{flex-shrink:0;padding:0 12px;border-left:1px solid var(--border);color:var(--muted);height:100%;display:flex;align-items:center;font-size:.9em;letter-spacing:.12em}.sterenna span{color:var(--cyan)}
     #app-root,#topbar{display:none}
@@ -268,14 +270,14 @@
 <div id="topbar"></div>
 
 <script type="module">
-import { getClient } from './logic/supaRaw.js?v=22';
-import { initPlayer, getDisplayName } from './data/supabaseData.js?v=22';
-import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=22';
-import { openOpeningOverlay } from './ui/openingOverlay.js?v=22';
-import { boot, navigate } from './app/router.js?v=22';
-import { getDailySquadChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=22';
-import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=22';
-import { renderOnboardingFunnel } from './ui/onboardingFunnel.js?v=22';
+import { getClient } from './logic/supaRaw.js?v=23';
+import { initPlayer, getDisplayName } from './data/supabaseData.js?v=23';
+import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=23';
+import { openOpeningOverlay } from './ui/openingOverlay.js?v=23';
+import { boot, navigate } from './app/router.js?v=23';
+import { getDailySquadChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=23';
+import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=23';
+import { renderOnboardingFunnel } from './ui/onboardingFunnel.js?v=23';
 
 // Réassigné dans init() avec sb/user/openView capturés ; appelé à chaque refreshHub.
 let refreshFunnel = async () => {};
@@ -309,7 +311,6 @@ async function renderShop(sb){
     shopList.innerHTML='';
     packs.forEach(p=>{
       const price = p.price ?? 100;
-      const canBuy = chronicles >= price;
       const imgSrc = `./assets/packs/${p.image_name||'set01.jpg'}`;
       const item = document.createElement('div');
       item.className='shop-item';
@@ -320,7 +321,11 @@ async function renderShop(sb){
           <div class="shop-item-sub">${p.card_count||'?'} cartes · Set ${p.set_id||'?'}</div>
           <div class="shop-item-footer">
             <span style="font-weight:700">✦ ${price}</span>
-            <button class="buy-btn" data-id="${p.id}" data-price="${price}" ${canBuy?'':'disabled'}>${canBuy?'Acheter':'Insuffisant'}</button>
+            <div class="buy-group">
+              <button class="buy-btn" data-id="${p.id}" data-qty="1" title="Acheter 1 pack (✦ ${price})" ${chronicles>=price?'':'disabled'}>Acheter</button>
+              <button class="buy-btn bulk" data-id="${p.id}" data-qty="5" title="Acheter 5 packs (✦ ${price*5})" ${chronicles>=price*5?'':'disabled'}>×5</button>
+              <button class="buy-btn bulk" data-id="${p.id}" data-qty="10" title="Acheter 10 packs (✦ ${price*10})" ${chronicles>=price*10?'':'disabled'}>×10</button>
+            </div>
           </div>
         </div>
       `;
@@ -329,15 +334,29 @@ async function renderShop(sb){
     shopList.querySelectorAll('.buy-btn').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         const packId = btn.dataset.id;
-        const price  = Number(btn.dataset.price);
-        btn.disabled=true;
+        const qty = Number(btn.dataset.qty)||1;
+        const group = [...btn.closest('.shop-item').querySelectorAll('.buy-btn')];
+        group.forEach(b=>b.disabled=true);
+        if(qty>1) showMsg(`Achat de ${qty} packs…`,'#8ab4a0');
         try{
-          const {data, error} = await sb.rpc('buy_pack_with_chronicles', {p_pack_type_id: packId});
-          if(error || !data?.ok){showMsg(data?.error||'Erreur achat','#ff8a8a');btn.disabled=false;return;}
-          showMsg(`✅ Pack acheté ! ✦ ${data.chronicles_remaining} restants`,'#22c55e');
+          // Le RPC est atomique (vérifie le solde côté serveur) → on le boucle ;
+          // si le solde s'épuise en cours de route, on s'arrête proprement.
+          let bought=0, remaining=null, lastErr=null;
+          for(let k=0;k<qty;k++){
+            const {data, error} = await sb.rpc('buy_pack_with_chronicles', {p_pack_type_id: packId});
+            if(error || !data?.ok){ lastErr = data?.error || error?.message || 'Erreur achat'; break; }
+            bought++; remaining = data.chronicles_remaining;
+          }
+          if(bought===0){ showMsg(lastErr||'Erreur achat','#ff8a8a'); group.forEach(b=>b.disabled=false); return; }
+          showMsg(
+            bought<qty
+              ? `✅ ${bought}/${qty} pack(s) — solde épuisé · ✦ ${remaining} restants`
+              : `✅ ${bought} pack${bought>1?'s':''} acheté${bought>1?'s':''} ! ✦ ${remaining} restants`,
+            bought<qty ? '#ffbe46' : '#22c55e'
+          );
           await refreshHub(sb);
           await renderShop(sb);
-        }catch(err){console.error(err);showMsg("Erreur achat",'#ff8a8a');btn.disabled=false;}
+        }catch(err){console.error(err);showMsg("Erreur achat",'#ff8a8a');group.forEach(b=>b.disabled=false);}
       });
     });
   }catch(e){console.warn('[shop]',e);shopList.innerHTML='<div style="padding:12px;color:#ff8a8a;font-size:.72em">Erreur boutique</div>';}
@@ -449,7 +468,7 @@ function updateStreakUI(streak, rewarded, amount){
 
 // ── ACHIEVEMENTS MODAL ────────────────────────────────────────
 async function openAchievementsModal(){
-  const { mount } = await import('./pages/achievementsWidget.js?v=22');
+  const { mount } = await import('./pages/achievementsWidget.js?v=23');
   const overlay=document.createElement('div');
   overlay.className='tcg-modal-overlay';
   overlay.innerHTML=`
@@ -468,7 +487,7 @@ async function openAchievementsModal(){
 
 // ── LEADERBOARD MODAL ─────────────────────────────────────────
 async function openLeaderboardModal(sb){
-  const { mount } = await import('./pages/leaderboardWidget.js?v=22');
+  const { mount } = await import('./pages/leaderboardWidget.js?v=23');
   const { data: { session } } = await sb.auth.getSession();
   const user = session?.user ?? null;
   const overlay=document.createElement('div');
@@ -573,7 +592,7 @@ async function init(){
     await renderShop(sb);
     renderDailyChallenges();
 
-    const { claimDailyReward } = await import('./logic/daily.js?v=22');
+    const { claimDailyReward } = await import('./logic/daily.js?v=23');
     const result = await claimDailyReward(sb, user.id);
     updateStreakUI(result.streak, result.rewarded, result.amount);
     // Le bonus est crédité via le ledger après le 1er refresh → resync l'affichage.

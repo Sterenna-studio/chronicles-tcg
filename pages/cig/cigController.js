@@ -1,6 +1,6 @@
 // pages/cig/cigController.js — v5
-import { getClient, getUser } from '../../logic/supaRaw.js?v=22';
-import { initPlayer, getDisplayName } from '../../data/supabaseData.js?v=22';
+import { getClient, getUser } from '../../logic/supaRaw.js?v=23';
+import { initPlayer, getDisplayName } from '../../data/supabaseData.js?v=23';
 
 (async function run() {
   try {

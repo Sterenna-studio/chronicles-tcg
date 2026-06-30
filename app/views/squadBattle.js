@@ -14,17 +14,17 @@
 //   emplacements dynamiques (champion.slots, défaut 3).
 //   ⚠️ Deck TEMPORAIRE (buildEquipmentDeck) si l'escouade n'a pas de deck Atelier.
 import {
-  createSquadBattle, championAct, getSquadResult, endSquadPlayerTurn,
+  createSquadBattle, championAct, getSquadResult, startSquadTurn, planAutoTurn,
   championAttackPower, teamShield, canChampionAct, actionCost, equipCard,
-  mulliganEquipment, openEnemyTurn,
-  SQUAD_HP, DECK_SIZE,
-} from '../../logic/squadEngine.js?v=22';
-import { getClient } from '../../logic/supaRaw.js?v=22';
-import { url } from '../../logic/paths.js?v=22';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=22';
-import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=22';
-import { createRecorder } from '../../logic/combatRecorder.js?v=22';
-import { attachCardPreview } from '../../ui/cardPreview.js?v=22';
+  mulliganEquipment,
+  SQUAD_HP, DECK_SIZE, ENERGY_MAX,
+} from '../../logic/squadEngine.js?v=23';
+import { getClient } from '../../logic/supaRaw.js?v=23';
+import { url } from '../../logic/paths.js?v=23';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=23';
+import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=23';
+import { createRecorder } from '../../logic/combatRecorder.js?v=23';
+import { attachCardPreview } from '../../ui/cardPreview.js?v=23';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -83,6 +83,15 @@ const CSS = `
   .sqb-champ.clk:hover{transform:translateY(-2px)}
   .sqb-champ.sel{border-color:#00f5c4;box-shadow:0 0 16px rgba(0,245,196,.3);background:#04140f}
   .sqb-champ.acted{opacity:.45}
+  .sqb-champ.acting{border-color:#ff5080 !important;box-shadow:0 0 26px rgba(255,80,80,.6);transform:translateY(-4px) scale(1.04);z-index:3;animation:sqb-acting 1s ease-in-out infinite}
+  .sqb-champ.acting::after{content:'⚔';position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:.9em;color:#ff5080;text-shadow:0 0 8px rgba(255,80,80,.8)}
+  @keyframes sqb-acting{0%,100%{box-shadow:0 0 18px rgba(255,80,80,.45)}50%{box-shadow:0 0 30px rgba(255,80,80,.85)}}
+  .sqb-enemy-turn{color:#ff6f8a;display:flex;align-items:center;gap:8px;font-size:.8em;letter-spacing:.04em}
+  .sqb-enemy-turn .dots{display:inline-flex;gap:3px}
+  .sqb-enemy-turn .dots i{width:5px;height:5px;border-radius:50%;background:#ff5080;animation:sqb-dot 1s infinite}
+  .sqb-enemy-turn .dots i:nth-child(2){animation-delay:.15s}
+  .sqb-enemy-turn .dots i:nth-child(3){animation-delay:.3s}
+  @keyframes sqb-dot{0%,100%{opacity:.25}50%{opacity:1}}
   .sqb-champ img{width:100%;aspect-ratio:2/3;object-fit:contain;background:#060c10;border-radius:6px}
   .sqb-champ .nm{font-size:.56em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
   .sqb-champ .st{font-size:.55em;color:#6fa694;display:flex;justify-content:space-between}
@@ -261,7 +270,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button class="sqb-ghost" id="go-atelier">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=22').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=23').then(m => m.renderSquadBuilder(root)));
     return;
   }
 
@@ -506,8 +515,10 @@ function startCombat(root, playerSquad, enemySquad, difficulty, first = 'player'
   let state = createSquadBattle(playerSquad, enemySquad);
   let selected = null;
   let busy = false;
+  let enemyActing = null;    // index du champion ennemi en train d'agir (animation)
   let pickedHand = null;     // index de la carte d'équipement sélectionnée (main)
   let replaceChamp = null;   // index du champion en attente d'un choix de remplacement
+  const delay = (ms) => new Promise(r => setTimeout(r, ms));
   const stats = { damageDealt: 0, highestHit: 0, skillsUsed: 0, activesUsed: 0, eventsUsed: 0 };
 
   // Enregistreur de combat (replay/analytics) — cf logic/combatRecorder.js
@@ -564,8 +575,10 @@ function startCombat(root, playerSquad, enemySquad, difficulty, first = 'player'
     const cd = side.skillCooldowns?.[ch.id] || 0;
     const isSel = sideKey === 'player' && selected === i;
     const equipable = sideKey === 'player' && pickedHand != null && state.phase === 'player_turn';
+    const acting = sideKey === 'enemy' && enemyActing === i;
     const cls = 'sqb-champ' + (sideKey === 'player' ? ' clk' : '') + (isSel ? ' sel' : '')
-      + (ch.actedThisTurn && sideKey === 'player' ? ' acted' : '') + (equipable ? ' equipable' : '');
+      + (ch.actedThisTurn && sideKey === 'player' ? ' acted' : '') + (equipable ? ' equipable' : '')
+      + (acting ? ' acting' : '');
     const badge = cd > 0 ? '⏳' + cd : (ch.skill ? '✨' : '');
     // En attente d'un remplacement : l'équipement devient des cibles cliquables.
     const eqLine = (sideKey === 'player' && replaceChamp === i)
@@ -640,7 +653,7 @@ function startCombat(root, playerSquad, enemySquad, difficulty, first = 'player'
       d.innerHTML = `<img src="${cardImg(card.id)}" onerror="this.style.display='none'">
         <div class="nm">${card.name}</div>
         <div class="st">${TI[card.type] || '🔧'} ${cost}⚡ · ⚔${card.power || 0} 🛡${card.shield || 0}</div>`;
-      d.addEventListener('click', () => { pickedHand = (pickedHand === idx) ? null : idx; replaceChamp = null; render(); });
+      d.addEventListener('click', () => { if (busy || state.phase !== 'player_turn') return; pickedHand = (pickedHand === idx) ? null : idx; replaceChamp = null; render(); });
       d.addEventListener('dragstart', () => { pickedHand = idx; replaceChamp = null; });
       attachCardPreview(d, card);
       row.appendChild(d);
@@ -657,7 +670,10 @@ function startCombat(root, playerSquad, enemySquad, difficulty, first = 'player'
   function renderActions() {
     actionBar.innerHTML = '';
     if (getSquadResult(state)) return;
-    if (state.phase !== 'player_turn') { actionBar.innerHTML = `<span class="sqb-hint">Tour adverse…</span>`; return; }
+    if (busy || state.phase !== 'player_turn') {
+      actionBar.innerHTML = `<span class="sqb-enemy-turn">⬢ L'adversaire joue son tour<span class="dots"><i></i><i></i><i></i></span></span>`;
+      return;
+    }
     if (selected == null) { actionBar.innerHTML = `<span class="sqb-hint">↑ Sélectionne un champion pour agir.</span>`; }
     else {
       const ch = state.player.champions[selected];
@@ -704,10 +720,46 @@ function startCombat(root, playerSquad, enemySquad, difficulty, first = 'player'
   }
   function endTurn() {
     if (busy) return;
-    busy = true; selected = null; pickedHand = null; replaceChamp = null;
+    selected = null; pickedHand = null; replaceChamp = null;
     rec.event('endturn', { turn: state.turn });
-    state = endSquadPlayerTurn(state, difficulty);
-    busy = false;
+    runEnemyTurn(false);
+  }
+
+  // Joue le tour ennemi en ANIMANT chaque action (~1 s) : on surligne le champion
+  // qui agit, on attend, puis on applique le résultat (dégâts + log). `opening` =
+  // l'ennemi a pris la main et ouvre le combat (pas de startSquadTurn joueur avant).
+  async function runEnemyTurn(opening) {
+    busy = true; selected = null; pickedHand = null; replaceChamp = null; enemyActing = null;
+    if (opening) {
+      state.enemy.energy = Math.min(state.turn, state.energyMax || ENERGY_MAX);
+      state.phase = 'enemy_turn';
+      state.log.push(`\n⚔️  L'adversaire ouvre la Chronique — Tour ${state.turn} · Énergie ${state.enemy.energy}`);
+    } else {
+      state = startSquadTurn('enemy', state);
+    }
+    render();
+    await delay(560);
+
+    if (state.phase === 'enemy_turn') {
+      const { frames, final } = planAutoTurn(state, 'enemy', difficulty);
+      if (!frames.length) await delay(350);
+      for (const f of frames) {
+        enemyActing = f.actor;        // surligne le champion qui agit
+        render();
+        await delay(820);
+        state = f.state;              // applique le résultat (dégâts, log)
+        enemyActing = null;
+        render();
+        await delay(280);
+        if (getSquadResult(state)) { busy = false; return finish(); }
+      }
+      state = final;
+    }
+
+    if (getSquadResult(state)) { busy = false; return finish(); }
+    if (opening) state.phase = 'player_turn';
+    else state = startSquadTurn('player', state);
+    busy = false; enemyActing = null;
     render();
     if (getSquadResult(state)) finish();
   }
@@ -767,9 +819,9 @@ function startCombat(root, playerSquad, enemySquad, difficulty, first = 'player'
 
   // ── Démarrage : mulligan d'ouverture → (si l'ennemi a la main) il ouvre. ──────
   function beginCombat() {
-    if (first === 'enemy') state = openEnemyTurn(state, difficulty);
     render();
-    if (getSquadResult(state)) finish();
+    if (first === 'enemy') runEnemyTurn(true);   // l'ennemi a la main : il ouvre (animé)
+    else if (getSquadResult(state)) finish();
   }
 
   // Mulligan : le joueur garde sa main d'ouverture, ou la rebat UNE fois.

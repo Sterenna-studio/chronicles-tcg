@@ -19,9 +19,11 @@
 //   getSquadResult(state)
 //   autoPlaySquadTurn(state, sideKey)        // IA basique (lot 5 l'enrichira)
 //   endSquadPlayerTurn(state, difficulty)
+//   mulliganEquipment(state, sideKey)        // rebat la main d'ouverture (mode deck)
+//   openEnemyTurn(state, difficulty)         // l'ennemi prend la main et ouvre le combat
 //   Helpers UI : championAttackPower, teamShield, canChampionAct
 
-import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=20';
+import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=22';
 
 export const SQUAD_HP        = 30;
 export const ENERGY_MAX      = 7;
@@ -223,6 +225,40 @@ export function createSquadBattle(playerSquad, enemySquad) {
   // Main d'ouverture (mode deck)
   if (s.player.useDeck) s = drawEquipment(s, 'player');
   if (s.enemy.useDeck)  s = drawEquipment(s, 'enemy');
+  return s;
+}
+
+/**
+ * Mulligan : rend la main d'ouverture au deck, rebat, et repioche autant de
+ * cartes. Un seul mulligan d'ouverture (la décision est prise côté UI). Mode deck
+ * uniquement ; no-op sinon.
+ */
+export function mulliganEquipment(state, sideKey) {
+  const s = clone(state);
+  const side = s[sideKey];
+  if (!side.useDeck) return s;
+  const n = side.equipHand.length;
+  side.equipDeck = shuffle([...side.equipDeck, ...side.equipHand]);
+  side.equipHand = [];
+  for (let i = 0; i < n && side.equipDeck.length; i++) side.equipHand.push(side.equipDeck.shift());
+  s.log.push(`  🔀 ${label(sideKey)} rebat sa main d'ouverture.`);
+  return s;
+}
+
+/**
+ * Initiative ennemie : l'ennemi « prend la main » et joue le tout premier tour
+ * (énergie du tour 1), puis rend la main au joueur. Utilisé quand le Sceau
+ * d'ouverture désigne l'ennemi et qu'il choisit d'ouvrir la Chronique. La main
+ * d'ouverture (3 cartes) a déjà été piochée par createSquadBattle.
+ */
+export function openEnemyTurn(state, difficulty = 'normal') {
+  let s = clone(state);
+  s.enemy.energy = Math.min(s.turn, s.energyMax);
+  s.phase = 'enemy_turn';
+  s.log.push(`\n⚔️  L'adversaire ouvre la Chronique — Tour ${s.turn} · Énergie ${s.enemy.energy}`);
+  s = autoPlaySquadTurn(s, 'enemy', difficulty);
+  if (getSquadResult(s)) { s.phase = 'end'; return s; }
+  s.phase = 'player_turn';
   return s;
 }
 

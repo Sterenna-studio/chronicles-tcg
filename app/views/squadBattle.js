@@ -1,34 +1,36 @@
 // app/views/squadBattle.js — Combat Mode Escouade (page dédiée).
-// Flux : DÉPLOIEMENT (glisser-déposer des 3 champions sur les positions + terrain,
-// placement visuel) → COMBAT (moteur logic/squadEngine.js). Récompenses via le
-// ledger (quêtes, bonus quotidien, défis du jour, or de combat). Voir docs/RULES_JRPG.md.
+// Séquence d'ouverture, directement sur l'arène (plus d'écran de déploiement séparé) :
+//   1) LE SCEAU D'OUVERTURE (runOpeningSeal) — sceau goétique/glitch qui désigne un
+//      camp ; le camp désigné PREND ou LAISSE la main (= ouvre la Chronique : déploie
+//      et agit en premier). Si l'ennemi est désigné, l'IA tranche.
+//   2) DÉPLOIEMENT chacun-son-tour (runPlacement) — chaque camp pose UN champion à
+//      son tour, en alternance, en commençant par le camp qui a la main.
+//   3) COMBAT (startCombat) — mulligan d'ouverture (garder/rebattre la main), puis si
+//      l'ennemi a la main il joue le 1er tour (openEnemyTurn). Moteur logic/squadEngine.js.
+// Récompenses via le ledger (quêtes, bonus quotidien, défis du jour, or). Voir docs/RULES_JRPG.md.
 //
-// Phase A : UI + déploiement (drag&drop des champions + terrain).
-// Phase B1 (cette version) : équipement « en main » — deck de 20, pioche 3/tour,
-//   équiper un champion coûte l'énergie de la carte (pool partagé avec l'attaque),
-//   échange → défausse, emplacements dynamiques (champion.slots, défaut 3).
-//   ⚠️ Deck TEMPORAIRE (buildEquipmentDeck) ; B2 = vrai constructeur à l'Atelier.
+// Équipement « en main » : deck de 20, pioche 3/tour, équiper un champion coûte
+//   l'énergie de la carte (pool partagé avec l'attaque), échange → défausse,
+//   emplacements dynamiques (champion.slots, défaut 3).
+//   ⚠️ Deck TEMPORAIRE (buildEquipmentDeck) si l'escouade n'a pas de deck Atelier.
 import {
   createSquadBattle, championAct, getSquadResult, endSquadPlayerTurn,
   championAttackPower, teamShield, canChampionAct, actionCost, equipCard,
+  mulliganEquipment, openEnemyTurn,
   SQUAD_HP, DECK_SIZE,
-} from '../../logic/squadEngine.js?v=20';
-import { getClient } from '../../logic/supaRaw.js?v=20';
-import { url } from '../../logic/paths.js?v=20';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=20';
-import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=20';
-import { createRecorder } from '../../logic/combatRecorder.js?v=20';
+} from '../../logic/squadEngine.js?v=22';
+import { getClient } from '../../logic/supaRaw.js?v=22';
+import { url } from '../../logic/paths.js?v=22';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=22';
+import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=22';
+import { createRecorder } from '../../logic/combatRecorder.js?v=22';
+import { attachCardPreview } from '../../ui/cardPreview.js?v=22';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
 const DIFF = { easy:'🟢 FACILE', normal:'🔵 NORMAL', hard:'🔴 DIFFICILE' };
 const cardImg = (id) => url(`/assets/cards/${id}.jpg`);
 const rnd = (a) => a[Math.floor(Math.random() * a.length)];
-
-// Puissance d'attaque prévue d'un slot {champion, equipment} (avant combat).
-const slotAtk = (s) => (s.champion.power || 0) +
-  (s.equipment || []).filter(e => ['Object','Companion'].includes(e.type)).reduce((a, e) => a + (e.power || 0), 0);
-const slotShield = (s) => (s.equipment || []).filter(e => ['Object','Companion'].includes(e.type)).reduce((a, e) => a + (e.shield || 0), 0);
 
 // Deck d'équipement TEMPORAIRE (B1) : l'équipement déjà choisi dans l'escouade +
 // complément aléatoire jusqu'à 20 cartes jouables. ⚠️ Remplacé en B2 par un vrai
@@ -117,6 +119,43 @@ const CSS = `
   .sqb-replace{display:inline-block;font-size:.62em;color:#ff8a8a;border:1px solid #ff2d4e55;border-radius:5px;padding:1px 5px;margin:1px 2px 0 0;cursor:pointer}
   .sqb-replace:hover{background:#ff2d4e22}
   @media(max-width:560px){ .sqb-card{width:84px} .sqb-slot,.sqb-terrain-slot{width:96px} .sqb-champ{flex-basis:96px;width:96px} }
+  /* ── Sceau d'ouverture (initiative) ── */
+  .sqb-seal-ov{position:fixed;inset:0;z-index:21000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;background:radial-gradient(120% 90% at 50% 30%,#0a1622 0%,#04060a 72%);font-family:'Share Tech Mono','Courier New',monospace;color:#c8ffe8;text-align:center;animation:sqb-fade .25s ease-out}
+  .sqb-seal-title{font-family:'VT323',monospace;font-size:2em;letter-spacing:.28em;color:#9be7ff;text-shadow:0 0 14px rgba(120,200,255,.45)}
+  .sqb-seal-sub{font-size:.82em;color:#7c93a6;max-width:420px;line-height:1.6;font-style:italic}
+  .sqb-seal-ring{position:relative;width:180px;height:180px;display:grid;place-items:center}
+  .sqb-seal-ring::before{content:'';position:absolute;inset:0;border-radius:50%;padding:4px;background:conic-gradient(#00f5c4,#42b0ff,#ff5080,#bb55d3,#00f5c4);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:sqb-spin 1s linear infinite;filter:drop-shadow(0 0 10px rgba(80,180,255,.5))}
+  .sqb-seal-ring.locked::before{animation:none;background:var(--seal-col)}
+  .sqb-seal-glyph{font-size:3.4em;line-height:1;filter:drop-shadow(0 0 12px currentColor);animation:sqb-flick .12s steps(2) infinite}
+  .sqb-seal-ring.locked .sqb-seal-glyph{animation:none}
+  .sqb-seal-verdict{font-family:'VT323',monospace;font-size:1.5em;letter-spacing:.18em;min-height:1.2em}
+  .sqb-seal-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:sqb-rise .3s ease-out}
+  .sqb-seal-pick{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:170px;padding:14px 18px;border-radius:12px;cursor:pointer;font-family:inherit;background:#05080d;transition:transform .12s,box-shadow .15s,filter .12s}
+  .sqb-seal-pick:hover{transform:translateY(-3px);filter:brightness(1.15)}
+  .sqb-seal-pick b{font-size:1em;letter-spacing:.08em}
+  .sqb-seal-pick small{font-size:.66em;color:#8ab4a0;line-height:1.4}
+  .sqb-seal-pick.take{border:1px solid #00f5c4;box-shadow:0 0 18px rgba(0,245,196,.18);color:#00f5c4}
+  .sqb-seal-pick.leave{border:1px solid #ff8a8a;box-shadow:0 0 18px rgba(255,80,80,.12);color:#ff8a8a}
+  .sqb-seal-quit{background:transparent;border:none;color:#3a6655;cursor:pointer;font-family:inherit;font-size:.74em;margin-top:4px}
+  /* ── Déploiement chacun-son-tour (sur l'arène) ── */
+  .sqb-place-status{font-size:.84em;letter-spacing:.06em;text-align:center;padding:4px 0}
+  .sqb-place-status b{font-family:'VT323',monospace;font-size:1.15em}
+  .sqb-slot.placed-in{animation:sqb-drop .32s cubic-bezier(.2,1.3,.5,1)}
+  .sqb-reserve{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:8px 0}
+  .sqb-reserve .sqb-card.disabled{opacity:.4;cursor:default;filter:grayscale(.5)}
+  .sqb-reserve .sqb-card.live{border-color:#00f5c4;box-shadow:0 0 12px rgba(0,245,196,.22)}
+  /* ── Mulligan ── */
+  .sqb-mull-ov{position:fixed;inset:0;z-index:21000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:rgba(2,5,8,.92);font-family:'Share Tech Mono',monospace;color:#c8ffe8;text-align:center;animation:sqb-fade .2s ease-out}
+  .sqb-mull-hand{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .sqb-mull-hand .mc{width:96px;border:1px solid #0e2a1f;border-radius:10px;padding:6px;background:#05080d}
+  .sqb-mull-hand .mc img{width:100%;aspect-ratio:2/3;object-fit:contain;background:#060c10;border-radius:6px}
+  .sqb-mull-hand .mc .nm{font-size:.56em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+  .sqb-mull-hand .mc .st{font-size:.54em;color:#7fb3a0}
+  @keyframes sqb-spin{to{transform:rotate(360deg)}}
+  @keyframes sqb-flick{0%{opacity:1}50%{opacity:.55}100%{opacity:1}}
+  @keyframes sqb-fade{from{opacity:0}to{opacity:1}}
+  @keyframes sqb-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes sqb-drop{from{opacity:0;transform:translateY(-14px) scale(.9)}to{opacity:1;transform:none}}
 `;
 function injectCss() {
   if (document.getElementById('sqb-css')) return;
@@ -222,7 +261,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button class="sqb-ghost" id="go-atelier">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=20').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=22').then(m => m.renderSquadBuilder(root)));
     return;
   }
 
@@ -235,169 +274,235 @@ export async function renderSquadBattle(root, opts = {}) {
   // Les champions démarrent nus : l'équipement se joue depuis la main en combat.
   playerSquad.slots = playerSquad.slots.map(s => ({ ...s, equipment: [] }));
 
-  // Rejouer : on saute le déploiement (même disposition).
-  const arranged = (opts.skipDeploy && opts.playerSquad)
-    ? playerSquad
-    : await runDeployment(root, playerSquad, difficulty);
-  if (!arranged) return; // quitté pendant le déploiement
-  startCombat(root, arranged, cards, difficulty);
+  const enemySquad = generateEnemySquad(cards, difficulty);
+
+  // Rejouer : on saute la séquence d'ouverture (même disposition, le joueur ouvre).
+  if (opts.skipDeploy && opts.playerSquad) {
+    startCombat(root, playerSquad, enemySquad, difficulty, 'player', { skipSetup: true });
+    return;
+  }
+
+  // ── Séquence d'ouverture, directement sur l'arène ──
+  // 1) Le Sceau d'ouverture désigne un camp → il PREND ou LAISSE la main.
+  const first = await runOpeningSeal(root, difficulty);
+  if (!first) return;                                       // renoncé au Sceau
+  // 2) Déploiement chacun-son-tour : le camp à la main place son champion en premier.
+  const arranged = await runPlacement(root, playerSquad, enemySquad, first, difficulty);
+  if (!arranged) return;                                    // quitté au déploiement
+  // 3) Combat : mulligan d'ouverture, puis si l'ennemi a la main, il ouvre la Chronique.
+  startCombat(root, arranged, enemySquad, difficulty, first);
 }
 
-// ── Phase DÉPLOIEMENT ─────────────────────────────────────────────────────────
-function runDeployment(root, squad, difficulty) {
+// ── Ouverture 1/2 : LE SCEAU D'OUVERTURE (initiative, lore Chronicles) ───────────
+// Un sceau goétique/glitch tourne puis désigne un camp. Le camp désigné choisit
+// « prendre la main » (ouvrir la Chronique : déployer + agir en premier) ou
+// « laisser la main ». Si l'ennemi est désigné, l'IA tranche et révèle son choix.
+// Résout 'player' | 'enemy' (= qui ouvre), ou null si on renonce.
+function runOpeningSeal(root, difficulty) {
   return new Promise((resolve) => {
-    const hand = squad.slots.map(s => ({ ...s }));   // {champion, equipment}
-    const terrainCard = squad.terrain || null;
-    const positions = [null, null, null];            // slots placés (gauche→droite)
-    let terrainSlot = null;
-    let picked = null;   // { kind:'champ', id } | { kind:'terrain' }
+    const ov = document.createElement('div');
+    ov.className = 'sqb-seal-ov';
+    ov.innerHTML = `
+      <div class="sqb-seal-title">LE SCEAU D'OUVERTURE</div>
+      <div class="sqb-seal-sub">Le Sceau de Lemegeton s'embrase et tourne… Il tranche qui, cette nuit, <b>ouvre la Chronique</b> — et frappe le premier.</div>
+      <div class="sqb-seal-ring" id="seal-ring"><div class="sqb-seal-glyph" id="seal-glyph">🜲</div></div>
+      <div class="sqb-seal-verdict" id="seal-verdict">&nbsp;</div>
+      <div id="seal-choice"></div>
+      <button class="sqb-seal-quit" id="seal-quit">✕ Renoncer au combat</button>`;
+    root.innerHTML = '';
+    root.appendChild(ov);
+
+    const ring = ov.querySelector('#seal-ring');
+    const glyph = ov.querySelector('#seal-glyph');
+    const verdict = ov.querySelector('#seal-verdict');
+    const choice = ov.querySelector('#seal-choice');
+    let done = false;
+    const finish = (side) => { if (!done) { done = true; resolve(side); } };
+    ov.querySelector('#seal-quit').addEventListener('click', () => { finish(null); backToHub(); });
+
+    const glyphs = ['🜲', '⛧', '✶', '🜏', '◈', '⬡', '✷', '⟁', '🝳'];
+    const flick = setInterval(() => { glyph.textContent = rnd(glyphs); }, 110);
+
+    setTimeout(() => {
+      clearInterval(flick);
+      const designated = Math.random() < 0.5 ? 'player' : 'enemy';
+      const col = designated === 'player' ? '#00f5c4' : '#ff5080';
+      ring.style.setProperty('--seal-col', col);
+      ring.classList.add('locked');
+      glyph.textContent = designated === 'player' ? '⬢' : '⬣';
+      glyph.style.color = col;
+      verdict.style.color = col;
+      verdict.textContent = designated === 'player' ? 'LE SCEAU TE DÉSIGNE' : "LE SCEAU DÉSIGNE L'ADVERSAIRE";
+
+      if (designated === 'player') {
+        choice.className = 'sqb-seal-actions';
+        choice.innerHTML = `
+          <div class="sqb-seal-pick take" id="pick-take"><b>✊ PRENDRE LA MAIN</b><small>Tu ouvres la Chronique :<br>tu déploies et agis en premier.</small></div>
+          <div class="sqb-seal-pick leave" id="pick-leave"><b>✋ LAISSER LA MAIN</b><small>L'adversaire ouvre :<br>tu réponds ensuite.</small></div>`;
+        choice.querySelector('#pick-take').addEventListener('click', () => finish('player'));
+        choice.querySelector('#pick-leave').addEventListener('click', () => finish('enemy'));
+      } else {
+        choice.innerHTML = `<div class="sqb-seal-sub" style="margin-top:6px">L'adversaire consulte le Code…</div>`;
+        setTimeout(() => {
+          // L'IA prend l'initiative (tempo) ; en facile elle la cède parfois.
+          const aiTakes = difficulty === 'easy' ? Math.random() < 0.5 : true;
+          const opener = aiTakes ? 'enemy' : 'player';
+          const c2 = aiTakes ? '#ff5080' : '#00f5c4';
+          choice.className = 'sqb-seal-actions';
+          choice.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+            <div class="sqb-seal-verdict" style="color:${c2}">${aiTakes ? "L'ADVERSAIRE PREND LA MAIN" : "L'ADVERSAIRE TE LAISSE LA MAIN"}</div>
+            <button class="sqb-cta" id="seal-go">${aiTakes ? 'Il ouvre la Chronique ▶' : "À toi d'ouvrir ▶"}</button></div>`;
+          choice.querySelector('#seal-go').addEventListener('click', () => finish(opener));
+        }, 1100);
+      }
+    }, 1700);
+  });
+}
+
+// ── Ouverture 2/2 : DÉPLOIEMENT chacun-son-tour, sur l'arène ────────────────────
+// Plus d'écran séparé : on montre directement le plateau de combat (escouades vides)
+// et chaque camp pose UN champion à son tour, en alternance, en commençant par le
+// camp qui a la main. Résout la disposition du joueur (et réordonne l'ennemi pour
+// que le combat affiche le même ordre), ou null si on quitte.
+function runPlacement(root, playerSquad, enemySquad, first, difficulty) {
+  return new Promise((resolve) => {
+    const pChamps = playerSquad.slots.map(s => s.champion);             // à placer (ordre choisi par le joueur)
+    const eQueue  = [...enemySquad.slots.map(s => s.champion)].sort(() => Math.random() - 0.5);
+    const pPos = [null, null, null];
+    const ePos = [null, null, null];
+    let placedP = 0, placedE = 0;
+    let turn = first;
+    let picking = false;
 
     const wrap = document.createElement('div');
     wrap.className = 'sqb-wrap';
     wrap.innerHTML = `
       <div class="sqb-top">
-        <button class="sqb-quit" id="d-quit">✕ Quitter</button>
+        <button class="sqb-quit" id="pl-quit">✕ Quitter</button>
         <span class="sqb-title">DÉPLOIEMENT</span>
         <span class="sqb-pill">${DIFF[difficulty]}</span>
         <div style="flex:1"></div>
-        <span class="sqb-pill" id="d-count">0/3 placés</span>
+        <span class="sqb-pill" id="pl-count">0/6 déployés</span>
       </div>
-      <div class="sqb-deploy">
-        <div class="sqb-deploy-hint">Place tes <b>3 champions</b> sur les positions${terrainCard ? ' et ton <b>terrain</b>' : ''}.<br>Glisse une carte, ou <b>clique</b> une carte puis une position (mobile). <span style="color:#5a7a6a">L'équipement se pioche et s'attribue en combat.</span></div>
-        <div class="sqb-positions" id="d-positions"></div>
-        ${terrainCard ? `<div style="display:flex;justify-content:center"><div class="sqb-terrain-slot" id="d-terrain"></div></div>` : ''}
-        <div class="sqb-hand" id="d-hand"></div>
-        <div class="sqb-deploy-actions">
-          <button class="sqb-ghost" id="d-auto">⚡ Déploiement auto</button>
-          <button class="sqb-cta" id="d-start" disabled>COMMENCER LE COMBAT ▶</button>
+      <div class="sqb-arena">
+        <div class="sqb-side sqb-side-enemy">
+          <div class="sqb-side-lbl" style="color:#ff6f8a">⬣ ESCOUADE ADVERSE</div>
+          <div class="sqb-row" id="pl-enemy"></div>
         </div>
+        <div class="sqb-log" style="display:flex;align-items:center;justify-content:center">
+          <div class="sqb-place-status" id="pl-status">…</div>
+        </div>
+        <div class="sqb-side sqb-side-player">
+          <div class="sqb-row" id="pl-player"></div>
+          <div class="sqb-side-lbl" style="color:#00f5c4;justify-content:flex-end">TON ESCOUADE ⬢</div>
+        </div>
+      </div>
+      <div class="sqb-hand-combat">
+        <div class="sqb-hand-lbl">RÉSERVE — clique un champion pour le déployer</div>
+        <div class="sqb-reserve" id="pl-reserve"></div>
       </div>`;
     root.innerHTML = '';
     root.appendChild(wrap);
 
-    const elPos  = wrap.querySelector('#d-positions');
-    const elTerr = wrap.querySelector('#d-terrain');
-    const elHand = wrap.querySelector('#d-hand');
-    const elStart= wrap.querySelector('#d-start');
-    const elCount= wrap.querySelector('#d-count');
+    const elEnemy = wrap.querySelector('#pl-enemy');
+    const elPlayer = wrap.querySelector('#pl-player');
+    const elReserve = wrap.querySelector('#pl-reserve');
+    const elStatus = wrap.querySelector('#pl-status');
+    const elCount = wrap.querySelector('#pl-count');
 
-    const placedIds = () => positions.filter(Boolean).map(s => s.champion.id);
-    const inHand = () => hand.filter(s => !placedIds().includes(s.champion.id));
-
-    function cardHtml(slot) {
-      const rc = RC[slot.champion.rarity] || '#9da7b3';
-      const eq = (slot.equipment || []).map(e => TI[e.type] || '🔧').join('');
-      return `<img src="${cardImg(slot.champion.id)}" onerror="this.style.display='none'">
-        <div class="nm" style="color:${rc}">${slot.champion.name}</div>
-        <div class="st"><span>⚔${slotAtk(slot)}</span><span>🛡${slotShield(slot)}</span></div>
-        <div class="st" style="color:#5a7a6a">${eq || '—'}</div>`;
+    function filled(ch) {
+      const rc = RC[ch.rarity] || '#9da7b3';
+      const d = document.createElement('div');
+      d.className = 'sqb-champ placed-in';
+      d.style.borderColor = rc + '66';
+      d.innerHTML = `<img src="${cardImg(ch.id)}" onerror="this.style.display='none'">
+        <div class="nm" style="color:${rc}">${ch.name}</div>
+        <div class="st"><span>⚔${ch.power || 0}</span><span>${ch.energy || 0}⚡</span></div>`;
+      attachCardPreview(d, ch);
+      return d;
     }
-
-    function render() {
-      // Positions
-      elPos.innerHTML = '';
-      positions.forEach((slot, i) => {
-        const d = document.createElement('div');
-        d.className = 'sqb-slot' + (slot ? ' filled' : '') + (picked?.kind === 'champ' && !slot ? ' target' : '');
-        if (slot) {
-          d.innerHTML = cardHtml(slot);
-          d.title = 'Cliquer pour retirer';
-        } else {
-          d.innerHTML = `<div class="sqb-slot-num">${i + 1}</div><div class="sqb-slot-lbl">POSITION</div>`;
-        }
-        d.addEventListener('dragover', (e) => { e.preventDefault(); d.classList.add('over'); });
-        d.addEventListener('dragleave', () => d.classList.remove('over'));
-        d.addEventListener('drop', (e) => { e.preventDefault(); d.classList.remove('over'); onDropChamp(i); });
-        d.addEventListener('click', () => onSlotClick(i));
-        elPos.appendChild(d);
-      });
-      // Terrain
-      if (elTerr) {
-        elTerr.className = 'sqb-terrain-slot' + (picked?.kind === 'terrain' ? ' target' : '');
-        if (terrainSlot) {
-          elTerr.innerHTML = `<div style="font-size:1.5em">🌍</div><div style="font-size:.58em;color:#9be15d;max-width:108px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${terrainSlot.name}</div>`;
-        } else {
-          elTerr.innerHTML = `<div style="font-size:1.4em;opacity:.4">🌍</div><div class="sqb-slot-lbl">TERRAIN</div>`;
-        }
-        elTerr.ondragover = (e) => { e.preventDefault(); elTerr.classList.add('over'); };
-        elTerr.ondragleave = () => elTerr.classList.remove('over');
-        elTerr.ondrop = (e) => { e.preventDefault(); elTerr.classList.remove('over'); if (picked?.kind === 'terrain' || draggingTerrain) placeTerrain(); };
-        elTerr.onclick = () => { if (terrainSlot) { terrainSlot = null; render(); } else if (picked?.kind === 'terrain') placeTerrain(); };
-      }
-      // Main
-      elHand.innerHTML = '';
-      inHand().forEach((slot) => {
+    function empty(n) {
+      const d = document.createElement('div');
+      d.className = 'sqb-slot';
+      d.style.cssText = 'width:120px;flex:0 0 120px';
+      d.innerHTML = `<div class="sqb-slot-num">${n}</div><div class="sqb-slot-lbl">POSITION</div>`;
+      return d;
+    }
+    const renderRow = (el, pos) => { el.innerHTML = ''; pos.forEach((ch, i) => el.appendChild(ch ? filled(ch) : empty(i + 1))); };
+    function renderReserve() {
+      const remain = pChamps.filter(ch => !pPos.some(p => p?.id === ch.id));
+      elReserve.innerHTML = '';
+      if (!remain.length) { elReserve.innerHTML = `<div class="sqb-hint" style="padding:10px">Tous tes champions sont déployés.</div>`; return; }
+      remain.forEach((ch) => {
+        const rc = RC[ch.rarity] || '#9da7b3';
         const c = document.createElement('div');
-        c.className = 'sqb-card' + (picked?.kind === 'champ' && picked.id === slot.champion.id ? ' picked' : '');
-        c.draggable = true;
-        c.innerHTML = cardHtml(slot);
-        c.addEventListener('dragstart', () => { picked = { kind: 'champ', id: slot.champion.id }; draggingTerrain = false; });
-        c.addEventListener('click', () => { picked = (picked?.id === slot.champion.id) ? null : { kind: 'champ', id: slot.champion.id }; render(); });
-        elHand.appendChild(c);
+        c.className = 'sqb-card' + (picking ? ' live' : ' disabled');
+        c.innerHTML = `<img src="${cardImg(ch.id)}" onerror="this.style.display='none'">
+          <div class="nm" style="color:${rc}">${ch.name}</div>
+          <div class="st"><span>⚔${ch.power || 0}</span><span>🛡${ch.shield || 0}</span></div>`;
+        attachCardPreview(c, ch);
+        if (picking) c.addEventListener('click', () => placePlayer(ch));
+        elReserve.appendChild(c);
       });
-      if (terrainCard && !terrainSlot) {
-        const t = document.createElement('div');
-        t.className = 'sqb-card' + (picked?.kind === 'terrain' ? ' picked' : '');
-        t.draggable = true;
-        t.style.width = '104px';
-        t.innerHTML = `<img src="${cardImg(terrainCard.id)}" onerror="this.style.display='none'">
-          <div class="nm" style="color:#9be15d">${terrainCard.name}</div>
-          <div class="st" style="color:#5a7a6a">🌍 Terrain</div>`;
-        t.addEventListener('dragstart', () => { picked = { kind: 'terrain' }; draggingTerrain = true; });
-        t.addEventListener('click', () => { picked = picked?.kind === 'terrain' ? null : { kind: 'terrain' }; render(); });
-        elHand.appendChild(t);
-      }
-      if (!inHand().length && (!terrainCard || terrainSlot)) {
-        elHand.innerHTML = `<div class="sqb-hint" style="padding:10px">Tout est placé — prêt au combat !</div>`;
-      }
-      // État
-      const n = placedIds().length;
-      elCount.textContent = `${n}/3 placés`;
-      elStart.disabled = n < 3;
+    }
+    function renderAll() {
+      renderRow(elEnemy, ePos);
+      renderRow(elPlayer, pPos);
+      renderReserve();
+      elCount.textContent = `${placedP + placedE}/6 déployés`;
     }
 
-    let draggingTerrain = false;
-
-    function firstEmpty() { return positions.findIndex(p => !p); }
-    function placeChampAt(i) {
-      if (!picked || picked.kind !== 'champ') return;
-      const slot = hand.find(s => s.champion.id === picked.id);
-      if (!slot) return;
-      // retire-le d'une position existante (déplacement)
-      const cur = positions.findIndex(p => p && p.champion.id === slot.champion.id);
-      if (cur >= 0) positions[cur] = null;
-      positions[i] = slot;
-      picked = null;
-      render();
+    function placePlayer(ch) {
+      if (turn !== 'player' || !picking || placedP >= 3) return;
+      pPos[placedP++] = ch; picking = false;
+      renderAll(); advance();
     }
-    function onDropChamp(i) { if (picked?.kind === 'champ') placeChampAt(i); }
-    function onSlotClick(i) {
-      if (positions[i]) {            // retirer → revient en main
-        positions[i] = null; picked = null; render();
-      } else if (picked?.kind === 'champ') {
-        placeChampAt(i);
+    function placeEnemy() {
+      if (placedE >= 3) return;
+      ePos[placedE] = eQueue[placedE]; placedE++;
+      renderAll(); advance();
+    }
+    function finalize() {
+      elStatus.innerHTML = `<b style="color:#00f5c4">DÉPLOIEMENT TERMINÉ</b>`;
+      enemySquad.slots = ePos.filter(Boolean).map(ch => ({ champion: ch }));   // même ordre au combat
+      setTimeout(() => resolve({
+        slots: pPos.filter(Boolean).map(ch => ({ champion: ch })),
+        terrain: playerSquad.terrain || null,
+        equipmentDeck: playerSquad.equipmentDeck,
+      }), 540);
+    }
+    function advance() {
+      if (placedP >= 3 && placedE >= 3) return finalize();
+      const otherSide = turn === 'player' ? 'enemy' : 'player';
+      const remaining = (s) => (s === 'player' ? 3 - placedP : 3 - placedE);
+      if (remaining(otherSide) > 0) turn = otherSide;
+      step();
+    }
+    function step() {
+      if (turn === 'enemy') {
+        picking = false; renderReserve();
+        elStatus.innerHTML = `<b style="color:#ff6f8a">L'ADVERSAIRE DÉPLOIE…</b>`;
+        setTimeout(placeEnemy, 680);
+      } else {
+        picking = true; renderReserve();
+        elStatus.innerHTML = `<b style="color:#00f5c4">À TOI</b><br><span style="font-size:.82em;color:#8ab4a0">choisis un champion à déployer</span>`;
       }
     }
-    function placeTerrain() { terrainSlot = terrainCard; picked = null; render(); }
 
-    wrap.querySelector('#d-auto').addEventListener('click', () => {
-      hand.forEach((s, i) => { if (i < 3) positions[i] = s; });
-      if (terrainCard) terrainSlot = terrainCard;
-      picked = null; render();
-    });
-    wrap.querySelector('#d-start').addEventListener('click', () => {
-      if (placedIds().length < 3) return;
-      resolve({ slots: positions.filter(Boolean), terrain: terrainSlot, equipmentDeck: squad.equipmentDeck });
-    });
-    wrap.querySelector('#d-quit').addEventListener('click', () => { resolve(null); backToHub(); });
+    wrap.querySelector('#pl-quit').addEventListener('click', () => { resolve(null); backToHub(); });
 
-    render();
+    elStatus.innerHTML = first === 'player'
+      ? `<b style="color:#00f5c4">TU AS LA MAIN</b><br><span style="font-size:.82em;color:#8ab4a0">tu déploies en premier</span>`
+      : `<b style="color:#ff6f8a">L'ADVERSAIRE A LA MAIN</b><br><span style="font-size:.82em;color:#8ab4a0">il déploie en premier</span>`;
+    renderAll();
+    setTimeout(step, 880);
   });
 }
 
 // ── Phase COMBAT ─────────────────────────────────────────────────────────────
-function startCombat(root, playerSquad, cards, difficulty) {
-  const enemySquad = generateEnemySquad(cards, difficulty);
+// `first` = qui ouvre (a pris la main) : 'player' | 'enemy'.
+// setupOpts.skipSetup : saute mulligan + ouverture (rejouer).
+function startCombat(root, playerSquad, enemySquad, difficulty, first = 'player', setupOpts = {}) {
   let state = createSquadBattle(playerSquad, enemySquad);
   let selected = null;
   let busy = false;
@@ -497,6 +602,11 @@ function startCombat(root, playerSquad, cards, difficulty) {
       el.addEventListener('dragover', (e) => { if (pickedHand != null) e.preventDefault(); });
       el.addEventListener('drop', (e) => { e.preventDefault(); if (pickedHand != null) tryEquip(i); });
     });
+    // Clic droit / appui long sur n'importe quel champion (ami ou ennemi) → aperçu.
+    [enemyZone, playerZone].forEach(zone => zone.querySelectorAll('[data-champ]').forEach(el => {
+      const [sk, idx] = el.dataset.champ.split(':');
+      attachCardPreview(el, () => state[sk]?.champions[+idx]);
+    }));
     renderHand();
     renderActions();
   }
@@ -532,6 +642,7 @@ function startCombat(root, playerSquad, cards, difficulty) {
         <div class="st">${TI[card.type] || '🔧'} ${cost}⚡ · ⚔${card.power || 0} 🛡${card.shield || 0}</div>`;
       d.addEventListener('click', () => { pickedHand = (pickedHand === idx) ? null : idx; replaceChamp = null; render(); });
       d.addEventListener('dragstart', () => { pickedHand = idx; replaceChamp = null; });
+      attachCardPreview(d, card);
       row.appendChild(d);
     });
   }
@@ -653,5 +764,43 @@ function startCombat(root, playerSquad, cards, difficulty) {
   }
 
   wrap.querySelector('#sq-flee').addEventListener('click', () => backToHub());
-  render();
+
+  // ── Démarrage : mulligan d'ouverture → (si l'ennemi a la main) il ouvre. ──────
+  function beginCombat() {
+    if (first === 'enemy') state = openEnemyTurn(state, difficulty);
+    render();
+    if (getSquadResult(state)) finish();
+  }
+
+  // Mulligan : le joueur garde sa main d'ouverture, ou la rebat UNE fois.
+  function runMulligan() {
+    if (!state.player.useDeck || !state.player.equipHand.length) return beginCombat();
+    const ov = document.createElement('div');
+    ov.className = 'sqb-mull-ov';
+    let used = false;
+    const handHtml = () => state.player.equipHand.map(c => `
+      <div class="mc"><img src="${cardImg(c.id)}" onerror="this.style.display='none'">
+        <div class="nm" style="color:${RC[c.rarity] || '#9da7b3'}">${c.name}</div>
+        <div class="st">${TI[c.type] || '🔧'} ⚔${c.power || 0} 🛡${c.shield || 0}</div></div>`).join('');
+    const paint = () => {
+      ov.innerHTML = `
+        <div class="sqb-seal-title" style="font-size:1.6em;color:#9be7ff">LA MAIN D'OUVERTURE</div>
+        <div class="sqb-seal-sub">Les premières cartes que t'offre le Code. <b>Garde-les</b>… ou <b>rebats tout</b> une fois pour tenter un meilleur tirage.</div>
+        <div class="sqb-mull-hand">${handHtml()}</div>
+        <div class="sqb-seal-actions">
+          <button class="sqb-cta" id="mull-keep">✊ Garder la main</button>
+          ${used ? '' : '<button class="sqb-ghost" id="mull-shuffle">🔀 Rebattre les cartes</button>'}
+        </div>
+        ${used ? `<div class="sqb-hint">Nouveau tirage tranché — pas de second remélange.</div>` : ''}`;
+      ov.querySelector('#mull-keep').addEventListener('click', () => { ov.remove(); beginCombat(); });
+      const sh = ov.querySelector('#mull-shuffle');
+      if (sh) sh.addEventListener('click', () => { state = mulliganEquipment(state, 'player'); used = true; paint(); });
+    };
+    paint();
+    document.body.appendChild(ov);
+  }
+
+  render();                          // peuple l'arène (escouades déployées) derrière l'overlay
+  if (setupOpts.skipSetup) beginCombat();
+  else runMulligan();
 }

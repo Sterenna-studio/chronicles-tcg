@@ -39,11 +39,12 @@ il ne le remplace pas.
 | Fichier | Rôle |
 |---|---|
 | [app/views/squadBuilder.js](../app/views/squadBuilder.js) | **Atelier d'escouade** : grille collection, 3 slots champion + équipement, slot Terrain, sauvegarde (`save_squad`), boutons Tuto / Quêtes / Combattre. |
-| [app/views/squadBattle.js](../app/views/squadBattle.js) | **Page de combat dédiée** : phase **DÉPLOIEMENT** (glisser-déposer / tap-pour-placer les 3 champions sur les positions + le terrain, placement **visuel**) → **COMBAT** (UI redessinée, CSS `.sqb-*` injecté). Charge l'escouade active (`load_squad`), génère un ennemi, overlay victoire, récompenses + quêtes + défis (ledger). |
+| [app/views/squadBattle.js](../app/views/squadBattle.js) | **Page de combat dédiée**, avec **séquence d'ouverture sur l'arène** : (1) **Le Sceau d'ouverture** `runOpeningSeal` — sceau goétique/glitch qui désigne un camp ; il **PREND** ou **LAISSE la main** (ouvre la Chronique = déploie + agit en 1er ; IA tranche si désignée). (2) **Déploiement chacun-son-tour** `runPlacement` — chaque camp pose 1 champion en alternance, le camp à la main commence. (3) **Combat** `startCombat` — **mulligan** d'ouverture (garder/rebattre la main), puis si l'ennemi a la main il joue le 1er tour (`openEnemyTurn`). CSS `.sqb-*` injecté. Charge `load_squad`, génère l'ennemi, overlay victoire, récompenses + quêtes + défis (ledger). |
 | [app/views/squadTutorial.js](../app/views/squadTutorial.js) | **Tuto scénarisé** : escouade fixe, ennemi faible passif, bulles d'aide étape par étape, quête `tuto_escouade`. |
 | [app/router.js](../app/router.js) | Routes `#/squad-builder`, `#/squad-battle`, `#/squad-tuto`. |
 | [ui/onboardingFunnel.js](../ui/onboardingFunnel.js) | **Parcours d'initiation** : bandeau hub qui guide le nouveau joueur (kit → booster → ouverture → tuto Escouade). Cf §9. |
 | [index.html](../index.html) | Carte module **ESCOUADE** du hub + handler `openView('#/squad-builder')` ; hôte `#onboarding-funnel` + écouteur `hub:refresh`. |
+| [ui/cardPreview.js](../ui/cardPreview.js) | **Aperçu carte en grand** (partagé) : `attachCardPreview(el, card\|()=>card, {qty?})` câble un **clic droit** (desktop) / **appui long** (tactile) qui ouvre une grande carte + stats (⚡⚔🛡) + skill + desc. Branché à l'Atelier (grille, slots, terrain, deck), au déploiement, au combat (champions amis/ennemis + main équipement) et au tuto. Ferme : fond / ✕ / Échap. |
 
 ### Données / docs
 | Fichier | Rôle |
@@ -258,6 +259,17 @@ incohérent.
   en localStorage (40 derniers). Bouton **📜 Historique** à l'Atelier → **Exporter**
   (JSON), **Copier**, **Envoyer** (mailto `contact@sterenna.fr` + téléchargement du
   fichier à joindre), **Vider**. Format pensé pour rejouer/simuler.
+- ✅ **Séquence d'ouverture lore-cohérente** (sur l'arène, plus d'écran de déploiement
+  séparé) : **Le Sceau d'ouverture** (initiative stylée — sceau goétique/glitch qui
+  désigne un camp, qui **prend ou laisse la main** ; IA tranche si désignée) →
+  **déploiement chacun-son-tour** (1 champion par camp en alternance, le camp à la
+  main commence) → **mulligan d'ouverture** (garder/rebattre la main d'équipement) →
+  combat (celui qui a pris la main agit en premier). Moteur : `mulliganEquipment`,
+  `openEnemyTurn`. Thème : chaque combat = une *Chronique* qu'on « ouvre ».
+- ✅ **Aperçu carte en grand** (`ui/cardPreview.js`) : **clic droit** (ou appui long
+  tactile) sur n'importe quelle carte → overlay grande image + stats + skill + desc.
+  Câblé partout (Atelier : grille/slots/terrain/deck ; déploiement ; combat :
+  champions amis & ennemis + main d'équipement ; tuto). Composant autonome réutilisable.
 - 🟡 **À venir** : collecte serveur auto (table `tcg_combat_logs`) pour centraliser
   sans e-mail ; replayer qui rejoue un record dans le moteur ; défausse imposée par
   l'adversaire ; slots modifiables par effets.

@@ -1,7 +1,7 @@
-import { renderCollection }  from './views/collection.js?v=20';
-import { renderSquadBuilder } from './views/squadBuilder.js?v=20';
-import { renderSquadBattle }  from './views/squadBattle.js?v=20';
-import { renderSquadTutorial } from './views/squadTutorial.js?v=20';
+import { renderCollection }  from './views/collection.js?v=22';
+import { renderSquadBuilder } from './views/squadBuilder.js?v=22';
+import { renderSquadBattle }  from './views/squadBattle.js?v=22';
+import { renderSquadTutorial } from './views/squadTutorial.js?v=22';
 
 // `#/hub` (ou hash vide / inconnu) = le HUB (la `.shell` statique). Toute autre
 // route rend une vue plein écran dans `#app-root`. onRoute() pilote SEUL l'affichage

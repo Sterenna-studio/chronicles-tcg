@@ -6,6 +6,8 @@ build), backend **Supabase** (auth, cartes, monnaie, escouades).
 
 En prod : `https://nitro.sterenna.fr/TCG/` (auth déléguée à la plateforme Nitro).
 
+Historique des versions : [CHANGELOG.md](CHANGELOG.md).
+
 ---
 
 ## Démarrer en local

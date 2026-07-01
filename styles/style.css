@@ -46,57 +46,6 @@ button:hover { border-color:#8b949e; }
 .card-sheet .meta h3 { margin: 0 0 8px 0; }
 .card-sheet .meta p { margin: 6px 0; }
 
-/* --- FX & badges --- */
-.badge-new {
-  position: absolute;
-  top: 8px; right: 8px;
-  background: #10b981;
-  color: #071a14;
-  font-weight: 700;
-  font-size: 12px;
-  padding: 4px 6px;
-  border-radius: 6px;
-  box-shadow: 0 0 10px rgba(16,185,129,0.5);
-  transform: rotate(-6deg) scale(0.9);
-  animation: badgePop 350ms ease-out;
-}
-@keyframes badgePop {
-  0% { transform: rotate(-6deg) scale(0.5); opacity: 0; }
-  100% { transform: rotate(-6deg) scale(0.9); opacity: 1; }
-}
-
-.fx-rays {
-  position: absolute;
-  inset: -20px;
-  background: conic-gradient(from 0deg, rgba(255,255,255,0.1), rgba(255,255,0,0.2), rgba(255,255,255,0.1));
-  filter: blur(8px);
-  border-radius: 14px;
-  animation: spinRays 2200ms linear infinite;
-  pointer-events: none;
-}
-@keyframes spinRays { to { transform: rotate(360deg); } }
-
-.fx-burst {
-  position:absolute;
-  inset:-10px;
-  background: radial-gradient(circle at center, rgba(255,255,255,0.35), rgba(255,255,255,0.0) 60%);
-  filter: blur(6px);
-  border-radius: 14px;
-  animation: pulseBurst 900ms ease-out;
-  pointer-events: none;
-}
-@keyframes pulseBurst {
-  0% { transform: scale(0.6); opacity: 0.0; }
-  50% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1.4); opacity: 0; }
-}
-
-/* Rarity intensities */
-.card.rarity-rare { box-shadow: 0 0 18px rgba(94, 129, 255, 0.5); }
-.card.rarity-epic { box-shadow: 0 0 24px rgba(192, 132, 252, 0.65); position: relative; }
-.card.rarity-legendary { box-shadow: 0 0 28px rgba(253, 224, 71, 0.75); position: relative; }
-.card.rarity-mythical { box-shadow: 0 0 36px rgba(16, 185, 129, 0.8), 0 0 56px rgba(99, 102, 241, 0.6); position: relative; }
-
 /* Album fixed button */
 .album-fab {
   position: fixed;
@@ -312,54 +261,6 @@ button:hover { border-color:#8b949e; }
   display:flex; gap: 14px; flex-wrap: wrap; justify-content:center;
   transform-style: preserve-3d;
 }
-
-/* ----- Flip card base ----- */
-.flip-card {
-  width: 160px; height: 224px; border-radius: 12px;
-  position: relative;
-  cursor: pointer;
-  perspective: 1000px; /* extra perspective per card -> stronger 3D feel */
-}
-.flip-inner {
-  position:absolute; inset:0;
-  transform-style: preserve-3d;
-  transition: transform 500ms ease;
-  border-radius: 12px;
-}
-.flip-card.flipped .flip-inner { transform: rotateY(180deg); }
-
-.flip-face {
-  position:absolute; inset:0;
-  border-radius: 12px; border:2px solid #161b22;
-  background-size: cover; background-position: center;
-  backface-visibility: hidden;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.45);
-}
-.flip-front {
-  transform: rotateY(180deg); /* so that after rotateY(180) it faces viewer */
-}
-.flip-back { /* face-down visible initially */ }
-
-/* Slight pop on flip end */
-.flip-card.flipped { animation: flipPop 180ms ease-out 420ms 1 both; }
-@keyframes flipPop { from { transform: scale(0.98); } to { transform: scale(1); } }
-
-/* ----- Flip row: tilt + stagger ----- */
-.flip-card {
-  width: 160px; height: 224px; border-radius: 12px; position: relative; cursor: pointer;
-  perspective: 1000px;
-  opacity: 1;
-  transform: perspective(1000px) rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg));
-  transition: transform 120ms ease, opacity 240ms ease;
-}
-.flip-card.pre {
-  opacity: 0;
-  transform: perspective(1000px) translateY(16px) scale(0.96);
-}
-.flip-inner {
-  position:absolute; inset:0; transform-style: preserve-3d; transition: transform 500ms ease; border-radius: 12px;
-}
-.flip-card.flipped .flip-inner { transform: rotateY(180deg); }
 
 /* Paper shake (GSAP-like timeline end step) */
 @keyframes paperShakeX {

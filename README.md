@@ -41,13 +41,19 @@ node dev/bump-cache.mjs          # incrémente la version partout (singletons OK
   plein écran rendue dans `#app-root`. `onRoute()` pilote seul l'affichage hub↔vue.
   Routes : `#/collection`, `#/squad-builder`, `#/squad-battle`, `#/squad-tuto`.
 - **`app/views/`** — vues : `collection`, `squadBuilder` (Atelier), `squadBattle`
-  (combat), `squadTutorial`. *(`battle` + `deckBuilder` = ancien mode 1-champion,
-  **dormants**, non routés.)*
+  (combat + séquence d'ouverture), `squadTutorial`. *(`battle` + `deckBuilder` =
+  ancien mode 1-champion, **dormants**, non routés.)*
 - **`logic/`** — moteurs purs : `squadEngine` (Mode Escouade), `skillEngine`
   (effets de skills, réutilisé), `combatRecorder` (journal de combats),
   `challengeEngine` (défis), `daily` (bonus de connexion), `sets` (sets jouables).
 - **`ui/`** — `lemegetonTuto` (accueil + kit de départ), `onboardingFunnel`
-  (parcours d'initiation), `openingOverlay` (ouverture de boosters).
+  (parcours d'initiation), `openingOverlay` (ouverture de boosters),
+  `cardPreview` (aperçu carte en grand, clic droit / appui long — partagé
+  par toutes les vues).
+- **`state/settings.js`** — réglages persistés en `localStorage` (volume/on-off
+  du son de révélation de carte), édités depuis l'admin.
+- **`pages/admin/`** — back-office (cartes, boosters, audio), réservé aux
+  comptes `profiles.role='superuser'` — cf section [Administration](#administration-superuser).
 - **`data/`** — `BZH01.json` (jouable), `BZH02.json` (visible en collection, pas
   encore jouable — cf `logic/sets.js` `PLAYABLE_SET_IDS`). Repos Supabase
   (`cardsRepo`, `packsRepo`, `supabaseData`).
@@ -65,11 +71,42 @@ insère dans le ledger (`claim_quest`, `buy_pack_with_chronicles`,
 ## Mode Escouade (mode principal)
 
 3 champions partageant un pool de 30 PV. À l'Atelier : 3 champions + 1 terrain +
-un **deck d'équipement (≤20)**. En combat : déploiement (drag&drop), puis on
-**pioche 3 cartes d'équipement/tour** et on les **équipe** (coût en énergie). IA
-ennemie symétrique ; difficulté = PV de l'ennemi. Récompenses via le ledger.
-**Détails complets : [docs/MODE_ESCOUADE.md](docs/MODE_ESCOUADE.md)** ;
+un **deck d'équipement (≤20)**.
+
+Ouverture d'un combat, directement sur l'arène (plus d'écran séparé) :
+1. **Le Sceau d'ouverture** — désigne un camp, qui **prend ou laisse la main**
+   (= ouvre la Chronique : déploie et agit en premier).
+2. **Déploiement chacun-son-tour** — un champion par camp, en alternance.
+3. **Mulligan** — garder sa main d'équipement d'ouverture ou la rebattre.
+
+En combat : on **pioche 3 cartes d'équipement/tour** et on les **équipe**
+(coût en énergie). L'IA (symétrique, difficulté = PV de l'ennemi) joue son
+tour **animé** — champion surligné avant résolution, pas de résultat instantané.
+Clic droit / appui long sur une carte l'affiche en grand. Récompenses via le
+ledger. **Détails complets : [docs/MODE_ESCOUADE.md](docs/MODE_ESCOUADE.md)** ;
 règles de jeu : [docs/RULES_JRPG.md](docs/RULES_JRPG.md).
+
+## Administration (superuser)
+
+`pages/admin/` est un back-office statique séparé du hub SPA, réservé aux
+comptes dont `profiles.role = 'superuser'` (même convention que les autres
+jeux du Supabase partagé). Un bouton **🛠 ADMIN** apparaît dans le hub pour ces
+comptes ; sinon la page affiche un écran d'accès refusé.
+
+Onglets : **Cartes** (recherche/filtre, édition complète y compris la skill,
+bannissement — pas de suppression, `cards`/`pack_types` n'ont pas de FK stricte
+et un DELETE laisserait des références mortes dans les collections/inventaires
+des joueurs), **Boosters** (prix, image, nombre de cartes, actif/inactif), **UI
+& Audio** (son de révélation de carte, le seul réglage réellement branché au jeu).
+
+Écritures via RPC `SECURITY DEFINER` (`admin_upsert_card`,
+`admin_upsert_pack_type`) qui revalident le rôle côté serveur — aucune policy
+RLS d'écriture ouverte sur ces tables.
+
+Pour se donner l'accès :
+```sql
+UPDATE profiles SET role = 'superuser' WHERE id = '<uuid>';
+```
 
 ---
 
@@ -81,9 +118,10 @@ Migrations versionnées dans `supabase/migrations/`. Appliquer :
 supabase db push                 # local = remote ; trackées via migration repair
 ```
 
-Tables clés : `cards`, `profiles` (chronicles), `tcg_players`, `tcg_player_cards`
-(`user_id`), `tcg_player_packs` (`player_id`), `tcg_squads` (+ `equipment_deck`),
-`chronicles_ledger`, `tcg_quests` / `tcg_quest_completions`, `pack_types`.
+Tables clés : `cards`, `profiles` (chronicles, `role` — `superuser` = accès
+admin), `tcg_players`, `tcg_player_cards` (`user_id`), `tcg_player_packs`
+(`player_id`), `tcg_squads` (+ `equipment_deck`), `chronicles_ledger`,
+`tcg_quests` / `tcg_quest_completions`, `pack_types` (+ `card_count`).
 
 ## Tests
 

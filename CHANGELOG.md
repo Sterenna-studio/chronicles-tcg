@@ -5,6 +5,46 @@ Regroupé par version (dates des commits). Détails techniques :
 
 ---
 
+## v2.6 — Ouverture repensée, IA animée & outils admin (2026-06-30 → 2026-07-01)
+
+**Mode Escouade — ouverture de combat**
+- Fin de l'écran de déploiement séparé : la séquence d'ouverture se joue
+  désormais **directement sur l'arène**, en trois temps lore-cohérents.
+  1. **Le Sceau d'ouverture** — sceau goétique animé qui désigne un camp ; il
+     **prend** ou **laisse la main** (ouvrir la Chronique = déployer et agir
+     en premier). L'IA tranche et révèle son choix si elle est désignée.
+  2. **Déploiement chacun-son-tour** — chaque camp pose un champion en
+     alternance, le camp à la main commence.
+  3. **Mulligan d'ouverture** — garder sa main d'équipement de départ ou la
+     rebattre une fois, avant le premier coup.
+- **Tour de l'IA animé** : chaque action ennemie (équipement puis attaque/
+  skill/actif) se joue en ~1 s, champion surligné avant résolution — on voit
+  l'IA jouer au lieu qu'elle résolve son tour instantanément.
+- Moteur : `mulliganEquipment`, `openEnemyTurn` / `planAutoTurn` (tour IA
+  découpé en frames pour l'animation).
+
+**Cartes & boutique**
+- **Aperçu de carte en grand** (`ui/cardPreview.js`) : clic droit (desktop) /
+  appui long (tactile) sur n'importe quelle carte — Atelier, déploiement,
+  combat, tuto — ouvre une fiche avec stats, skill et description.
+- **Achat de packs ×5 / ×10** dans la boutique (en plus de ×1), RPC
+  d'achat bouclé avec arrêt propre si le solde s'épuise en cours de route.
+- Correctif : le nombre de cartes par booster était codé en dur (5) ; c'est
+  maintenant une colonne `pack_types.card_count` réelle et éditable.
+
+**Administration**
+- Nouvelle page **`pages/admin/`** (back-office), réservée aux comptes
+  `profiles.role = 'superuser'` : gestion des **cartes** (recherche, édition
+  complète y compris la skill, bannissement) et des **boosters** (prix, image,
+  nombre de cartes, actif/inactif). Écritures via RPC `SECURITY DEFINER`
+  (`admin_upsert_card`, `admin_upsert_pack_type`) qui revalident le rôle
+  côté serveur — pas de nouvelle policy RLS ouverte.
+- Bouton **🛠 ADMIN** dans le hub, visible uniquement pour les superusers.
+- Ancien panneau FX (rays/burst/badge) retiré : il pilotait un mécanisme de
+  carte-flip qui n'existait plus dans le jeu réel. Seul l'**audio** (son de
+  révélation de carte) est resté, et il est maintenant **réellement câblé**
+  à `ui/openingOverlay.js` (avant : sans aucun effet).
+
 ## v2.5 — Mode Escouade & refonte du hub (2026-06-26 → 2026-06-30)
 
 Ajout du **Mode Escouade** (mode principal : 3 champions, pool de PV partagé) et

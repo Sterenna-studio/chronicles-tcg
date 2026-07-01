@@ -18,13 +18,13 @@ import {
   championAttackPower, teamShield, canChampionAct, actionCost, equipCard,
   mulliganEquipment,
   SQUAD_HP, DECK_SIZE, ENERGY_MAX,
-} from '../../logic/squadEngine.js?v=23';
-import { getClient } from '../../logic/supaRaw.js?v=23';
-import { url } from '../../logic/paths.js?v=23';
-import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=23';
-import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=23';
-import { createRecorder } from '../../logic/combatRecorder.js?v=23';
-import { attachCardPreview } from '../../ui/cardPreview.js?v=23';
+} from '../../logic/squadEngine.js?v=24';
+import { getClient } from '../../logic/supaRaw.js?v=24';
+import { url } from '../../logic/paths.js?v=24';
+import { PLAYABLE_SET_IDS, playableSets } from '../../logic/sets.js?v=24';
+import { checkAndCompleteSquadChallenges } from '../../logic/challengeEngine.js?v=24';
+import { createRecorder } from '../../logic/combatRecorder.js?v=24';
+import { attachCardPreview } from '../../ui/cardPreview.js?v=24';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };
@@ -270,7 +270,7 @@ export async function renderSquadBattle(root, opts = {}) {
         <div style="font-size:.85em;max-width:360px;line-height:1.6">Monte une escouade de 3 champions dans l'Atelier avant de combattre.</div>
         <button class="sqb-ghost" id="go-atelier">→ Atelier d'escouade</button>
       </div>`;
-    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=23').then(m => m.renderSquadBuilder(root)));
+    root.querySelector('#go-atelier').addEventListener('click', () => import('./squadBuilder.js?v=24').then(m => m.renderSquadBuilder(root)));
     return;
   }
 

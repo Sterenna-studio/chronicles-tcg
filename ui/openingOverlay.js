@@ -1,9 +1,10 @@
 // ui/openingOverlay.js
-import { generatePack } from '../logic/packGenerator.js?v=23';
-import { decrementPlayerPack } from '../data/packsRepo.js?v=23';
-import { addCardsBatch } from '../data/cardsRepo.js?v=23';
-import { getUser } from '../logic/supaRaw.js?v=23';
-import { url } from '../logic/paths.js?v=23';
+import { generatePack } from '../logic/packGenerator.js?v=24';
+import { decrementPlayerPack } from '../data/packsRepo.js?v=24';
+import { addCardsBatch } from '../data/cardsRepo.js?v=24';
+import { getUser } from '../logic/supaRaw.js?v=24';
+import { url } from '../logic/paths.js?v=24';
+import { getFxSettings } from '../state/settings.js?v=24';
 
 const SET_FILES = {
   BZH01: '/data/BZH01.json', BZH02: '/data/BZH02.json',
@@ -16,9 +17,11 @@ const RARITY_SOUND = { Common:'common', Rare:'rare', Epic:'epic', Legendary:'leg
 
 function playRaritySound(rarity) {
   try {
+    const fx = getFxSettings();
+    if (!fx.audio_enabled) return;
     const name = RARITY_SOUND[rarity] || 'common';
     const audio = new Audio(url(`/sounds/${name}.mp3`));
-    audio.volume = 0.6;
+    audio.volume = Math.max(0, Math.min(1, fx.audio_volume ?? 1)) * 0.6;
     audio.play().catch(() => {});
   } catch {}
 }
@@ -150,8 +153,9 @@ function disintegrateToCollection(sourceEl, onDone) {
 }
 
 // ─── Export principal ─────────────────────────────────────────────────────────
-export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone, count = 1 } = {}) {
+export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone, count = 1, cardCount = 5 } = {}) {
   count = Math.max(1, Math.min(10, Number(count) || 1));
+  cardCount = Math.max(1, Math.min(20, Number(cardCount) || 5));
 
   // Overlay full-screen, z-index maximal, PAS de modal chrome
   const overlay = document.createElement('div');
@@ -217,7 +221,7 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone,
     const base = Date.now().toString(16);
     cards = [];
     for (let i = 0; i < count; i++) {
-      cards.push(...generatePack({ cards: allCards, cardCount: 5, seedHex: String(packTypeId) + '-' + i + '-' + base }));
+      cards.push(...generatePack({ cards: allCards, cardCount, seedHex: String(packTypeId) + '-' + i + '-' + base }));
     }
   } catch {
     overlay.innerHTML = '<div style="color:#ff8a8a;padding:40px">Erreur génération pack.</div>';

@@ -1,5 +1,5 @@
 // data/packsRepo.js — v7
-import { getClient, getUser } from '../logic/supaRaw.js?v=23';
+import { getClient, getUser } from '../logic/supaRaw.js?v=24';
 
 const PACK_IMAGE_MAP = {
   'BZH01-default': 'set01.jpg',
@@ -79,4 +79,27 @@ export async function buyPack(pack_type_id) {
   const { data, error } = await sb.rpc('buy_pack_with_chronicles', { p_pack_type_id: pack_type_id });
   if (error || !data?.ok) return { ok: false, error: data?.error || error?.message };
   return { ok: true, chronicles_remaining: data.chronicles_remaining, pack_qty: data.pack_qty };
+}
+
+/**
+ * Tous les types de booster, actifs ou non (vue admin — la boutique, elle,
+ * filtre `is_active`). Lecture publique (pack_types_select_public), pas de RPC.
+ */
+export async function loadAllPackTypesForAdmin() {
+  const sb = await getClient();
+  const { data, error } = await sb.from('pack_types').select('*').order('created_at', { ascending: true });
+  if (error) throw error;
+  return (data || []).map(normalizePack);
+}
+
+/**
+ * Crée ou met à jour un type de booster via le RPC admin_upsert_pack_type
+ * (réservé aux comptes profiles.role='superuser'). Voir supabase/migrations/
+ * 20260701000000_admin_superuser_tools.sql.
+ */
+export async function adminUpsertPackType(pack) {
+  const sb = await getClient();
+  const { data, error } = await sb.rpc('admin_upsert_pack_type', { p_pack: pack });
+  if (error) return { ok: false, error: error.message };
+  return data;
 }

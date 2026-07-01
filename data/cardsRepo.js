@@ -1,5 +1,5 @@
 // data/cardsRepo.js — v1
-import { getClient, getUser } from '../logic/supaRaw.js?v=23';
+import { getClient, getUser } from '../logic/supaRaw.js?v=24';
 
 /**
  * Charge la collection du joueur depuis tcg_player_cards.
@@ -70,4 +70,29 @@ export async function addCardsBatch(userId, cards) {
     .from('tcg_player_cards')
     .upsert(rows, { onConflict: 'user_id,card_id' });
   if (error) throw error;
+}
+
+/**
+ * Charge TOUTES les cartes d'un set depuis la table `cards` (lecture publique
+ * authentifiée, y compris les cartes bannies — réservé à l'admin pour édition).
+ * Fallback JSON statique si la table est vide/indisponible (mêmes données que
+ * loadAllCards() côté Atelier).
+ */
+export async function loadAllCardsForAdmin() {
+  const sb = await getClient();
+  const { data, error } = await sb.from('cards').select('*').order('id', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+/**
+ * Crée ou met à jour une carte via le RPC admin_upsert_card (réservé aux comptes
+ * profiles.role='superuser', validé côté serveur). Voir supabase/migrations/
+ * 20260701000000_admin_superuser_tools.sql.
+ */
+export async function adminUpsertCard(card) {
+  const sb = await getClient();
+  const { data, error } = await sb.rpc('admin_upsert_card', { p_card: card });
+  if (error) return { ok: false, error: error.message };
+  return data;
 }

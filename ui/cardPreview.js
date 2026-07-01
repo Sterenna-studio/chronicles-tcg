@@ -4,13 +4,13 @@
 // déploiement et le tuto pour offrir partout le même geste « voir la carte en
 // grand ». N'a aucune dépendance applicative hormis le résolveur de chemin.
 //
-//   import { attachCardPreview } from '../../ui/cardPreview.js?v=23';
+//   import { attachCardPreview } from '../../ui/cardPreview.js?v=24';
 //   attachCardPreview(el, card);              // carte fixe
 //   attachCardPreview(el, () => slot.champion); // carte calculée à l'ouverture
 //
 // Geste : clic droit (contextmenu, menu natif supprimé) sur desktop, appui long
 // (~450 ms) sur tactile. Fermeture : fond, ✕, ou Échap.
-import { url } from '../logic/paths.js?v=23';
+import { url } from '../logic/paths.js?v=24';
 
 const RC = { Common:'#9da7b3', Rare:'#42b0ff', Epic:'#bb55d3', Legendary:'#ffbe46', Mythical:'#ff5080' };
 const TI = { Champion:'⚔️', Companion:'🐾', Event:'⚡', Object:'🔧', Special:'✨', Terrain:'🌍', Team:'👥' };

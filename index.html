@@ -182,6 +182,7 @@
     <nav class="tb-nav">
       <button class="tb-nav-btn active" id="btn-collection">COLLECTION</button>
       <button class="tb-nav-btn" id="tb-nav-cig">CIG</button>
+      <a class="tb-nav-btn tb-nav-admin" id="tb-nav-admin" href="pages/admin/index.html" style="display:none;text-decoration:none;border-color:#ff5080;color:#ff5080" title="Réservé aux superusers">🛠 ADMIN</a>
     </nav>
     <div class="tb-spacer"></div>
     <div class="tb-chronicles">
@@ -270,14 +271,14 @@
 <div id="topbar"></div>
 
 <script type="module">
-import { getClient } from './logic/supaRaw.js?v=23';
-import { initPlayer, getDisplayName } from './data/supabaseData.js?v=23';
-import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=23';
-import { openOpeningOverlay } from './ui/openingOverlay.js?v=23';
-import { boot, navigate } from './app/router.js?v=23';
-import { getDailySquadChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=23';
-import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=23';
-import { renderOnboardingFunnel } from './ui/onboardingFunnel.js?v=23';
+import { getClient } from './logic/supaRaw.js?v=24';
+import { initPlayer, getDisplayName } from './data/supabaseData.js?v=24';
+import { loadPlayerPacks, loadPackTypes } from './data/packsRepo.js?v=24';
+import { openOpeningOverlay } from './ui/openingOverlay.js?v=24';
+import { boot, navigate } from './app/router.js?v=24';
+import { getDailySquadChallenges, getChallengeProgress } from './logic/challengeEngine.js?v=24';
+import { showLemegetonTuto } from './ui/lemegetonTuto.js?v=24';
+import { renderOnboardingFunnel } from './ui/onboardingFunnel.js?v=24';
 
 // Réassigné dans init() avec sb/user/openView capturés ; appelé à chaque refreshHub.
 let refreshFunnel = async () => {};
@@ -377,10 +378,15 @@ async function refreshHub(sb){
     const [totalCards, playerPacks, {data:pl}] = await Promise.all([
       fetchTotalCards(sb,user),
       loadPlayerPacks(),
-      sb.from('profiles').select('chronicles').eq('id',user.id).single()
+      sb.from('profiles').select('chronicles, role').eq('id',user.id).single()
     ]);
     const chronicles = pl?.chronicles ?? 0;
     ['ub-chronicles'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=chronicles;});
+    // Bouton ADMIN — visible uniquement pour profiles.role='superuser' (même
+    // convention que les autres jeux du Supabase partagé). Lien direct, simple
+    // <a href>, pas de route SPA : pages/admin/ est une page statique séparée.
+    const adminLink=document.getElementById('tb-nav-admin');
+    if(adminLink) adminLink.style.display = (pl?.role === 'superuser') ? '' : 'none';
     const name = getDisplayName();
     ['ub-agent','tb-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
     const statCards=document.getElementById('stat-cards');if(statCards)statCards.textContent=totalCards;
@@ -404,7 +410,7 @@ async function refreshHub(sb){
             <div class="booster-qty">×${p.quantity}</div>
             <button class="booster-open-btn">OUVRIR</button>
             ${multi>1?`<button class="booster-openx-btn">OUVRIR ×${multi}</button>`:''}`;
-          const opts={ packTypeId:p.pack_type_id||p.id, setId:p.set_id, packImage:imgSrc, onDone:async()=>{await refreshHub(sb);} };
+          const opts={ packTypeId:p.pack_type_id||p.id, setId:p.set_id, packImage:imgSrc, cardCount:p.card_count||5, onDone:async()=>{await refreshHub(sb);} };
           card.querySelector('.booster-open-btn').addEventListener('click',()=>openOpeningOverlay({...opts, count:1}));
           const xBtn=card.querySelector('.booster-openx-btn');
           if(xBtn) xBtn.addEventListener('click',()=>openOpeningOverlay({...opts, count:multi}));
@@ -468,7 +474,7 @@ function updateStreakUI(streak, rewarded, amount){
 
 // ── ACHIEVEMENTS MODAL ────────────────────────────────────────
 async function openAchievementsModal(){
-  const { mount } = await import('./pages/achievementsWidget.js?v=23');
+  const { mount } = await import('./pages/achievementsWidget.js?v=24');
   const overlay=document.createElement('div');
   overlay.className='tcg-modal-overlay';
   overlay.innerHTML=`
@@ -487,7 +493,7 @@ async function openAchievementsModal(){
 
 // ── LEADERBOARD MODAL ─────────────────────────────────────────
 async function openLeaderboardModal(sb){
-  const { mount } = await import('./pages/leaderboardWidget.js?v=23');
+  const { mount } = await import('./pages/leaderboardWidget.js?v=24');
   const { data: { session } } = await sb.auth.getSession();
   const user = session?.user ?? null;
   const overlay=document.createElement('div');
@@ -592,7 +598,7 @@ async function init(){
     await renderShop(sb);
     renderDailyChallenges();
 
-    const { claimDailyReward } = await import('./logic/daily.js?v=23');
+    const { claimDailyReward } = await import('./logic/daily.js?v=24');
     const result = await claimDailyReward(sb, user.id);
     updateStreakUI(result.streak, result.rewarded, result.amount);
     // Le bonus est crédité via le ledger après le 1er refresh → resync l'affichage.

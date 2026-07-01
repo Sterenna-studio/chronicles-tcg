@@ -24,7 +24,7 @@
 //   openEnemyTurn(state, difficulty)         // l'ennemi prend la main et ouvre le combat
 //   Helpers UI : championAttackPower, teamShield, canChampionAct
 
-import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=23';
+import { tickSkillCooldowns, setActiveChampion, useSkill } from './skillEngine.js?v=24';
 
 export const SQUAD_HP        = 30;
 export const ENERGY_MAX      = 7;

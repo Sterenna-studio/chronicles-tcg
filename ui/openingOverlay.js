@@ -158,7 +158,7 @@ function ensureCircleStyles() {
   const style = document.createElement('style');
   style.id = 'mpo-circle-style';
   style.textContent = `
-    .mpo-wrapper { width:100%; min-height:340px; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .mpo-wrapper { width:100%; min-height:460px; position:relative; z-index:1; display:flex; align-items:center; justify-content:center; overflow:visible; }
     .mpo-inner {
       --w: 110px; --h: 155px;
       --translateZ: calc((var(--w) + var(--h)) + 40px);
@@ -167,7 +167,7 @@ function ensureCircleStyles() {
       position:relative; width:var(--w); height:var(--h);
       transform-style: preserve-3d;
       transform: perspective(var(--perspective));
-      animation: mpo-spin 2.1s linear 1;
+      animation: mpo-spin 4.4s linear 1;
     }
     @keyframes mpo-spin {
       from { transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0); }
@@ -177,11 +177,14 @@ function ensureCircleStyles() {
       position:absolute; inset:0; border-radius:12px; overflow:hidden;
       border:2px solid rgba(0,245,196,.55);
       box-shadow:0 0 20px rgba(0,245,196,.25);
-      transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(var(--translateZ));
-      transition: transform .6s cubic-bezier(.2,.8,.2,1), opacity .5s ease;
+      --radius: 1;
+      transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(calc(var(--translateZ) * var(--radius)));
+      transition: transform .5s cubic-bezier(.4,0,.2,1), opacity .5s ease;
     }
     .mpo-card img { width:100%; height:100%; object-fit:cover; background:#060c10; }
+    .mpo-card.mpo-converge { --radius: 0.3; }
     .mpo-card.mpo-explode {
+      --radius: 1;
       transform: translate3d(var(--ex), var(--ey), 600px) rotate(var(--er)) scale(1.4);
       opacity:0;
     }
@@ -213,24 +216,33 @@ function circleBurstIntro(container, images, onDone) {
     cardEls.push(card);
   }
 
+  const SPIN_MS = 4400;
+  const CONVERGE_MS = 450;
+
   let done = false;
   function explode() {
     if (done) return;
     done = true;
     clearTimeout(timer);
     inner.style.animationPlayState = 'paused';
-    cardEls.forEach(card => {
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 420 + Math.random() * 260;
-      card.style.setProperty('--ex', Math.cos(angle) * dist + 'px');
-      card.style.setProperty('--ey', Math.sin(angle) * dist + 'px');
-      card.style.setProperty('--er', (Math.random() * 720 - 360) + 'deg');
-      card.classList.add('mpo-explode');
-    });
-    setTimeout(() => { wrapper.remove(); onDone(); }, 620);
+    // Resserre le rayon d'abord (les cartes se rapprochent du centre)…
+    cardEls.forEach(card => card.classList.add('mpo-converge'));
+    setTimeout(() => {
+      // …puis explosent d'un coup vers l'extérieur
+      cardEls.forEach(card => {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 420 + Math.random() * 260;
+        card.style.setProperty('--ex', Math.cos(angle) * dist + 'px');
+        card.style.setProperty('--ey', Math.sin(angle) * dist + 'px');
+        card.style.setProperty('--er', (Math.random() * 720 - 360) + 'deg');
+        card.classList.remove('mpo-converge');
+        card.classList.add('mpo-explode');
+      });
+      setTimeout(() => { wrapper.remove(); onDone(); }, 620);
+    }, CONVERGE_MS);
   }
 
-  const timer = setTimeout(explode, 2100);
+  const timer = setTimeout(explode, SPIN_MS);
   return explode; // permet de forcer l'explosion (clic pour passer)
 }
 

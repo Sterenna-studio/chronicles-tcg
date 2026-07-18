@@ -152,6 +152,88 @@ function disintegrateToCollection(sourceEl, onDone) {
   }, 1100);
 }
 
+// ─── Cercle 3D (multi-packs) : rotation puis explosion ───────────────────────
+function ensureCircleStyles() {
+  if (document.getElementById('mpo-circle-style')) return;
+  const style = document.createElement('style');
+  style.id = 'mpo-circle-style';
+  style.textContent = `
+    .mpo-wrapper { width:100%; min-height:340px; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .mpo-inner {
+      --w: 110px; --h: 155px;
+      --translateZ: calc((var(--w) + var(--h)) + 40px);
+      --rotateX: -15deg;
+      --perspective: 1200px;
+      position:relative; width:var(--w); height:var(--h);
+      transform-style: preserve-3d;
+      transform: perspective(var(--perspective));
+      animation: mpo-spin 2.1s linear 1;
+    }
+    @keyframes mpo-spin {
+      from { transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0); }
+      to   { transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(1turn); }
+    }
+    .mpo-card {
+      position:absolute; inset:0; border-radius:12px; overflow:hidden;
+      border:2px solid rgba(0,245,196,.55);
+      box-shadow:0 0 20px rgba(0,245,196,.25);
+      transform: rotateY(calc((360deg / var(--quantity)) * var(--index))) translateZ(var(--translateZ));
+      transition: transform .6s cubic-bezier(.2,.8,.2,1), opacity .5s ease;
+    }
+    .mpo-card img { width:100%; height:100%; object-fit:cover; background:#060c10; }
+    .mpo-card.mpo-explode {
+      transform: translate3d(var(--ex), var(--ey), 600px) rotate(var(--er)) scale(1.4);
+      opacity:0;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function circleBurstIntro(container, images, onDone) {
+  ensureCircleStyles();
+  const quantity = Math.max(images.length, 3);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'mpo-wrapper';
+  const inner = document.createElement('div');
+  inner.className = 'mpo-inner';
+  wrapper.appendChild(inner);
+  container.appendChild(wrapper);
+
+  const cardEls = [];
+  for (let i = 0; i < quantity; i++) {
+    const card = document.createElement('div');
+    card.className = 'mpo-card';
+    card.style.setProperty('--index', i);
+    card.style.setProperty('--quantity', quantity);
+    const img = document.createElement('img');
+    img.src = images[i % images.length];
+    img.alt = '';
+    card.appendChild(img);
+    inner.appendChild(card);
+    cardEls.push(card);
+  }
+
+  let done = false;
+  function explode() {
+    if (done) return;
+    done = true;
+    clearTimeout(timer);
+    inner.style.animationPlayState = 'paused';
+    cardEls.forEach(card => {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 420 + Math.random() * 260;
+      card.style.setProperty('--ex', Math.cos(angle) * dist + 'px');
+      card.style.setProperty('--ey', Math.sin(angle) * dist + 'px');
+      card.style.setProperty('--er', (Math.random() * 720 - 360) + 'deg');
+      card.classList.add('mpo-explode');
+    });
+    setTimeout(() => { wrapper.remove(); onDone(); }, 620);
+  }
+
+  const timer = setTimeout(explode, 2100);
+  return explode; // permet de forcer l'explosion (clic pour passer)
+}
+
 // ─── Export principal ─────────────────────────────────────────────────────────
 export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone, count = 1, cardCount = 5 } = {}) {
   count = Math.max(1, Math.min(10, Number(count) || 1));
@@ -202,6 +284,7 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone,
       // Clic hors zone = déchire le booster d'un coup
       if (tearOpen) tearOpen();
     } else if (phase === 'cards') {
+      if (skipCircleIntro) { skipCircleIntro(); return; }
       // Révèle tout + sauvegarde
       revealAll();
     }
@@ -421,23 +504,41 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone,
   }
 
   // ── Phase multi (ouverture rapide de plusieurs boosters) ────────────────────
+  let skipCircleIntro = null;
+
   async function showMultiPhase() {
     phase = 'cards';
     // Consomme les boosters ouverts
     try { await decrementPlayerPack(packTypeId, count); } catch (e) { console.warn(e); }
-    const rarityOrder = ['Mythical','Legendary','Epic','Rare','Common'];
-    const best = rarityOrder.find(r => grouped.some(g => g.card.rarity === r));
-    if (best) playRaritySound(best);
 
+    zone.innerHTML = `
+      <div style="color:#6fa694;font-size:.82em;opacity:.8">${count} boosters en rotation — clique pour passer</div>
+      <div id="circle-intro" style="width:100%;"></div>
+    `;
+    const introHost = zone.querySelector('#circle-intro');
+    const boosterImg = packImage || url('/assets/packs/set01.jpg');
+    const images = Array.from({ length: count }, () => boosterImg);
+
+    skipCircleIntro = circleBurstIntro(introHost, images, () => {
+      skipCircleIntro = null;
+      const rarityOrder = ['Mythical','Legendary','Epic','Rare','Common'];
+      const best = rarityOrder.find(r => grouped.some(g => g.card.rarity === r));
+      if (best) playRaritySound(best);
+      renderMultiGrid();
+    });
+  }
+
+  function renderMultiGrid() {
     const backSrc = url('/assets/card_back.png');
     zone.innerHTML = `
       <div style="font-weight:700;color:#42b0ff;font-size:.95em">✦ ${count} boosters ouverts — ${cards.length} cartes</div>
-      <div id="cards-grid" style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;padding:8px;width:100%;max-height:58vh;overflow-y:auto;"></div>
+      <div id="cards-grid" style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;padding:8px;width:100%;max-height:58vh;overflow-y:auto;opacity:0;transition:opacity .35s ease;"></div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
         <button id="finish-btn" style="background:#22c55e;border:1px solid #22c55e;color:#04130d;font-weight:700;padding:6px 22px;cursor:pointer;font-family:inherit;font-size:.85em;border-radius:6px;">📥 Ranger dans la collection</button>
       </div>
     `;
     const grid = zone.querySelector('#cards-grid');
+    requestAnimationFrame(() => { grid.style.opacity = '1'; });
     const order = { Mythical:0, Legendary:1, Epic:2, Rare:3, Common:4 };
     [...grouped]
       .sort((a, b) => (order[a.card.rarity] ?? 9) - (order[b.card.rarity] ?? 9))

@@ -167,7 +167,10 @@ function ensureCircleStyles() {
       position:relative; width:var(--w); height:var(--h);
       transform-style: preserve-3d;
       transform: perspective(var(--perspective));
-      animation: mpo-spin 4.4s linear 1;
+      animation: mpo-spin 4.4s linear infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mpo-inner { animation: none; }
     }
     @keyframes mpo-spin {
       from { transform: perspective(var(--perspective)) rotateX(var(--rotateX)) rotateY(0); }
@@ -188,11 +191,21 @@ function ensureCircleStyles() {
       transform: translate3d(var(--ex), var(--ey), 600px) rotate(var(--er)) scale(1.4);
       opacity:0;
     }
+    .mpo-flash {
+      position:absolute; left:50%; top:50%; width:12px; height:12px;
+      border-radius:50%; pointer-events:none;
+      background: radial-gradient(circle, rgba(200,255,232,.95), rgba(0,245,196,.5) 40%, transparent 70%);
+      animation: mpo-flash .5s ease-out forwards;
+    }
+    @keyframes mpo-flash {
+      from { opacity:1; transform: translate(-50%,-50%) scale(1); }
+      to   { opacity:0; transform: translate(-50%,-50%) scale(55); }
+    }
   `;
   document.head.appendChild(style);
 }
 
-function circleBurstIntro(container, images, onDone) {
+function circleBurstIntro(container, images, { onBurst, onDone } = {}) {
   ensureCircleStyles();
   const quantity = Math.max(images.length, 3);
   const wrapper = document.createElement('div');
@@ -216,19 +229,26 @@ function circleBurstIntro(container, images, onDone) {
     cardEls.push(card);
   }
 
-  const SPIN_MS = 4400;
-  const CONVERGE_MS = 450;
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SPIN_MS = reducedMotion ? 500 : 4400;
+  const CONVERGE_MS = reducedMotion ? 0 : 500;
 
   let done = false;
+  let convergeTimer = null, finishTimer = null;
+
   function explode() {
     if (done) return;
     done = true;
-    clearTimeout(timer);
-    inner.style.animationPlayState = 'paused';
-    // Resserre le rayon d'abord (les cartes se rapprochent du centre)…
+    clearTimeout(spinTimer);
+    // La rotation continue pendant que le rayon se resserre (effet spirale)…
     cardEls.forEach(card => card.classList.add('mpo-converge'));
-    setTimeout(() => {
-      // …puis explosent d'un coup vers l'extérieur
+    convergeTimer = setTimeout(() => {
+      // …puis tout explose d'un coup vers l'extérieur
+      inner.style.animationPlayState = 'paused';
+      const flash = document.createElement('div');
+      flash.className = 'mpo-flash';
+      wrapper.appendChild(flash);
+      if (onBurst) onBurst();
       cardEls.forEach(card => {
         const angle = Math.random() * Math.PI * 2;
         const dist = 420 + Math.random() * 260;
@@ -238,12 +258,22 @@ function circleBurstIntro(container, images, onDone) {
         card.classList.remove('mpo-converge');
         card.classList.add('mpo-explode');
       });
-      setTimeout(() => { wrapper.remove(); onDone(); }, 620);
+      finishTimer = setTimeout(() => { wrapper.remove(); if (onDone) onDone(); }, 620);
     }, CONVERGE_MS);
   }
 
-  const timer = setTimeout(explode, SPIN_MS);
-  return explode; // permet de forcer l'explosion (clic pour passer)
+  // Annulation propre (overlay fermé pendant l'intro) : stoppe les timers,
+  // retire le DOM, ne déclenche ni son ni onDone.
+  function cancel() {
+    done = true;
+    clearTimeout(spinTimer);
+    clearTimeout(convergeTimer);
+    clearTimeout(finishTimer);
+    wrapper.remove();
+  }
+
+  const spinTimer = setTimeout(explode, SPIN_MS);
+  return { skip: explode, cancel };
 }
 
 // ─── Export principal ─────────────────────────────────────────────────────────
@@ -282,6 +312,13 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone,
 
   let phase = 'booster'; // 'booster' | 'cards' | 'done'
   let savedAlready = false;
+  // Déclarés avant l'enregistrement des écouteurs : un clic (✕ ou hors zone)
+  // peut survenir pendant le await de chargement, avant les phases (TDZ sinon).
+  let tearOpen = null;       // assignée dans showBoosterPhase, appelable via advancePhase
+  let torn = false;
+  let boosterCleanup = null; // détache les écouteurs window de la phase booster
+  let skipCircleIntro = null;
+  let circleIntroCtl = null; // { skip, cancel } de l'intro cercle multi-packs
 
   // Clic HORS zone centrale = avancer
   overlay.addEventListener('click', e => {
@@ -304,6 +341,7 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone,
 
   function closeOverlay() {
     if (boosterCleanup) boosterCleanup();
+    if (circleIntroCtl) { circleIntroCtl.cancel(); circleIntroCtl = null; skipCircleIntro = null; }
     overlay.style.transition = 'opacity .3s';
     overlay.style.opacity = '0';
     setTimeout(() => overlay.remove(), 320);
@@ -335,10 +373,6 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone,
   pixelBuildIn(overlay, count > 1 ? showMultiPhase : showBoosterPhase);
 
   // ── Phase booster (déchirure au drag) ───────────────────────────────────────
-  let tearOpen = null;       // assignée dans showBoosterPhase, appelable via advancePhase
-  let torn = false;
-  let boosterCleanup = null; // détache les écouteurs window de la phase booster
-
   function showBoosterPhase() {
     phase = 'booster';
     const boosterImg = packImage || url('/assets/packs/set01.jpg');
@@ -516,8 +550,6 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone,
   }
 
   // ── Phase multi (ouverture rapide de plusieurs boosters) ────────────────────
-  let skipCircleIntro = null;
-
   async function showMultiPhase() {
     phase = 'cards';
     // Consomme les boosters ouverts
@@ -531,13 +563,19 @@ export async function openOpeningOverlay({ packTypeId, setId, packImage, onDone,
     const boosterImg = packImage || url('/assets/packs/set01.jpg');
     const images = Array.from({ length: count }, () => boosterImg);
 
-    skipCircleIntro = circleBurstIntro(introHost, images, () => {
-      skipCircleIntro = null;
-      const rarityOrder = ['Mythical','Legendary','Epic','Rare','Common'];
-      const best = rarityOrder.find(r => grouped.some(g => g.card.rarity === r));
-      if (best) playRaritySound(best);
-      renderMultiGrid();
+    const rarityOrder = ['Mythical','Legendary','Epic','Rare','Common'];
+    const best = rarityOrder.find(r => grouped.some(g => g.card.rarity === r));
+
+    circleIntroCtl = circleBurstIntro(introHost, images, {
+      onBurst: () => { if (best) playRaritySound(best); },
+      onDone: () => {
+        circleIntroCtl = null;
+        skipCircleIntro = null;
+        if (!overlay.isConnected) return;
+        renderMultiGrid();
+      },
     });
+    skipCircleIntro = circleIntroCtl.skip;
   }
 
   function renderMultiGrid() {

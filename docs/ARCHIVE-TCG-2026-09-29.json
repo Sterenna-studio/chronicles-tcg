@@ -1,0 +1,1173 @@
+{
+  "source": "C:\\DEV\\toCheck\\from_ghs\\TCG",
+  "archive": "C:\\DEV\\repos\\chronicles-tcg\\local-private\\tcg-from-ghs-2026-09-29",
+  "date": "2026-09-29",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 68,
+      "sha256": "D8FB0DE4792538F93822B2C0D235604921299D5E54A3D6EC7A6CB34536E8BF1E"
+    },
+    {
+      "path": "add_secret_code.py",
+      "bytes": 2727,
+      "sha256": "82DD2BAEC9DB11002F6F067E32437B116D9451FC6CF0BBEF8E56BFF2E475F107"
+    },
+    {
+      "path": "admin.js",
+      "bytes": 1369,
+      "sha256": "CD833DB32EFDA68235EAA5A6F07626103A0B5AC6EED16B3C66D616B7BE266C46"
+    },
+    {
+      "path": "app.js",
+      "bytes": 674935,
+      "sha256": "FE916482EB921A4F6728D00DD3B1A7770754BA0835446F6B1ACAFFB3B95C54C4"
+    },
+    {
+      "path": "config.example.js",
+      "bytes": 800,
+      "sha256": "63C8FED1DCFF66E30C9C21A1B15138A514BCCACA5ABE333DB2174F8597D0B30B"
+    },
+    {
+      "path": "config.js",
+      "bytes": 842,
+      "sha256": "A7B6DA7C988E997AAC6005A7A31CC14784E9EF012CEC82B4F4E1137AE7C5E9CE"
+    },
+    {
+      "path": "index.html",
+      "bytes": 19473,
+      "sha256": "81DB8375C9B0E5DAF9D75C493C4DC872DCBDF4A2FE2524A7CA80521F61074A94"
+    },
+    {
+      "path": "PING.txt",
+      "bytes": 2,
+      "sha256": "2689367B205C16CE32ED4200942B8B8B1E262DFC70D9BC9FBC77C49699A4F1DF"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1571,
+      "sha256": "EF704DA62B0292ACFEFD203FD77E1FF1DCA1076A6B3B6E934187B5DAA357FA1B"
+    },
+    {
+      "path": "README.txt",
+      "bytes": 1673,
+      "sha256": "29C062A9F86CFE32DEAADE02A194A204EB0CFE13128C967D0E8C3DC721AACDA4"
+    },
+    {
+      "path": "supabaseData.js",
+      "bytes": 312,
+      "sha256": "E988E3B0149B6530DF63C41C8B8781F4427A95DE372703ED62FEA4C88122456E"
+    },
+    {
+      "path": "tcg_auth.js",
+      "bytes": 442,
+      "sha256": "86DA88255376043A572DEB8763F099A56C45F1C4B8243C904E02F2D80FF96915"
+    },
+    {
+      "path": "VERIFICATION.txt",
+      "bytes": 491,
+      "sha256": "82A43D6A0B2E82E3AB8792C1F7D14F4E3A7A0226E39BA8410F70C98DA572669F"
+    },
+    {
+      "path": "version.js",
+      "bytes": 90,
+      "sha256": "B7C9BCABC7E5783375075A9270CDAA8322D6833D913F6DECF1E6CCE605EAD250"
+    },
+    {
+      "path": "view_cards_bzh.html",
+      "bytes": 1913,
+      "sha256": "12D7F5417655C84A2672FA179FD909BDD04DE6AEADDD007482A523E54E1B7832"
+    },
+    {
+      "path": "app\\router.js",
+      "bytes": 1019,
+      "sha256": "E5134CF12FBAD82F711D7FE920B25C7E1F0523A9FEBC84752FF5E816318CD8E1"
+    },
+    {
+      "path": "app\\state.js",
+      "bytes": 213,
+      "sha256": "31BA799311B8377209A704371F10D5A135740E42DC0BFE3707D3A39B5AE097E8"
+    },
+    {
+      "path": "app\\ui-settings.js",
+      "bytes": 1930,
+      "sha256": "1974603F90FAD797EAB8FA8FE6D4F15CDADFEB945A04EF8A5756F0D959435436"
+    },
+    {
+      "path": "app\\ui-shell.js",
+      "bytes": 7818,
+      "sha256": "ACED45707F385BA7A15C48D729CF5965214ED51A2EB813B873ED9CBDD090BB83"
+    },
+    {
+      "path": "app\\version.js",
+      "bytes": 217,
+      "sha256": "9B7CADFCF5732EE3C3A96E387DCDDC887B477B4A44F9FADAD944BFA8780E2934"
+    },
+    {
+      "path": "app\\collection\\collection.js",
+      "bytes": 764,
+      "sha256": "DC7E4EBB97B5207F904C949448D96458A993270CFFC5F4E421832A8871954377"
+    },
+    {
+      "path": "app\\views\\collection.js",
+      "bytes": 9209,
+      "sha256": "28DCA21D41D76D7DCAB793CD7F23A46CF0ED038C8BB1BAE2CD63E74F8C2F2568"
+    },
+    {
+      "path": "app\\views\\home.js",
+      "bytes": 12206,
+      "sha256": "1AB2104A398DB603D668095799346EB4109782A1721E8820D9B498F6D7FACD32"
+    },
+    {
+      "path": "app\\views\\opening.js",
+      "bytes": 4568,
+      "sha256": "5CDC605A1F2C16A25670E07A0C1E8502749CEA0EB94BF22010B25BA3BE0D1CBB"
+    },
+    {
+      "path": "app\\views\\shop.js",
+      "bytes": 4643,
+      "sha256": "86C8575FD38DD590DA07F0BA0708C94210796C560162C73C5A3A46E1C4AF62C6"
+    },
+    {
+      "path": "assets\\album.jpg",
+      "bytes": 90688,
+      "sha256": "64D3CC004C8243A7768D348FA8BC981468527A6A7BA14C15E708539989DDFD92"
+    },
+    {
+      "path": "assets\\card_back.png",
+      "bytes": 3212171,
+      "sha256": "20083BD3452C501C33D1B2608654C1D408AC1FD34F138E150660C5AF0D54560A"
+    },
+    {
+      "path": "assets\\shelf.png",
+      "bytes": 10912,
+      "sha256": "69A7EB8859516356C169CC1DC980D200405298572C845084F37DDF809C6E2225"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CE001.jpg",
+      "bytes": 37367,
+      "sha256": "B90177B59F0A68065BBC00C4E0E085EF7970FC5B01F4C8E162CD3F5F8EC41749"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CE002.jpg",
+      "bytes": 37640,
+      "sha256": "37BFED6F7E3943B9936BCC112524AE1C89C9CD069D18679C28780945373F2875"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CE003.jpg",
+      "bytes": 24066,
+      "sha256": "173AB28D5205AB18298B2B1B09635A72509FF5ABF163F33DA436B53975416DE8"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CE004.jpg",
+      "bytes": 107113,
+      "sha256": "9C82FED47E88C05B26B8771BED4C8C63C2E21881227679463A93E4BC6C11976C"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CO001.jpg",
+      "bytes": 26834,
+      "sha256": "648B0DD75764B935FF0190510B9EFF66BD90C309CA1F462E0ABE0028F7E8AD30"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CO002.jpg",
+      "bytes": 33441,
+      "sha256": "0C01BD2562F5482BDFA4BCFF394EA53F377171C18D685144CD0720063875E4D8"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CO003.jpg",
+      "bytes": 31450,
+      "sha256": "D6430DD266AE3C0AE8AE0CCE9CAF78EFFB39DE9D6B7F695F6483202790DB5957"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CO004.jpg",
+      "bytes": 28448,
+      "sha256": "E7EC119871C6032076E14E15AFCE2E06AED546D4EE7EDBDDAE8D46CA9C0990D9"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CO005.jpg",
+      "bytes": 27612,
+      "sha256": "B8E81A0B5ECA8E29EADAAAAB4F782F63B462A99DCFB9B4279FC215CE57AD9CAE"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CO006.jpg",
+      "bytes": 30492,
+      "sha256": "8233C13971874A6B9B39B36517DCD9C8F16D7961EF13EAFC4410D6AE0D096A6E"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CO007.jpg",
+      "bytes": 35598,
+      "sha256": "FBAEEE52A244039C7AF2F190D6D63BE7CF81DC0317BA5424DAAF2FE6A577492F"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CP001.jpg",
+      "bytes": 88535,
+      "sha256": "6D4C2553EF624F0F0D73D7D0AD4A5DC2B76C6CC12C76F854C0532A1DA2C5F69F"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CP002.jpg",
+      "bytes": 61266,
+      "sha256": "B653A3E71B6B67932EB9164403DBDB694F59071249DE33090BF21FDD7F2BE4A0"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CP003.jpg",
+      "bytes": 31653,
+      "sha256": "6863206BAAD7259733820E7FA2ACDCD1734E1CD3F9D0F1482238A21AD45D4A06"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CP004.jpg",
+      "bytes": 28430,
+      "sha256": "A7D7BD10D5F29E48A194903573FFFEAD19747C2C337C0EA4AB2493CEA74777BF"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CS001.jpg",
+      "bytes": 30839,
+      "sha256": "762B40DDFF95DBA71D4799434AEC3500A8217478D7D428C02C25BF43C46D9731"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CS002.jpg",
+      "bytes": 29582,
+      "sha256": "914FBC9607D7E80A743C66A3211992732721A838E56C2F9A171FD140FFDF257B"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CT001.jpg",
+      "bytes": 29255,
+      "sha256": "8D1B0B6283C361625C8272E87D52C7C7E6DCEBEA913F640A436C59494285F600"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CT002.jpg",
+      "bytes": 30174,
+      "sha256": "8BE7DD2EA4E1C9C3F16DBD61D41AB64CB8D614A890A370D5B21E7C1AF5E1F2C8"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CT003.jpg",
+      "bytes": 31818,
+      "sha256": "1F367D132FF0C5E8992F3C9E38F76C711F1012478CCDBBDB2529E7A894A3C071"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CT004.jpg",
+      "bytes": 41058,
+      "sha256": "8977645DA26E31A88E4F90A8FB26565133381009C508C2236A1412FE865DC254"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CT005.jpg",
+      "bytes": 36641,
+      "sha256": "DAE95FF13C58D652D114E14B9556E35A55A1B1DBE59A34DD95B4E3495F2E7CB1"
+    },
+    {
+      "path": "assets\\cards\\BZH01_CT006.jpg",
+      "bytes": 42919,
+      "sha256": "1D1BFF60DE7A05B73DEC5D315F9FDB299294E1865AC3569C95C13BC0E3C5F326"
+    },
+    {
+      "path": "assets\\cards\\BZH01_EC001.jpg",
+      "bytes": 37399,
+      "sha256": "9BAD68D2C95BB6FA3192539A1C488605C74AF04AAE51E9D4C1F8B6ADCF0EECE2"
+    },
+    {
+      "path": "assets\\cards\\BZH01_EC002.jpg",
+      "bytes": 27570,
+      "sha256": "BB4410CBC3F7364F1537BFBFD99B034DD1046844D811FCF75B00C5005A2A4413"
+    },
+    {
+      "path": "assets\\cards\\BZH01_EC003.jpg",
+      "bytes": 36494,
+      "sha256": "F0ED0D19325686A1ECA10674FF6E0252AD3646A9DDBB57BEFE9379543366482B"
+    },
+    {
+      "path": "assets\\cards\\BZH01_EC004.jpg",
+      "bytes": 37942,
+      "sha256": "9550433968C1D1DB17252BC563956CEB2891237EEACE41AA11010941CF65BFCD"
+    },
+    {
+      "path": "assets\\cards\\BZH01_EE001.jpg",
+      "bytes": 131148,
+      "sha256": "8AD0A948B0DB54AFFEF21DBE6CED9BA7ABF2D13DD87541357543F579844F69EC"
+    },
+    {
+      "path": "assets\\cards\\BZH01_EO001.jpg",
+      "bytes": 89577,
+      "sha256": "52E59E0BC87800E6148C2E4C80EA61EA03D5DD5B861ED529AD4896E25EB30544"
+    },
+    {
+      "path": "assets\\cards\\BZH01_EP001.jpg",
+      "bytes": 95304,
+      "sha256": "C79B8281239A04AD7D2A655B8717C21519AF7CB1E5B5B7E26F09BEDF3E01A17F"
+    },
+    {
+      "path": "assets\\cards\\BZH01_ES001.jpg",
+      "bytes": 85013,
+      "sha256": "BD7E050FA24CF658830324C96D3B849F508425600F561CBDC81A8A978C730982"
+    },
+    {
+      "path": "assets\\cards\\BZH01_ES002.jpg",
+      "bytes": 121269,
+      "sha256": "5096E7AA8EAAEA3DC8D96E5BFB06534C951BFB3941FD58B4D33B71300B0B97C8"
+    },
+    {
+      "path": "assets\\cards\\BZH01_ET001.jpg",
+      "bytes": 27085,
+      "sha256": "0A2C47060C8704A0314A6B83F8E0CBCCE736EC12653AA5815159F37D3778EC7F"
+    },
+    {
+      "path": "assets\\cards\\BZH01_LC001.jpg",
+      "bytes": 38062,
+      "sha256": "6F09CA289144951232938F58D948F21B040BF9EF87094E60FCF66CBD4D1F9D29"
+    },
+    {
+      "path": "assets\\cards\\BZH01_LC002.jpg",
+      "bytes": 111792,
+      "sha256": "42C218500C17AC82C710D933058158385E8D8E9EB3B7125CB3B8CA45D6723748"
+    },
+    {
+      "path": "assets\\cards\\BZH01_LO001.jpg",
+      "bytes": 78701,
+      "sha256": "16E5B76FBF43A8914A87F5329B409E656629F14D4C2C43CAEDA79D2AD188A734"
+    },
+    {
+      "path": "assets\\cards\\BZH01_LP001.jpg",
+      "bytes": 83564,
+      "sha256": "414D245AC1B38F88657B5DDD438683FF37ED8B678351CA2FFF46C06F5B8BE493"
+    },
+    {
+      "path": "assets\\cards\\BZH01_LS001.jpg",
+      "bytes": 72808,
+      "sha256": "2EEFC4CB29150740385C82166AD01A02502124C5CAB7B79B41C499C34661AB1C"
+    },
+    {
+      "path": "assets\\cards\\BZH01_LS002.jpg",
+      "bytes": 94950,
+      "sha256": "ACC3470209D6DF2D84C6A91CB1EC0F2C2481CC3002483ED0DB3BC8F826A5F4D5"
+    },
+    {
+      "path": "assets\\cards\\BZH01_MC001.jpg",
+      "bytes": 37632,
+      "sha256": "073E5BE470842C0B8A570D3F84DB09C25406EAC984DFBA9062C9077B93EB06B9"
+    },
+    {
+      "path": "assets\\cards\\BZH01_MC002.jpg",
+      "bytes": 42119,
+      "sha256": "CCA245E36F0B276FD2755E0A8B0E39A3BBD532FC8B03B7D6737FCF0DD689577E"
+    },
+    {
+      "path": "assets\\cards\\BZH01_MC003.jpg",
+      "bytes": 36129,
+      "sha256": "E2A4940EC1836CA1204418D383AF3102233ABB9F79E7095F56DD67882B6DEB04"
+    },
+    {
+      "path": "assets\\cards\\BZH01_MC004.jpg",
+      "bytes": 36879,
+      "sha256": "12E9CF081CE7C68E0E7B345291BE9EE62F1937FED06F81E6C486B6AA9C283A08"
+    },
+    {
+      "path": "assets\\cards\\BZH01_MC005.jpg",
+      "bytes": 32620,
+      "sha256": "CC5F49A496D50DF150BDE991DE08E61587A32FDCECFC0DFDD3DC195881F1C46B"
+    },
+    {
+      "path": "assets\\cards\\BZH01_MC006.jpg",
+      "bytes": 28751,
+      "sha256": "1995CE74C5FA84E146066A1DCB73AC4457CD030855C2203AD1657A9C9CDB394D"
+    },
+    {
+      "path": "assets\\cards\\BZH01_ME001.jpg",
+      "bytes": 31885,
+      "sha256": "57D1349A22B90DB0885D464C8744E0683BF0DE98B1C662F79DDD6442B17AC264"
+    },
+    {
+      "path": "assets\\cards\\BZH01_ME002.jpg",
+      "bytes": 27957,
+      "sha256": "8C163248FB6303237E9D3E19B4A0BD6D5BCDB97AA9B21D41769BAE7EA5159BA3"
+    },
+    {
+      "path": "assets\\cards\\BZH01_ME003.jpg",
+      "bytes": 28100,
+      "sha256": "A5FC58A55B2CF63B29B25F947281F8AF084B4835C5D2FB7CDEA2BDB5EB989D7F"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RC001.jpg",
+      "bytes": 92840,
+      "sha256": "532718C3347C8FFE530660426B85315641916A27D8D27F622DB8715C482A5FAD"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RC002.jpg",
+      "bytes": 122305,
+      "sha256": "B206F39122E39986A571DFD550D8D7B1BD573B3AB6AD52524DA9C799C5C2785F"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RC003.jpg",
+      "bytes": 98146,
+      "sha256": "A3D030CAC8248DAAFC4193D1DB55C0D9BBF421ACB73208ADB65A8701B308F606"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RC004.jpg",
+      "bytes": 29293,
+      "sha256": "758C7FFD6F990DF7F7C12452879BE3BA2185B513D02C422C11883F245CDFBA4E"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RE001.jpg",
+      "bytes": 30765,
+      "sha256": "40BDD80524F512C779EC4A1907D0AAB23FBB614F851FF8422AE939A404B33549"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RE002.jpg",
+      "bytes": 31991,
+      "sha256": "7C9E1D4AA9B18399E72B1087B3AAFBBCB28BE37509188121B1DC1F8DCEC8891A"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RE003.jpg",
+      "bytes": 111515,
+      "sha256": "5FC186CC09DF9315A1A54BCB2A2E14A263AF747A56B134B7D9181612F79883C0"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RO001.jpg",
+      "bytes": 35519,
+      "sha256": "71BF753F00C46569C5ED55E2F656A85809C212CDA1ACE546378A753C336A741F"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RO002.jpg",
+      "bytes": 29621,
+      "sha256": "79FA79EAA438A2A7CE5EE677F97FE1C24A9928D67CE59A90036DCF5178E9BF32"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RP001.jpg",
+      "bytes": 28655,
+      "sha256": "BDE9368E9220D86E5195D29117BDAB96F1B724B6D3AD4E995F9AB82FE7717E1C"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RP002.jpg",
+      "bytes": 120102,
+      "sha256": "7986B6E2948EBA714ED3BF6868735AF0489FE52B34B5089F58D6471584C44AA1"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RS001.jpg",
+      "bytes": 30400,
+      "sha256": "0DA76DE0CD5B529506C10D3B2E8AD5D7A7A2AE0CCFF1BFC1069D5895BC25E801"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RS002.jpg",
+      "bytes": 33022,
+      "sha256": "98246780F1DCE69FB847162F9713875BF81F5CB99ECD15A9FC57B16761D9AEC9"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RS003.jpg",
+      "bytes": 31666,
+      "sha256": "23192B46F7BFDF01F1CF6BDB23E3C39374B2B1229CEE3DFC62B5536B80338052"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RS004.jpg",
+      "bytes": 31522,
+      "sha256": "2A8FA7341463986EFE20425E3F6C875DB0F26B6636CA992E8BF26CB4D6DE013D"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RT001.jpg",
+      "bytes": 79538,
+      "sha256": "D022C079054221B42F1CE340B94291767FF2A962038F6F9344C3B45E777FE6BE"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RT002.jpg",
+      "bytes": 65127,
+      "sha256": "D63F8767C1716843D3821F638D380A4542D379983F6CB8DB35A5F57604B5764E"
+    },
+    {
+      "path": "assets\\cards\\BZH01_RT003.jpg",
+      "bytes": 80080,
+      "sha256": "6AD87070402B2DB6358A195F47ED5856D09FF0F2934F5AD85B7C7B6AC5D65375"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CO001.jpg",
+      "bytes": 85289,
+      "sha256": "BAC37B7AEBC1D25E108B3CD93DAAE82F01C4588D98E866D5EE1F1B52234565C6"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CO002.jpg",
+      "bytes": 108683,
+      "sha256": "2A9C12DB5C3FFA074A16B97636C17678CA7F528BDDC383BCBD8CE71257F5206B"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CO003.jpg",
+      "bytes": 103282,
+      "sha256": "AA340110C59B5A943090D2B615DE64B9504730160B888B748FC7CAA112A08042"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CO004.jpg",
+      "bytes": 81529,
+      "sha256": "E12E9A3E3C716628ACCD770F95238F52D4D4EACBFF6BDC57AE7CDEF46FFD3B44"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CO005.jpg",
+      "bytes": 101595,
+      "sha256": "B87463986FC34CCD17A1692E25A42497F873C056412F66C8EE4E8D7BB3DDDF8A"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CO006.jpg",
+      "bytes": 97028,
+      "sha256": "04E40524FE3C62901172944CF9C9BE252DCBFD2800B7F98F7B3B9FA7F2A675EC"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CP001.jpg",
+      "bytes": 103902,
+      "sha256": "7914679CB4F1F9C83681E52D8CA429E4565CB26216EEC89611CCE028EF859F19"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CP002.jpg",
+      "bytes": 100266,
+      "sha256": "8D327129F618A033712C6203DFC989682BF683A3D490A163154A894EB0738537"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CP003.jpg",
+      "bytes": 81729,
+      "sha256": "8088E9B62A4198B0AA6236E281A111580EB84D7B5F64FA07A5E9D08399B607A2"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CP004.jpg",
+      "bytes": 112458,
+      "sha256": "5DE41D5616559A0F60A0AAA39FFE7F1290F4E519513B696409F228338324F775"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CP005.jpg",
+      "bytes": 85967,
+      "sha256": "296738144760900D6C525D92FE8C9963E2B024B5591E74B21CFDAD9D9DD65FDC"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CP006.jpg",
+      "bytes": 105701,
+      "sha256": "B15B3E1155920DDFE0A68DD2F7FEE1D3DFBF53730CB732B12BDE43A144EA2AA1"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CT001.jpg",
+      "bytes": 81486,
+      "sha256": "69C11FA7DF81506ED5DA27AB9FE80900A40DB68B723CB7092FDD36EA41D60C97"
+    },
+    {
+      "path": "assets\\cards\\BZH02_CT002.jpg",
+      "bytes": 131991,
+      "sha256": "8FF58D6D3F81B812701F8CE5635556239CF1CD9C4863407886347EC5745B0AE7"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EC001.jpg",
+      "bytes": 88056,
+      "sha256": "FC79230F4DD19746DF0EA48AE235B2ADEC79F6FDC6D109D9F843730FDD740A1F"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EC002.jpg",
+      "bytes": 95532,
+      "sha256": "538E5E4D80017042C4C93BD51A54EC4556D6C967202E284ABDB2A3F366D15320"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EC003.jpg",
+      "bytes": 125011,
+      "sha256": "6E48DA5EEE3F7364D826F851E7676C5F5263B938D580EF5226302722177B922D"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EC004.jpg",
+      "bytes": 106367,
+      "sha256": "2D742BC909B4344AE6B71664D1A8E27D1CB2F26A7383C1FA9D1E69AE6A03AF3B"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EC005.jpg",
+      "bytes": 130798,
+      "sha256": "207F45FFD78ACB68E9EB4C964F05272528BD74DEB07654CF3EC96B42C7651A1A"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EC006.jpg",
+      "bytes": 131631,
+      "sha256": "CC9DE1325A98FD822874C3A536266F4708B216B2B32129ED56647CCCB62169A5"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EC007.jpg",
+      "bytes": 112854,
+      "sha256": "2DAC0B948349EF46FB2488E5587683F1E795FBAC573672706B831DD712DA6894"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EC008.jpg",
+      "bytes": 104232,
+      "sha256": "F2F94FB58A4B878E6C3E8ACC55C20F108D38CB693E19AAACC1A3ABC3A37E0C4B"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EC009.jpg",
+      "bytes": 99217,
+      "sha256": "E45F34B5304B5E790B07B2897A61909DE9F8C9EC9ECB282A743145774AC6EFAD"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EE001.jpg",
+      "bytes": 99366,
+      "sha256": "2A11137BA5922382598AFC143BB48EFE535B5960BE437DB9C5F57C4D0BE8A7F2"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EE002.jpg",
+      "bytes": 116218,
+      "sha256": "89D6BCDDFE22B248EF7397FA4D3DBBCBD434F2F78F8294991EFB741AFD3BB948"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EO001.jpg",
+      "bytes": 79890,
+      "sha256": "E81003A3992BE84704A0954EB842642BA686CC6F34371FC9C9A0AF02668F7E05"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EO002.jpg",
+      "bytes": 128277,
+      "sha256": "632B70A77A122915227C8764F7D602A0312A160B213ABD3CA39B75FFB4FF9880"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EO003.jpg",
+      "bytes": 102010,
+      "sha256": "F6885407C57C9576DCC2EAFFABFCA46950082C42967656D71CE2344AD88491BF"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EP001.jpg",
+      "bytes": 93700,
+      "sha256": "7CBCEA1EF87FE5DD433FBC6A25D1B312183ABE8F4EEE270A32AF3812BCC634A5"
+    },
+    {
+      "path": "assets\\cards\\BZH02_ER001.jpg",
+      "bytes": 114278,
+      "sha256": "E6F1F79BB556F0A197FCC4997BF01BDC84CA2DA6AD54A612C6FB08F70F4E265A"
+    },
+    {
+      "path": "assets\\cards\\BZH02_ER002.jpg",
+      "bytes": 94223,
+      "sha256": "B75AC352F8A040D7834EBF1EBAEF9C98A82D77DDD1905E09EDAE68055AECB000"
+    },
+    {
+      "path": "assets\\cards\\BZH02_ER003.jpg",
+      "bytes": 94036,
+      "sha256": "249ED97F87661B5DBD6C1D54985A12C24F4C0F2B16B94296158FC6837468DB8C"
+    },
+    {
+      "path": "assets\\cards\\BZH02_ER004.jpg",
+      "bytes": 102271,
+      "sha256": "146EA899D3C5864E3B2A8581141D06A83A5B474CED80F2E1F5FF8443D9069989"
+    },
+    {
+      "path": "assets\\cards\\BZH02_ET001.jpg",
+      "bytes": 147674,
+      "sha256": "A53FC5E993A24E215450122BBD287ED935D2FD46ADFBD689BC710CB80C228D0A"
+    },
+    {
+      "path": "assets\\cards\\BZH02_ET002.jpg",
+      "bytes": 100231,
+      "sha256": "99545A7CCD3FBCCD23B37B6764D85CCF4EB019451EA43C95943AAE23081DEAC0"
+    },
+    {
+      "path": "assets\\cards\\BZH02_ET003.jpg",
+      "bytes": 87381,
+      "sha256": "3FBB505238FA8905F4249A96B809D825560EC02FBECFCCF28B605BC97B0B81E9"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EU001.jpg",
+      "bytes": 91984,
+      "sha256": "B53598921D2AF2D91F5602D59498C95AE77F65B913A2C5E0D88FA99D198AEA38"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EU002.jpg",
+      "bytes": 97145,
+      "sha256": "2D11F06237BD44296138D25944FDA0BD544ED56ECE13E20C3D4A78BB971BD4F9"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EU003.jpg",
+      "bytes": 63658,
+      "sha256": "44008ED57CD5B2CA5CC70C51BB57386F4C934A839AEA90BC05E9679C5B5264A7"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EU004.jpg",
+      "bytes": 72875,
+      "sha256": "90BD0D2B36B708E278E1DF79FA9CD8DF52D4B3387D510C7186B3DB2A5432FCEC"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EU005.jpg",
+      "bytes": 144271,
+      "sha256": "3E07D650DE27E9ADD8AED2DD5894B854D1F9B463DAC4C61EA093B415D0217FE0"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EU006.jpg",
+      "bytes": 103642,
+      "sha256": "E4942B415DE262EE8487AE8D5E5D405070E18A704C221F638D1E353A720556E4"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EU007.jpg",
+      "bytes": 91855,
+      "sha256": "CC1DE81E3B080A6CE363BACCF6999BA934ECD2761D180D4125765254FE0E9871"
+    },
+    {
+      "path": "assets\\cards\\BZH02_EU008.jpg",
+      "bytes": 131662,
+      "sha256": "B8FA13F3F7D74E8A78819C2B83744B3B798BACC8B5DFCD9447DD8D7C196F7E5A"
+    },
+    {
+      "path": "assets\\cards\\BZH02_LO001.jpg",
+      "bytes": 81620,
+      "sha256": "EF5B5846CDD8EA290A94C3CD1A4A07412FC847CAFEC3D448C0977AAD20438899"
+    },
+    {
+      "path": "assets\\cards\\BZH02_LO002.jpg",
+      "bytes": 79674,
+      "sha256": "35EC6030BA570019126FBB91C8A000E1CE8B6CA328EDD2028C34D6407425A798"
+    },
+    {
+      "path": "assets\\cards\\BZH02_LP001.jpg",
+      "bytes": 105448,
+      "sha256": "13AF8308469A2129BD63A6BD3A694EF5C38C7C2C1C28A2314806CD131B28FAFC"
+    },
+    {
+      "path": "assets\\cards\\BZH02_LT001.jpg",
+      "bytes": 87673,
+      "sha256": "367CB658643A8E877F93E0008B3DC57CFF14C04F0941B040264E089DF9CF502E"
+    },
+    {
+      "path": "assets\\cards\\BZH02_LT002.jpg",
+      "bytes": 93797,
+      "sha256": "F150437C4CBEC33AEC1F5B8671A3FACDAF4EFCD2ACBB07337E9B383BB28CF39E"
+    },
+    {
+      "path": "assets\\cards\\BZH02_LT003.jpg",
+      "bytes": 94973,
+      "sha256": "3E907D5B36A3BED31D49E6D6EE6321C670099673FDC155A5D226B5F2471DA1B9"
+    },
+    {
+      "path": "assets\\cards\\BZH02_LU001.jpg",
+      "bytes": 96499,
+      "sha256": "DB1E4D15C30BDB6A4AF12BEDBFCCF4F71FCDB11C4A4160095CFA487F4B78AD7F"
+    },
+    {
+      "path": "assets\\cards\\BZH02_LU002.jpg",
+      "bytes": 61871,
+      "sha256": "62A2C52D044CBE85CFC6A40E0BD4B40BB32E7ECDDCF779AAD2AAA60E9AB77341"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC001.jpg",
+      "bytes": 108045,
+      "sha256": "CD40855923E87DB6CBBA55062890CA749984950083098509C6515278C489C235"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC002.jpg",
+      "bytes": 94452,
+      "sha256": "1F084A13F7C52D8975BE5EDC4528DF7D0DB2DDDBD7D1730EEC9BB990C183E3A1"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC003.jpg",
+      "bytes": 131144,
+      "sha256": "0652693B6546C78CC37DE50E22B4DB6632703CDD3EA5B003ECA05A94F4A7B863"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC004.jpg",
+      "bytes": 104727,
+      "sha256": "4CBC49D2AE46A682A20A3C1C614B3FA31BD9E39A88D6BCD552FC2CC18E9BD808"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC005.jpg",
+      "bytes": 124213,
+      "sha256": "C60AA801B411586DF330E34E3F49B9C92C22ED9605F48BE519CBACD5CC52BC55"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC006.jpg",
+      "bytes": 105289,
+      "sha256": "2FEBFC498F34BFCFA57253D12EEDB55D91EC870C5962E8FE1DAAA1D5F61D1998"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC007.jpg",
+      "bytes": 126461,
+      "sha256": "702728FFF4038979A690D95857C9C1D8EBDC01E29725896D119828C86CDFB749"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC008.jpg",
+      "bytes": 155224,
+      "sha256": "A64460EDC6A153914FD667282532D69D16089C77A4A2AD6645ACE6B11CFBA54F"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC009.jpg",
+      "bytes": 104503,
+      "sha256": "7F46201C5535CEF1ADF432F93E1C60BB145AC8A12D18F7815854F97D1592FBFC"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC010.jpg",
+      "bytes": 92201,
+      "sha256": "645CC6802BA0EA52193EC078F440AC8C43881EA8DDD39D9A3E29A5FD1AFD074C"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC011.jpg",
+      "bytes": 107342,
+      "sha256": "AEE1DB5125E09303FBAF21BF80982617A27E3B0FB4BB93CEDE3D9064DB7FD0AA"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC012.jpg",
+      "bytes": 117920,
+      "sha256": "F372F1F140598BC7597E640EFE650161D38AACE500503FF2F43A14E68EBA747E"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC013.jpg",
+      "bytes": 107120,
+      "sha256": "91D9D3E960B82DD635939305E069A35638BB7A7A56CF5CAFB1525755163AA3AD"
+    },
+    {
+      "path": "assets\\cards\\BZH02_MC014.jpg",
+      "bytes": 99861,
+      "sha256": "CE91CFF31CD29771AC0F8F058DC417B814ED4381E59EA90249E8E6FF5B95B13A"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RO001.jpg",
+      "bytes": 115755,
+      "sha256": "9B71C0D31B42343EFB31DDDA83757C8B65B414342800A4134F87B624872637AE"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RO002.jpg",
+      "bytes": 78145,
+      "sha256": "ECB7D78C5534D44F42C5836DC273022F410CD3A737235B606D3242B5013D6A50"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RO003.jpg",
+      "bytes": 76412,
+      "sha256": "DA2AA5D9792355D051B7F9DF4E855C9E66142773C162FA594E2A995C7B425299"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RO004.jpg",
+      "bytes": 87344,
+      "sha256": "74AB05031055F1FB5F5724D2F7A4B89F3AE51B1A98A1A1297FC7F1A9DE177C45"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RO005.jpg",
+      "bytes": 107912,
+      "sha256": "26389B0F1C8BA6E429A91673D587A16BF7729BB28431ABBAF48635E359D905DF"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RO006.jpg",
+      "bytes": 88297,
+      "sha256": "E3B53BD41272635DC60CC74D0F30A80A61BA02A98A1CF42D71910F86E7EFAFFE"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RP001.jpg",
+      "bytes": 99073,
+      "sha256": "0A6E9EA31F64A1D4D6E89F59563AF0320B8DDC5114519704069A6D20FC378444"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RP002.jpg",
+      "bytes": 124112,
+      "sha256": "CD63CD781BEF8B091CF1B6EF92B72545FCA62DFB8809A93F94802E722E122B67"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RP003.jpg",
+      "bytes": 101352,
+      "sha256": "A388EC4E6987D6C3BB835342D85D6564C84EC2760E9EC15BB52C8C146470EE6E"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RP004.jpg",
+      "bytes": 94092,
+      "sha256": "C34EE8C00F2059844098FE5DD9703013FD73D7512931C7DA11DD73D4352034AD"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RP005.jpg",
+      "bytes": 72854,
+      "sha256": "BB0A89966115338DCA1343FF1382C593FEEC826D66323D31E3C1B1FCEA9D72D5"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RP006.jpg",
+      "bytes": 96551,
+      "sha256": "91D2720C884C8C5AA554043FF6A642AE48F95FE651EFC62E66CA81B2CC06BD5B"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RT001.jpg",
+      "bytes": 87360,
+      "sha256": "8BA35444F355B729185147959C8383E98EACECF131DF6787677014F9FB7F5E70"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RT002.jpg",
+      "bytes": 103993,
+      "sha256": "43AEE5A83BE53618B995457DC324C87F52D8F23F1F9A5E4C8BD7675ECBA619D0"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RT003.jpg",
+      "bytes": 72276,
+      "sha256": "38FCF8355E3C22B0E90752621750D6FE1E6CF1FFCFCB946B6EC68CB2DD5FCFFD"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RT004.jpg",
+      "bytes": 101330,
+      "sha256": "54EC244400B8ED0E752909FE01553C7763D19D42B1EF164FDB2CE468BBDF34FD"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RT005.jpg",
+      "bytes": 96797,
+      "sha256": "2ED9C871D537BC89B88B3FD7E140B105B7C5D4F417228D6CA42252C4E9936485"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RT006.jpg",
+      "bytes": 140285,
+      "sha256": "4B3BD16DB3C1F58C8F72250E2668EE0754349D34AB357ADFB0B956BE47B0632A"
+    },
+    {
+      "path": "assets\\cards\\BZH02_RT007.jpg",
+      "bytes": 113497,
+      "sha256": "424ACF95DD7AFCAD9DD3529D5EC6CED4CCEBC1FCF661508C792F865A597AFDA0"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SC001.jpg",
+      "bytes": 111375,
+      "sha256": "BFB52E38842532A9B106A47A41422DBEF829E7A3D7AFA2A4203E40390DDD2360"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SC002.jpg",
+      "bytes": 96963,
+      "sha256": "3411C628D1983C2C366CEDA4D480B2E14F483000E5156CCD75CD25C078569411"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SC004.jpg",
+      "bytes": 89503,
+      "sha256": "51CFC5B699E6577DD7441B6FAC66513A239B8C581F31DF12BE736605107BB45A"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SE001.jpg",
+      "bytes": 90617,
+      "sha256": "B848CEBD00D96DA35A364A1517B90B12E67C51C4A73DB15BC481A3F04480F7EF"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SE002.jpg",
+      "bytes": 112670,
+      "sha256": "BAD7273B195CB1244FF7D97F204A35092B34F7070BEAE2952173DE5C7DFCACE5"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SE003.jpg",
+      "bytes": 122366,
+      "sha256": "EDE1A34436454D90E3D2954F3B32E6C0FC5977991EE4EB338B5289A2416F5906"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SE004.jpg",
+      "bytes": 115529,
+      "sha256": "919E51D70E49F9D42B53B201AFB08BE04C264915F328335E34D6A7D6A175692D"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SE005.jpg",
+      "bytes": 96218,
+      "sha256": "42473F795249D8BC54297812D36F5F83F489651099F36007DF4D23D190D7D59D"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SE006.jpg",
+      "bytes": 98754,
+      "sha256": "FD03AA594F88D892563792FDA8A855C833F0BFE0CA1588271C8EF201E75B63CC"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SL001.jpg",
+      "bytes": 95096,
+      "sha256": "34CFDEC0077C82ECDC83240D46EDB676388B49A63AE731673850EB7CF6835112"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SL002.jpg",
+      "bytes": 117326,
+      "sha256": "4A18983E2FA34AD6D70ABD45BCFC2FB46ECA0557E7755A0FF61D59AE52FC6B91"
+    },
+    {
+      "path": "assets\\cards\\BZH02_SR001.jpg",
+      "bytes": 99953,
+      "sha256": "8552431F2BF7EDB9C87FE2A8715BF70BC2A12C811BCC01B6F8CA01C08E6ECD6F"
+    },
+    {
+      "path": "assets\\packs\\set01_champ.jpg",
+      "bytes": 120770,
+      "sha256": "768ECC78071CAC4BD0D7EDAE8FF47B1D6ED1A230F27A1C669C206D61C0FB4F82"
+    },
+    {
+      "path": "assets\\packs\\set01.jpg",
+      "bytes": 90837,
+      "sha256": "234836379D07E68988D05A1DB475AEF0EB40CE8033E42244049270583278E4B5"
+    },
+    {
+      "path": "assets\\packs\\Set02_champ.jpg",
+      "bytes": 75615,
+      "sha256": "835FAE2F12806BF70646E0922AAAD1A6A1B95B654E5BA77519357D7FC68690B7"
+    },
+    {
+      "path": "assets\\packs\\set02.jpg",
+      "bytes": 94594,
+      "sha256": "95DBBA46DE29B3E0313149AD698CE865C1085C4336062750F4333A18EF430088"
+    },
+    {
+      "path": "data\\achievementsRepo.js",
+      "bytes": 7527,
+      "sha256": "317BE13E692A12F01142F324A0BFD6D81306E13AC51D03EFA070D4EB3C08F0EB"
+    },
+    {
+      "path": "data\\BZH01.json",
+      "bytes": 16317,
+      "sha256": "EC38B26EF60F9131FE5C505613F938ABE18F4A7D0179B6DC3539CF0DAE2A38AE"
+    },
+    {
+      "path": "data\\BZH02.json",
+      "bytes": 25588,
+      "sha256": "C00F94001EF1C36A02281900B2CAE973BA9CFF4C6B6D697F9415C08AC7B021F3"
+    },
+    {
+      "path": "data\\cardsRepo.js",
+      "bytes": 1253,
+      "sha256": "990B9741C5605E3A2081CF3127E4F0A602983676CED4552A270880593630D279"
+    },
+    {
+      "path": "data\\dailyRepo.js",
+      "bytes": 2476,
+      "sha256": "6486267E6B89EDD6EBB3A5B6E4F064C75943CAC07537AC15117798F2C5D945CC"
+    },
+    {
+      "path": "data\\packsRepo.js",
+      "bytes": 2278,
+      "sha256": "B1B9EDB373C7BB549B6835E37609391D94A0752F8570D5E220DA9C335E0058E6"
+    },
+    {
+      "path": "data\\playersRepo.js",
+      "bytes": 2414,
+      "sha256": "3188D2628F97F85432A35D57DDC05EE6A384F123C4B9098D469181E4384FC649"
+    },
+    {
+      "path": "data\\supabaseData.js",
+      "bytes": 1229,
+      "sha256": "958A2B74963F26758F106584126CF76031527CAD9F21136EEAC72B4F3BD0B1E3"
+    },
+    {
+      "path": "logic\\packGenerator.js",
+      "bytes": 1845,
+      "sha256": "AA269A61D5A82754166636BE90487F0F3D7DEDCDC16B7EE51551218B6553B194"
+    },
+    {
+      "path": "logic\\paths.js",
+      "bytes": 530,
+      "sha256": "1C1B187B3E41FCC0BD17BE82FCD41129A37F3C75910C5A9743E10969E11B9370"
+    },
+    {
+      "path": "logic\\supaRaw.js",
+      "bytes": 954,
+      "sha256": "B2509150B9189CFA06DD3178EAD20D62983A8380B54CA2A2C99BCFEF22F85721"
+    },
+    {
+      "path": "pages\\achievementsWidget.js",
+      "bytes": 5412,
+      "sha256": "7A43F54B962D858307737BB5D3F031D61CCBB7457807D379B0236714754F1C48"
+    },
+    {
+      "path": "pages\\dailyWidget.js",
+      "bytes": 4780,
+      "sha256": "D0166BCA20A40D3506E63F3414065199E7DD4895843F3ED7B187C6EBA116399F"
+    },
+    {
+      "path": "pages\\homePage.js",
+      "bytes": 6273,
+      "sha256": "35AF7E5C4275700BB4AE81F5FD8D70B1F73A2CDFE27B39773AEDD17F01866A49"
+    },
+    {
+      "path": "pages\\leaderboardWidget.js",
+      "bytes": 4726,
+      "sha256": "2DFF4A9782366436B52E40CECA4B0BD8DC55539CF1EF26F28EDBB51251C86A13"
+    },
+    {
+      "path": "pages\\openingRenderer.js",
+      "bytes": 11196,
+      "sha256": "EF2D411FBB0259D2F8DC941073FE711CDC64E81B2097DB334C39377691620620"
+    },
+    {
+      "path": "pages\\packsPage.js",
+      "bytes": 9481,
+      "sha256": "25F0F6A32152970F72C1B9091A66D1C641780BF484D2DA3E2424F35D1E5F1A23"
+    },
+    {
+      "path": "pages\\shopPage.js",
+      "bytes": 5577,
+      "sha256": "1DE49CB99257744F32922C2FC2CE07B5BFCFAA5C564057D8FC8177A29BB1378F"
+    },
+    {
+      "path": "pages\\admin\\index.html",
+      "bytes": 21583,
+      "sha256": "6266967756E970D7BFD77D00B9CB82F2B098613CB564F33E76DAD46E9B183FCD"
+    },
+    {
+      "path": "pages\\cig\\cigController.js",
+      "bytes": 485,
+      "sha256": "5BAF10AB92B521E1EF0B2D3E79D45D1AE420B6AFEFC1F354A6B2C1843E4DB5D4"
+    },
+    {
+      "path": "pages\\cig\\index.html",
+      "bytes": 2762,
+      "sha256": "4396F6533EAF25266EA318EF91CE0066BD343E3D5E328A8C03FBCE219D64E612"
+    },
+    {
+      "path": "shared\\assetHelpers.js",
+      "bytes": 981,
+      "sha256": "AA77EBDF726F8CDA5C220B09AE2AAB7D7E0FDEC935F32650CEF8DB7F4B71491B"
+    },
+    {
+      "path": "shared\\packsRepo.js",
+      "bytes": 1535,
+      "sha256": "C46D7F47F2C6EFE9AF043EDE6AF883136EDA8D5B7EAFAF65630A5506EE56041F"
+    },
+    {
+      "path": "shared\\supabaseClient.js",
+      "bytes": 286,
+      "sha256": "92B437588FD7F1DCC0650361D661026B0D04762CDBFB645CACEDD7BB230219C5"
+    },
+    {
+      "path": "shared\\effects\\animations.js",
+      "bytes": 3207,
+      "sha256": "ADC0D3F73DDC9CA8909ADB521CB91235782DDE2869C06930C9C83A811ACF3C11"
+    },
+    {
+      "path": "sounds\\common.mp3",
+      "bytes": 25907,
+      "sha256": "E127FCC52632CF29DFFA5C4B9FB425357726A99FF926FF2FC8486E490C6B5986"
+    },
+    {
+      "path": "sounds\\epic.mp3",
+      "bytes": 35197,
+      "sha256": "8EDD9DD67E8636C04F647BD8A2A017B6BCD5EF40202C3370FBF14E81CDA4B58F"
+    },
+    {
+      "path": "sounds\\legendary.mp3",
+      "bytes": 71059,
+      "sha256": "9539EDD0FD8BB3F357CF418FAD14EC674A71DA67BD50D4323AD78D0CD46651DD"
+    },
+    {
+      "path": "sounds\\mythical.mp3",
+      "bytes": 95463,
+      "sha256": "C212EF175724DAD92AC959950292057A4569525D8614E6A05715C3C5AA55DD80"
+    },
+    {
+      "path": "sounds\\rare.mp3",
+      "bytes": 34365,
+      "sha256": "16C2784BF2E836B87E0855D8D532F7C8C952BE9734A547FA31B56549602E3826"
+    },
+    {
+      "path": "styles\\cig.css",
+      "bytes": 1534,
+      "sha256": "D23C570B12FEFD1DFB551891C2F7934C91F5D9873040BBE301B62B65AD47A4B8"
+    },
+    {
+      "path": "styles\\effects.css",
+      "bytes": 1661,
+      "sha256": "1417BC62576E1669F2E5596374A49AB9D7B2F6621E1522AF751C5A49808FE929"
+    },
+    {
+      "path": "styles\\style.css",
+      "bytes": 6161,
+      "sha256": "91084B65A55F6A7A557EA4B63E4350779C9A65C1E7E6C663964BEC0A3A212E99"
+    },
+    {
+      "path": "styles\\theme-cyber.css",
+      "bytes": 3090,
+      "sha256": "FCD3804D918B6EC1F55B340C7A98CF2D342C2B7B7C1F6DABFA2FEAE00A33625F"
+    },
+    {
+      "path": "ui\\cigModal.js",
+      "bytes": 1230,
+      "sha256": "EDCF5EC8011FF67517646109F842CDF353C312F1A137129F6CC8B53D66C55B8A"
+    },
+    {
+      "path": "ui\\dragOpenRenderer.js",
+      "bytes": 4448,
+      "sha256": "C5951C255102E9E7F8F182220DEAD9406D8FBC79C4CA05FAD9FB5B9B39010745"
+    },
+    {
+      "path": "ui\\openingOverlay.js",
+      "bytes": 10894,
+      "sha256": "3078F119A0DBAFA81350FD8F651D2A86DD36E2C83AF82A5E419269A102B42AA6"
+    },
+    {
+      "path": "ui\\shopModal.js",
+      "bytes": 5748,
+      "sha256": "7825CA8FEA06B4CA3F43834F2FEF8D71B325DAA90C07F92B88B23190660E1857"
+    }
+  ],
+  "verified": true
+}

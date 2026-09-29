@@ -1,0 +1,52 @@
+/* --- Halo rarity hover (teasing face-down) --- */
+.card.face-down.common:hover { box-shadow: 0 0 6px rgba(200,200,200,0.6); }
+.card.face-down.rare:hover { box-shadow: 0 0 8px rgba(80,150,255,0.7); }
+.card.face-down.epic:hover { box-shadow: 0 0 10px rgba(160,80,255,0.8); }
+.card.face-down.legendary:hover { box-shadow: 0 0 12px rgba(255,200,50,0.9); }
+.card.face-down.mythical:hover { box-shadow: 0 0 12px rgba(50,255,220,0.9); }
+
+/* --- Legendary shockwave --- */
+@keyframes shockwave {
+  from { transform:scale(0); opacity:0.8; }
+  to { transform:scale(3); opacity:0; }
+}
+.shockwave {
+  position:absolute;
+  border-radius:50%;
+  border:3px solid gold;
+  width:100px; height:100px;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  animation:shockwave 1s ease-out forwards;
+  pointer-events:none;
+}
+
+/* --- Fissures (Legendary FX) --- */
+.fissure {
+  position:absolute;
+  width:2px; height:40px;
+  background:gold;
+  animation:fissureAnim 0.8s ease-out forwards;
+}
+@keyframes fissureAnim {
+  from { opacity:1; transform:scaleY(0); }
+  to { opacity:0; transform:scaleY(1); }
+}
+
+/* --- Sleeve gloss --- */
+.card.sleeved::after {
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.15),rgba(255,255,255,0));
+  pointer-events:none;
+  mix-blend-mode:overlay;
+}
+
+/* --- Set selector buttons --- */
+.set-selector { margin:10px 0; }
+.set-selector button {
+  margin-right:8px; padding:6px 12px; border:none; border-radius:6px;
+  cursor:pointer; background:#222; color:#eee;
+}
+.set-selector button.active { background:#4af; color:#fff; }

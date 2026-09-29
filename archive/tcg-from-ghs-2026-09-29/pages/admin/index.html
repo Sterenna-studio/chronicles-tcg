@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TCG · Management</title>
+  <style>
+    :root{
+      --bg:#04060a;--bg2:#070d14;--bg3:#0a1018;
+      --cyan:#00f5c4;--red:#ff2d4e;--amber:#f0a500;--green:#22c55e;
+      --purple:#a855f7;--muted:#3a6655;--border:#0e2a1f;
+      --fg:#c8ffe8;--fg2:#7ab89a;--font:'Courier New',monospace;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:13px}
+    body{padding:0}
+
+    /* ── Header ── */
+    .top-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:100}
+    .top-bar h1{font-size:15px;letter-spacing:.2em;color:var(--cyan)}
+    .agent-badge{font-size:11px;color:var(--fg2);display:flex;align-items:center;gap:8px}
+    .agent-badge span{color:var(--cyan)}
+    .btn{background:transparent;border:1px solid currentColor;padding:5px 14px;cursor:pointer;font-family:var(--font);font-size:11px;letter-spacing:.08em;transition:.15s}
+    .btn:hover{opacity:.7}
+    .btn-cyan{color:var(--cyan)}
+    .btn-red{color:var(--red)}
+    .btn-green{color:var(--green)}
+    .btn-amber{color:var(--amber)}
+    .btn-sm{padding:3px 10px;font-size:10px}
+
+    /* ── Nav tabs ── */
+    .nav{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg2);padding:0 24px}
+    .nav-tab{padding:10px 20px;cursor:pointer;font-size:11px;letter-spacing:.12em;color:var(--muted);border-bottom:2px solid transparent;transition:.15s;text-transform:uppercase}
+    .nav-tab:hover{color:var(--fg)}
+    .nav-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+    /* ── Content ── */
+    .content{padding:24px;max-width:1100px}
+    .panel{display:none}.panel.active{display:block}
+    .section-title{font-size:11px;letter-spacing:.18em;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:16px;text-transform:uppercase}
+
+    /* ── Tables ── */
+    table{width:100%;border-collapse:collapse;margin-bottom:20px}
+    th{text-align:left;font-size:10px;letter-spacing:.15em;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--border);text-transform:uppercase}
+    td{padding:7px 10px;border-bottom:1px solid #0a1810;vertical-align:middle}
+    tr:hover td{background:#050d0a}
+    .badge{display:inline-block;padding:2px 7px;font-size:10px;border-radius:2px;letter-spacing:.08em}
+    .badge-common{background:#1a2a20;color:#7ab89a}
+    .badge-rare{background:#0d1f3a;color:#60a5fa}
+    .badge-epic{background:#1e0d3a;color:var(--purple)}
+    .badge-legendary{background:#2a1a00;color:var(--amber)}
+    .badge-mythical{background:#2a0010;color:var(--red)}
+    .badge-champion{background:#001a2a;color:var(--cyan)}
+    .chr{color:var(--amber);font-weight:bold}
+    .chr::before{content:'◆ '}
+
+    /* ── Editable cells ── */
+    .editable{border:1px solid transparent;padding:3px 6px;border-radius:2px;background:transparent;color:var(--fg);font-family:var(--font);font-size:12px;width:100%;min-width:60px}
+    .editable:focus{outline:none;border-color:var(--cyan);background:var(--bg3)}
+    .editable[type=number]{max-width:90px}
+    input[type=checkbox].editable{width:16px;min-width:16px}
+    .save-row{background:transparent;border:none;color:var(--green);cursor:pointer;font-size:16px;padding:2px 6px}
+    .save-row:hover{color:#fff}
+    .del-row{background:transparent;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px 6px}
+    .del-row:hover{color:#fff}
+    .status-cell{font-size:10px;color:var(--muted);min-width:50px;text-align:right}
+
+    /* ── Toast ── */
+    #toast{position:fixed;bottom:20px;right:20px;padding:10px 18px;background:var(--bg2);border:1px solid var(--cyan);color:var(--cyan);font-size:12px;letter-spacing:.08em;display:none;z-index:999}
+    #toast.err{border-color:var(--red);color:var(--red)}
+
+    /* ── Stats cards ── */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+    .stat-card{background:var(--bg2);border:1px solid var(--border);padding:14px;text-align:center}
+    .stat-card .val{font-size:22px;color:var(--cyan);letter-spacing:.1em}
+    .stat-card .lbl{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:.12em;text-transform:uppercase}
+
+    /* ── Add row form ── */
+    .add-form{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;background:var(--bg2);border:1px solid var(--border);padding:14px;margin-bottom:20px}
+    .add-form label{display:flex;flex-direction:column;gap:4px;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+    .add-form input,.add-form select{background:var(--bg3);border:1px solid var(--border);color:var(--fg);font-family:var(--font);font-size:12px;padding:4px 8px}
+    .add-form input:focus,.add-form select:focus{outline:none;border-color:var(--cyan)}
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>⬡ TCG · MANAGEMENT</h1>
+  <div class="agent-badge">Agent : <span id="agent-name">…</span> <a href="/TCG/" class="btn btn-cyan btn-sm">← TCG</a></div>
+</div>
+
+<nav class="nav">
+  <div class="nav-tab active" data-panel="packs">📦 Packs</div>
+  <div class="nav-tab" data-panel="players">👥 Joueurs</div>
+  <div class="nav-tab" data-panel="diag">🔬 Diagnostic</div>
+</nav>
+
+<div class="content">
+
+  <!-- ══ PACKS ══ -->
+  <div class="panel active" id="panel-packs">
+    <div class="section-title">Types de packs — prix en ◆ Chronicles</div>
+
+    <div class="add-form" id="form-add-pack">
+      <label>Nom <input id="np-name" class="editable" placeholder="Pack Classique" /></label>
+      <label>Set ID <input id="np-setid" class="editable" placeholder="BZH01" style="width:80px" /></label>
+      <label>Prix ◆ <input id="np-price" class="editable" type="number" min="0" value="100" style="width:80px" /></label>
+      <label>Cartes <input id="np-cards" class="editable" type="number" min="1" value="5" style="width:60px" /></label>
+      <label>Image <input id="np-img" class="editable" placeholder="set01.jpg" /></label>
+      <label>Champion <input id="np-champ" type="checkbox" /></label>
+      <label>Épique <input id="np-epic" type="checkbox" /></label>
+      <label>Légend. <input id="np-leg" type="checkbox" /></label>
+      <label>Mythique <input id="np-myth" type="checkbox" /></label>
+      <button class="btn btn-green" onclick="addPack()">+ Ajouter</button>
+    </div>
+
+    <table id="tbl-packs">
+      <thead><tr>
+        <th>Nom</th><th>Set</th><th>Prix ◆</th><th>Cartes</th><th>Image</th>
+        <th>Champ</th><th>Épic</th><th>Légend</th><th>Myth</th>
+        <th></th><th class="status-cell"></th>
+      </tr></thead>
+      <tbody id="tbody-packs"><tr><td colspan="11" style="color:var(--muted)">Chargement…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- ══ JOUEURS ══ -->
+  <div class="panel" id="panel-players">
+    <div class="section-title">Joueurs TCG</div>
+    <div class="stats-grid" id="stats-players"></div>
+    <table id="tbl-players">
+      <thead><tr>
+        <th>Username</th><th>◆ Chronicles</th><th>Cartes</th><th>Légendaire</th><th>Duels gagnés</th>
+        <th>Inscription</th><th></th>
+      </tr></thead>
+      <tbody id="tbody-players"><tr><td colspan="7" style="color:var(--muted)">Chargement…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- ══ DIAGNOSTIC ══ -->
+  <div class="panel" id="panel-diag">
+    <div class="section-title">Diagnostic système</div>
+    <div id="checks-auth"></div>
+    <br/>
+    <div class="section-title">Tables Supabase</div>
+    <div id="checks-db"></div>
+    <br/>
+    <div class="section-title">Modules JS</div>
+    <div id="checks-js"></div>
+    <br/>
+    <div class="section-title">Assets packs</div>
+    <div id="checks-assets"></div>
+    <br/>
+    <button class="btn btn-cyan" onclick="location.reload()">↺ Relancer</button>
+    <div id="summary" style="margin-top:16px;padding:10px 14px;border:1px solid var(--border);background:var(--bg2);font-size:12px">Analyse en cours…</div>
+  </div>
+
+</div><!-- /content -->
+
+<div id="toast"></div>
+
+<style>
+  .row{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #0a1810}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .ok{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .err{background:var(--red);box-shadow:0 0 6px var(--red)}
+  .warn{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+  .pend{background:var(--muted);animation:blink 1s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  .label{flex:1}
+  .detail{font-size:11px;color:var(--muted);text-align:right;max-width:360px;word-break:break-all}
+</style>
+
+<script type="module">
+import { supabase as sb } from '/shared/supabase-client.js';
+import { getUser }        from '/shared/auth.js';
+import { getProfile, getDisplayNameFromUser } from '/shared/profile.js';
+
+// ── Utils ──────────────────────────────────────────────────────────────
+function toast(msg, err=false){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = err ? 'err' : '';
+  el.style.display='block';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.style.display='none', 3000);
+}
+
+// ── Nav ────────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.panel).classList.add('active');
+  });
+});
+
+// ── Auth ───────────────────────────────────────────────────────────────
+const user = await getUser();
+if(user){
+  const profile = await getProfile(user.id);
+  document.getElementById('agent-name').textContent = getDisplayNameFromUser(user, profile);
+} else {
+  document.getElementById('agent-name').innerHTML = '<a href="/login.html" style="color:var(--amber)">Non connecté</a>';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// PACKS
+// ══════════════════════════════════════════════════════════════════════
+async function loadPacks(){
+  const { data, error } = await sb.from('pack_types').select('*').order('created_at');
+  if(error){ toast('Erreur packs: '+error.message, true); return; }
+  const tbody = document.getElementById('tbody-packs');
+  tbody.innerHTML = '';
+  (data||[]).forEach(pack => tbody.appendChild(packRow(pack)));
+}
+
+function packRow(p){
+  const tr = document.createElement('tr');
+  tr.dataset.id = p.id;
+  tr.innerHTML = `
+    <td><input class="editable" data-f="name" value="${esc(p.name)}" /></td>
+    <td><input class="editable" data-f="set_id" value="${esc(p.set_id||'')}" style="width:70px"/></td>
+    <td><input class="editable" data-f="price" type="number" min="0" value="${p.price||0}" /></td>
+    <td><input class="editable" data-f="card_count" type="number" min="1" value="${p.card_count||5}" /></td>
+    <td><input class="editable" data-f="image_name" value="${esc(p.image_name||'')}" /></td>
+    <td><input type="checkbox" class="editable" data-f="require_champion" ${p.require_champion?'checked':''}/></td>
+    <td><input type="checkbox" class="editable" data-f="require_epic" ${p.require_epic?'checked':''}/></td>
+    <td><input type="checkbox" class="editable" data-f="require_legendary" ${p.require_legendary?'checked':''}/></td>
+    <td><input type="checkbox" class="editable" data-f="require_mythical" ${p.require_mythical?'checked':''}/></td>
+    <td>
+      <button class="save-row" title="Sauver" onclick="savePack('${p.id}',this)">✓</button>
+      <button class="del-row" title="Supprimer" onclick="delPack('${p.id}',this)">✕</button>
+    </td>
+    <td class="status-cell" id="st-${p.id}"></td>
+  `;
+  return tr;
+}
+
+window.savePack = async (id, btn) => {
+  const tr = btn.closest('tr');
+  const st = document.getElementById('st-'+id);
+  const fields = {};
+  tr.querySelectorAll('[data-f]').forEach(el=>{
+    fields[el.dataset.f] = el.type==='checkbox' ? el.checked
+      : el.type==='number' ? parseInt(el.value)||0
+      : el.value;
+  });
+  st.textContent = '…';
+  const { error } = await sb.from('pack_types').update(fields).eq('id',id);
+  if(error){ st.textContent='❌'; toast(error.message,true); }
+  else{ st.textContent='✓'; toast('Pack sauvé ✓'); setTimeout(()=>st.textContent='',2000); }
+};
+
+window.delPack = async (id, btn) => {
+  if(!confirm('Supprimer ce pack type ?')) return;
+  const { error } = await sb.from('pack_types').delete().eq('id',id);
+  if(error){ toast(error.message,true); return; }
+  btn.closest('tr').remove();
+  toast('Pack supprimé');
+};
+
+window.addPack = async () => {
+  const name = document.getElementById('np-name').value.trim();
+  if(!name){ toast('Nom requis',true); return; }
+  const row = {
+    name,
+    set_id: document.getElementById('np-setid').value.trim()||null,
+    price: parseInt(document.getElementById('np-price').value)||100,
+    card_count: parseInt(document.getElementById('np-cards').value)||5,
+    image_name: document.getElementById('np-img').value.trim()||null,
+    require_champion: document.getElementById('np-champ').checked,
+    require_epic:     document.getElementById('np-epic').checked,
+    require_legendary:document.getElementById('np-leg').checked,
+    require_mythical: document.getElementById('np-myth').checked,
+  };
+  const { data, error } = await sb.from('pack_types').insert(row).select().single();
+  if(error){ toast(error.message,true); return; }
+  document.getElementById('tbody-packs').appendChild(packRow(data));
+  toast('Pack ajouté ✓');
+  document.getElementById('np-name').value='';
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// JOUEURS
+// ══════════════════════════════════════════════════════════════════════
+async function loadPlayers(){
+  const { data, error } = await sb.from('tcg_players').select('*').order('chronicles', {ascending:false});
+  if(error){ toast('Erreur joueurs: '+error.message, true); return; }
+
+  // Stats
+  const total = data?.length||0;
+  const totalChr = (data||[]).reduce((s,p)=>s+(p.chronicles||0),0);
+  const totalCards = (data||[]).reduce((s,p)=>s+(p.cards_count||0),0);
+  document.getElementById('stats-players').innerHTML = `
+    <div class="stat-card"><div class="val">${total}</div><div class="lbl">Joueurs</div></div>
+    <div class="stat-card"><div class="val chr" style="font-size:16px">${totalChr.toLocaleString()}</div><div class="lbl">Chronicles en jeu</div></div>
+    <div class="stat-card"><div class="val">${totalCards}</div><div class="lbl">Cartes totales</div></div>
+  `;
+
+  const tbody = document.getElementById('tbody-players');
+  tbody.innerHTML = '';
+  (data||[]).forEach(p=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(p.username||'—')}</td>
+      <td><input class="editable" type="number" min="0" value="${p.chronicles||0}" data-uid="${p.id}" style="max-width:100px"/></td>
+      <td>${p.cards_count||0}</td>
+      <td>${p.has_legendary?'<span class="badge badge-legendary">OUI</span>':'—'}</td>
+      <td>${p.duels_won||0}</td>
+      <td style="color:var(--fg2);font-size:10px">${new Date(p.created_at).toLocaleDateString('fr-FR')}</td>
+      <td>
+        <button class="save-row" title="Sauver chronicles" onclick="savePlayerChr(this)">✓</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+window.savePlayerChr = async (btn) => {
+  const inp = btn.closest('tr').querySelector('input[data-uid]');
+  const uid = inp.dataset.uid;
+  const val = parseInt(inp.value)||0;
+  const { error } = await sb.from('tcg_players').update({ chronicles: val }).eq('id', uid);
+  if(error) toast(error.message,true);
+  else toast('Chronicles mis à jour ✓');
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// DIAGNOSTIC
+// ══════════════════════════════════════════════════════════════════════
+let okCount=0,errCount=0,warnCount=0;
+
+function diagRow(containerId, label, status, detail=''){
+  if(status==='ok') okCount++; if(status==='err') errCount++; if(status==='warn') warnCount++;
+  const el=document.getElementById(containerId);
+  const div=document.createElement('div'); div.className='row';
+  div.innerHTML=`<span class="dot ${status}"></span><span class="label">${label}</span><span class="detail">${detail}</span>`;
+  el.appendChild(div);
+}
+
+function diagPending(containerId, label){
+  const el=document.getElementById(containerId);
+  const div=document.createElement('div'); div.className='row';
+  div.innerHTML=`<span class="dot pend"></span><span class="label">${label}</span><span class="detail">…</span>`;
+  el.appendChild(div);
+  const res=(s,d)=>{
+    if(s==='ok') okCount++; if(s==='err') errCount++; if(s==='warn') warnCount++;
+    div.innerHTML=`<span class="dot ${s}"></span><span class="label">${label}</span><span class="detail">${d}</span>`;
+  };
+  return { ok:d=>res('ok',d), err:d=>res('err',d), warn:d=>res('warn',d) };
+}
+
+async function runDiag(){
+  // Auth
+  diagRow('checks-auth','Client Supabase','ok','https://imryukpbtkngsihxfxox.supabase.co');
+  const pa = diagPending('checks-auth','Session agent');
+  if(user){ const pr=await getProfile(user.id); pa.ok('👤 '+getDisplayNameFromUser(user,pr)); }
+  else pa.warn('Non connecté — <a href="/login.html" style="color:var(--cyan)">Se connecter</a>');
+
+  // DB
+  for(const t of ['tcg_players','tcg_player_packs','tcg_player_cards','tcg_leaderboard','pack_types','profiles']){
+    const p=diagPending('checks-db',t);
+    try{
+      const {count,error}=await sb.from(t).select('*',{count:'exact',head:true});
+      if(error) p.err(error.message); else p.ok(`${count??'?'} lignes`);
+    }catch(e){p.err(e.message);}
+  }
+
+  // JS
+  for(const path of [
+    '/TCG/logic/supaRaw.js','/TCG/data/packsRepo.js','/TCG/data/playersRepo.js',
+    '/shared/supabase-client.js','/shared/auth.js','/shared/profile.js',
+    '/TCG/app/router.js','/TCG/app/ui-shell.js',
+  ]){
+    const p=diagPending('checks-js',path);
+    try{ const r=await fetch(path,{method:'HEAD'}); r.ok?p.ok(`HTTP ${r.status}`):p.err(`HTTP ${r.status}`); }
+    catch(e){p.err(e.message);}
+  }
+
+  // Assets
+  try{
+    const {data}=await sb.from('pack_types').select('image_name').not('image_name','is',null);
+    const paths=[...new Set((data||[]).map(r=>`/TCG/assets/packs/${r.image_name}`))];
+    for(const path of paths){
+      const p=diagPending('checks-assets',path);
+      try{ const r=await fetch(path,{method:'HEAD'}); r.ok?p.ok(`HTTP ${r.status}`):p.err(`HTTP ${r.status}`); }
+      catch(e){p.err(e.message);}
+    }
+  }catch(e){ diagRow('checks-assets','pack_types','err',e.message); }
+
+  const sum=document.getElementById('summary');
+  if(errCount===0&&warnCount===0){ sum.style.borderColor='var(--green)'; sum.textContent=`✅ Tout OK — ${okCount} checks`; }
+  else{ sum.style.borderColor=errCount>0?'var(--red)':'var(--amber)'; sum.textContent=`${errCount>0?'❌':'⚠️'} ${errCount} erreur(s) · ${warnCount} avert. · ${okCount} OK`; }
+}
+
+// ── Escape helper ──────────────────────────────────────────────────────
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ── Init ───────────────────────────────────────────────────────────────
+await Promise.all([loadPacks(), loadPlayers(), runDiag()]);
+</script>
+</body>
+</html>

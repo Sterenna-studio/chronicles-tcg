@@ -9,11 +9,12 @@ celui de Pokeforge et le README correspond au README Pokeforge actuel.
 Les 20 fichiers restants ont été examinés ci-dessous.
 
 Aucun changement fonctionnel, appel à la base distante ou import de configuration.
-Les originaux ont été déplacés dans
-`local-private/tcg-from-ghs-2026-09-29/` le 29 septembre 2026 : 233 fichiers
-vérifiés par SHA-256, aucun contenu perdu. Le manifeste est dans
-`docs/ARCHIVE-TCG-2026-09-29.json`. Ce dossier est ignoré par Git et exclu du
-déploiement ; la copie complète est locale, pas sauvegardée sur GitHub.
+Les 233 originaux restent dans `local-private/tcg-from-ghs-2026-09-29/`.
+Une copie de référence est maintenant versionnée sous
+`archive/tcg-from-ghs-2026-09-29/` ; SHA-256 correspond pour chaque fichier.
+La copie de référence a passé un scan des clés privées et jetons connus.
+Le workflow de déploiement exclut explicitement `/archive/`.
+`docs/ARCHIVE-TCG-2026-09-29.json` contient le manifeste de la copie privée.
 
 ## Les 20 fichiers non retrouvés exactement
 

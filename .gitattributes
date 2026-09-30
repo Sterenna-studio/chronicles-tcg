@@ -1,3 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 archive/tcg-lab-2026-04-20/** -text
+archive/server-lab-2026-04-20/** -text

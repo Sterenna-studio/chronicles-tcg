@@ -1,0 +1,1 @@
+export async function renderShop(root){const el=document.createElement('div');el.className='panel';el.innerHTML=`<div class='h-section'>Boutique</div><div class='hud'><span class='chip'>Bientôt: panier + achat direct</span></div>`;root.appendChild(el);}

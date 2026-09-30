@@ -1,0 +1,2 @@
+// lab/shared/packsRepo.js — note: per-reveal SFX handled in openingRenderer now
+// (Aucune modification obligatoire ici si vous utilisez déjà la version récente)

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab TCG 2.1.0</title>
+<link rel="stylesheet" href="./styles/style.css?v=base">
+<link rel="stylesheet" href="./styles/theme-cyber.css?v=cyber1">
+<script type="module" src="./version.js"></script>
+<script type="module">
+  import { boot } from './app/router.js';
+  import './app/ui-shell.js'; // ui-shell.js importe supabaseData + supaRaw
+  boot();
+</script>
+</head>
+<body>
+<div id="topbar"><div class="topbar-inner"></div></div>
+<main id="app-root"></main>
+</body>
+</html>

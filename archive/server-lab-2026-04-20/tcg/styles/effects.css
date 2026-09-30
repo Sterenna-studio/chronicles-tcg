@@ -1,0 +1,9 @@
+/* Non-destructive effects */
+.card.sleeved::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,0));pointer-events:none;mix-blend-mode:overlay}
+@keyframes shockwave{from{transform:scale(0);opacity:.8}to{transform:scale(3);opacity:0}}
+.shockwave{position:absolute;border-radius:50%;border:3px solid gold;width:100px;height:100px;top:50%;left:50%;transform:translate(-50%,-50%);animation:shockwave 1s ease-out forwards;pointer-events:none}
+.fissure{position:absolute;width:2px;height:40px;background:gold;animation:fissureAnim .8s ease-out forwards}
+@keyframes fissureAnim{from{opacity:1;transform:scaleY(0)}to{opacity:0;transform:scaleY(1)}}
+.set-selector{margin:10px 0;display:flex;gap:8px;flex-wrap:wrap}
+.set-selector button{padding:6px 12px;border:none;border-radius:8px;background:#222;color:#eee;cursor:pointer}
+.set-selector button.active{background:#4af;color:#fff}

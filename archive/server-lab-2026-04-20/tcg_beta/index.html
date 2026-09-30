@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>BZH TCG — Accueil</title>
+  <link rel="stylesheet" href="./styles/style.css?v=v1.0.7-home-dragtear" />
+</head>
+<body>
+    <div class="home-wrap">
+    <div class="home-inventory">
+      <!-- Top‑left navigation buttons -->
+      <div style="position:absolute; left:-76px; top:-8px; display:flex; gap:8px;">
+        <a class="btn-nav" href="/lab">🏠 Retour</a>
+        <!-- Admin button will be shown only if the player is admin via JS -->
+        <a class="btn-nav" href="./pages/admin/index.html" id="admin-btn" style="display:none;">⚙️ Admin</a>
+      </div>
+      <div class="row"><span>Or</span><b id="gold">0</b></div>
+      <div class="row"><span>Boosters</span><b id="boosters">0</b></div>
+      <div class="row"><span>Cartes uniques</span><b id="unique">0</b></div>
+      <button class="stats-btn" id="btn-stats">Plus de stats</button>
+      <!-- Info button toggles the quick guide bubble -->
+      <button class="stats-btn" id="btn-info" title="Informations">ℹ️ Guide</button>
+    </div>
+
+    <div class="home-main">
+      <div class="shelf-angled" id="owned-packs"></div>
+    </div>
+
+    <div class="home-bottom">
+      <a class="btn-nav" href="./pages/shop/index.html?v=v1.0.7-home-dragtear">🛒 Boutique</a>
+      <a class="btn-nav" href="./pages/collection/index.html?set=bzh_set01&v=v1.0.7-home-dragtear">📘 Album</a>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="stats-modal">
+    <div class="panel">
+      <h3>Statistiques</h3>
+      <p>Boosters ouverts: <b id="st-opened">0</b></p>
+      <p>Cartes obtenues (total): <b id="st-cards">0</b></p>
+      <p>Or dépensé: <b id="st-gold">0</b></p>
+      <div style="text-align:right;margin-top:8px;">
+        <button id="close-stats">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info bubble: hidden by default; shows a quick guide to the TCG when the
+       player clicks the ℹ️ Guide button.  Content will be filled via JS. -->
+  <div class="info-bubble hidden" id="info-bubble">
+    <h2>Guide rapide du TCG</h2>
+    <p>Bienvenue dans le Trading Card Game ! Voici quelques infos utiles :</p>
+    <ul>
+      <li><strong>Objectif :</strong> collectionner toutes les cartes des différents sets.</li>
+      <li><strong>Classes :</strong> chaque carte appartient à une classe (comme Guerrier, Mage, Voleur...).</li>
+      <li><strong>Raretés :</strong> Common, Rare, Epic, Legendary, Mythical — plus la rareté est élevée, plus les chances de l’obtenir sont faibles.</li>
+      <li><strong>Taux de drop estimés :</strong> Common ~70 %, Rare ~20 %, Epic ~7 %, Legendary ~2 %, Mythical ~1 %.</li>
+      <li><strong>Boosters :</strong> ouvrez un booster pour obtenir plusieurs cartes aléatoires. Faites glisser le coin pour l’ouvrir !</li>
+    </ul>
+    <p>Bon jeu ! 👾</p>
+    <button id="close-info">Fermer</button>
+  </div>
+
+  <script type="module" src="./pages/home/home.js?v=v1.0.7-home-dragtear"></script>
+
+  <!-- Insert neon lines background at runtime.  This script creates a
+       `.neon-lines` container and populates it with multiple animated
+       `.ray` elements.  Each ray drifts downward at a random speed and
+       opacity to produce a dynamic cyberpunk effect behind the page. -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.createElement('div');
+      container.className = 'neon-lines';
+      const count = 28;
+      for (let i = 0; i < count; i++) {
+        const ray = document.createElement('div');
+        ray.className = 'ray';
+        ray.style.left = (Math.random() * 100) + '%';
+        // Randomise the duration between 10 and 20 seconds for variety
+        ray.style.animationDuration = (10 + Math.random() * 10) + 's';
+        // Random negative delay so that rays start at different positions
+        ray.style.animationDelay = (-Math.random() * 20) + 's';
+        // Vary opacity between 0.25 and 0.75
+        ray.style.opacity = (0.25 + Math.random() * 0.5).toFixed(2);
+        container.appendChild(ray);
+      }
+      document.body.prepend(container);
+    });
+  </script>
+</body>
+</html>
